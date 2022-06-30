@@ -506,7 +506,6 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             raise PermissionDenied(
                 detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/membership".format(kwargs.get('pk')))
 
-
 class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
     """
     User Experiment
@@ -712,9 +711,43 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - started_by (fk)        - user_id
 
         Permission:
-        - user is_operator
+        - user is_operator or is_experiment?
         """
-        raise MethodNotAllowed(method="POST: /experiment-session")
+
+        try:
+            experiment_id = request.data.get('experiment_id', None)
+            if not experiment_id:
+                raise ValidationError(
+                    detail="experiment_id: must provide experiment_id")
+            experiment = get_object_or_404(AerpawExperiment.objects.all(), pk=int(experiment_id))
+            user = get_object_or_404(AerpawUser.objects.all(), pk=request.user.id)
+        except Exception as exc:
+            raise ValidationError(
+                detail="ValidationError: {0}".format(exc))
+        if user.is_experimenter() and (experiment.is_creator(user) or experiment.is_member(user)):
+            # validate description
+            session_type = request.data.get('session_type', None)
+            #TODO: the 4 session types
+            if not session_type:
+                raise ValidationError(
+                    detail="session_type:  must be one of the four types")
+
+            # create project
+            session = ExperimentSession()
+            session.started_by = user.username
+            session.session_type = user
+            session.session_id = description
+            session.modified_by = user.username
+            session.start_date_timee = name
+            session.uuid = uuid4()
+
+            session.save()
+
+            return self.retrieve(request, pk=session.id)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to POST /experiments")
+
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -762,7 +795,26 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         Permission:
         - user is_operator
         """
-        raise MethodNotAllowed(method="PUT/PATCH: /experiment-session/{int:pk}")
+        session = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
+        if request.user.is_operator():
+            modified = False
+            # check for description
+            if request.data.get('session_type', None):
+                session.session_type = request.data.get('session_type')
+                modified = True
+            if request.data.get('end_date_time', None):
+                session.end_date_time = request.data.get('end_date_time')
+                modified = True
+            if request.data.get('ended_by', None):
+                session.ended_by = request.data.get('ended_by')
+                modified = True
+            # save if modified
+            if modified:
+                session.save()
+            return self.retrieve(request, pk=session.id)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to PUT/PATCH /experiments/{0} details".format(kwargs.get('pk')))
 
     def partial_update(self, request, *args, **kwargs):
         """
