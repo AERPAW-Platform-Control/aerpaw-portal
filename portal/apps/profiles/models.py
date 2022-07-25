@@ -23,15 +23,3 @@ class AerpawUserProfile(BaseModel, AuditModelMixin):
 
     def __str__(self):
         return self.uuid
-
-
-class PublicCredentials(BaseModel, AuditModelMixin):
-    """
-    Public User Credentials
-    - created (from AuditModelMixin)
-    - created_by (from AuditModelMixin)
-    - id (from Basemodel)
-    - modified (from AuditModelMixin)
-    - modified_by (from AuditModelMixin)
-    - uuid
-    """
