@@ -818,8 +818,6 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
                     detail="experiment_id: must provide experiment_id")
             experiment = get_object_or_404(AerpawExperiment.objects.all(), pk=int(experiment_id))
             user = get_object_or_404(AerpawUser.objects.all(), pk=request.user.id)
-            print(experiment)
-            print(user)
         except Exception as exc:
             raise ValidationError(
                 detail="ValidationError: {0}".format(exc))
@@ -873,8 +871,14 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         Permission:
         - user is_operator
         """
-        raise MethodNotAllowed(method="DELETE: /experiment-session/{int:pk}")
-
+        session = get_object_or_404(self.queryset, pk=pk)
+        if request.user.is_operator():
+            session.ended_by = request.user
+            session.save()
+            return Response(status=HTTP_204_NO_CONTENT)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to DELETE /sessions/{0}".format(pk))
 
 class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
     """
