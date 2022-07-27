@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.db.models import Q
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.decorators import action
@@ -102,6 +103,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                         'experiment_creator': du.get('experiment_creator'),
                         'experiment_id': du.get('experiment_id'),
                         'experiment_uuid': du.get('experiment_uuid'),
+                        'experiment_state': du.get('experiment_state'),
                         'is_canonical': du.get('is_canonical'),
                         'is_retired': du.get('is_retired'),
                         'membership': {
@@ -223,6 +225,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             # add experiment membership
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)
+            can_initiate = experiment.can_initiate()
+            can_submit = experiment.can_submit()
             experiment_membership = []
             for p in du.get('experiment_membership'):
                 person = {
@@ -247,6 +251,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                     'is_experiment_creator': is_experiment_creator,
                     'is_experiment_member': is_experiment_member
                 },
+                'can_initiate':can_initiate,
+                'can_submit':can_submit,
                 'modified_date': str(du.get('modified_date')),
                 'name': du.get('name'),
                 'project_id': du.get('project_id'),
@@ -640,6 +646,8 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
     def get_queryset(self):
         experiment_id = self.request.query_params.get('experiment_id', None)
         user_id = self.request.query_params.get('user_id', None)
+        print(experiment_id)
+        print(user_id)
         if experiment_id and user_id:
             queryset = ExperimentSession.objects.filter(
                 experiment__id=experiment_id,
@@ -671,7 +679,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         Permission:
         - user is_operator
         """
-        if request.user.is_operator():
+        if request.user.is_operator() or request.user.is_experimenter():
             page = self.paginate_queryset(self.get_queryset())
             if page:
                 serializer = ExperimentSessionSerializer(page, many=True)
@@ -731,22 +739,27 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
             if not session_type:
                 raise ValidationError(
                     detail="session_type:  must be one of the four types")
+            
+            session_id = request.data.get('session_id', None)
+            if not session_id:
+                session_id='6'
 
-            # create project
+            # create session
             session = ExperimentSession()
-            session.started_by = user.username
-            session.session_type = user
-            session.session_id = description
-            session.modified_by = user.username
-            session.start_date_timee = name
+            session.experiment=experiment
+            session.started_by = user
+            session.session_type = session_type
+            session.created = timezone.now()
             session.uuid = uuid4()
+            #session.id = session.uuid
+            session.id = session_id
 
             session.save()
 
             return self.retrieve(request, pk=session.id)
         else:
             raise PermissionDenied(
-                detail="PermissionDenied: unable to POST /experiments")
+                detail="PermissionDenied: unable to POST /sessions")
 
 
     def retrieve(self, request, *args, **kwargs):
@@ -764,7 +777,9 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - user is_operator
         """
         experiment_session = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
-        if request.user.is_operator():
+        #experiment_session = self.get_queryset()
+        print(experiment_session)
+        if request.user.is_operator() or request.user.is_experimenter():
             serializer = ExperimentSessionSerializer(experiment_session)
             du = dict(serializer.data)
             response_data = {
@@ -796,7 +811,19 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - user is_operator
         """
         session = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
-        if request.user.is_operator():
+        try:
+            experiment_id = session.experiment.id
+            if not experiment_id:
+                raise ValidationError(
+                    detail="experiment_id: must provide experiment_id")
+            experiment = get_object_or_404(AerpawExperiment.objects.all(), pk=int(experiment_id))
+            user = get_object_or_404(AerpawUser.objects.all(), pk=request.user.id)
+            print(experiment)
+            print(user)
+        except Exception as exc:
+            raise ValidationError(
+                detail="ValidationError: {0}".format(exc))
+        if request.user.is_operator() or (experiment.is_creator(user) or experiment.is_member(user)):
             modified = False
             # check for description
             if request.data.get('session_type', None):
@@ -806,7 +833,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
                 session.end_date_time = request.data.get('end_date_time')
                 modified = True
             if request.data.get('ended_by', None):
-                session.ended_by = request.data.get('ended_by')
+                session.ended_by = get_object_or_404(AerpawUser.objects.all(), pk=request.data.get('ended_by'))
                 modified = True
             # save if modified
             if modified:

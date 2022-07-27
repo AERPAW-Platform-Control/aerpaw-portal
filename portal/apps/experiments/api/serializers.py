@@ -42,16 +42,16 @@ class ExperimentSerializerDetail(serializers.ModelSerializer):
 
 
 class ExperimentSessionSerializer(serializers.ModelSerializer):
-    ended_by = serializers.IntegerField(source='ended_by.id')
+    #ended_by = serializers.IntegerField(source='ended_by')
     experiment_id = serializers.IntegerField(source='experiment.id')
     session_id = serializers.IntegerField(source='id')
-    start_date_time = serializers.DateTimeField(source='created')
-    started_by = serializers.IntegerField(source='started_by.id')
+    #created = serializers.DateTimeField(source='created')
+    #started_by = serializers.IntegerField(source='started_by')
 
     class Meta:
         model = ExperimentSession
         fields = ['end_date_time', 'ended_by', 'experiment_id', 'session_id', 'session_type',
-                  'start_date_time', 'started_by']
+                  'created', 'started_by']
 
 
 class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):

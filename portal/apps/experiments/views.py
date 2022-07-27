@@ -6,13 +6,16 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet, ExperimentSessionViewSet
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentMembershipForm, \
     ExperimentResourceTargetsForm, ExperimentResourceTargetModifyForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @login_required
@@ -112,15 +115,31 @@ def experiment_detail(request, experiment_id):
         except Exception as exc:
             resources = []
             print(exc)
+        # get session
+        try:
+            sessions = []
+            request.query_params = QueryDict('', mutable=True)
+            request.query_params.update({'experiment_id': experiment_id})
+            for ses_id in experiment.get('sessions'):
+                request.query_params.update({'session_id': ses_id})
+                r = ExperimentSessionViewSet(request=request)
+                ses = r.list(request=request)
+                if ses.data:
+                    sessions.append(ses.data.get('results')[0])
+        except Exception as exc:
+            sessions = []
+            print(exc)
     except Exception as exc:
         message = exc
-        resources = []
+        experiment = None
+        sessions = []
     return render(request,
                   'experiment_detail.html',
                   {
                       'user': request.user,
                       'experiment': experiment,
                       'resources': resources,
+                      'sessions': sessions,
                       'message': message,
                       'debug': DEBUG
                   })
@@ -384,3 +403,170 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
                       'cer': cer
                   })
 
+@csrf_exempt
+@login_required
+def session_detail(request, experiment_id, session_id):
+    message = None
+    try:
+        e = ExperimentSessionViewSet(request=request)
+        session = e.retrieve(request=request, pk=session_id).data
+        if request.method == "POST":
+            if request.POST.get('delete-session') == "true":
+                exp = e.destroy(request=request, pk=session_id).data
+                return redirect('experiment_session_list')
+    except Exception as exc:
+        message = exc
+    return render(request,
+                  'session_detail.html',
+                  {
+                      'user': request.user,
+                      'session': session,
+                      'experiment_id':experiment_id,
+                      'message': message,
+                      'debug': DEBUG
+                  })
+
+@csrf_exempt
+@login_required()
+def experiment_session_initiate(request, experiment_id):
+    """
+    handles experiment session initiate OR terminate depending on its state
+
+    :param request:
+    :param experiment_uuid:
+    :return:
+    """
+    message = None
+    project = None
+    if request.method == "POST":
+        pass
+    else:
+        experiment_id = request.GET.get('experiment_id')
+        e = ExperimentViewSet()
+        experiment = e.retrieve(request=request, pk=experiment_id).data
+
+    if request.method == "POST":
+        if experiment.can_initiate():
+            # we are going to initiate the development
+            experiment.stage = 'Development'
+            experiment.save()
+        elif experiment.can_terminate():
+            # we are going to terminate the development
+            experiment_state_change(request, experiment, "terminating")
+            experiment.stage = 'Idle'
+            experiment.save()
+            return redirect('experiment_detail', experiment_uuid=experiment_uuid)
+        else:
+            logger.error("wrong state!")
+            return redirect('experiment_detail', experiment_uuid=experiment_uuid)
+
+        if not is_emulab_stage(experiment.stage):
+            # should check reservation
+            # ...
+            if experiment.created_by.publickey is None:
+                return render(request, 'experiment_initiate.html', {'experiment': experiment,
+                                                                    'experimenter': experiment.experimenter.all(),
+                                                                    'experiment_reservations': experiment_reservations,
+                                                                    'msg': '* Please check if you have ssh publickey uploaded (under Credential Menu).'})
+
+            session_req = generate_experiment_session_request(request, experiment)
+            if session_req is None:
+                return render(request, 'experiment_initiate.html', {'experiment': experiment,
+                                                                    'experimenter': experiment.experimenter.all(),
+                                                                    'experiment_reservations': experiment_reservations,
+                                                                    'msg': '* [ERROR] Invalid entry for "Definition".'})
+
+            if experiment.state < Experiment.STATE_DEPLOYING:  # and if reservation is_valid
+                experiment_state_change(request, experiment, "ready")
+            else:
+                # should do something to tell node agent to terminate experiment
+                # ...
+                experiment_state_change(request, experiment, "not_started")
+            return redirect('experiment_detail', experiment_uuid=experiment_uuid)
+
+        else:
+            is_success = initiate_emulab_instance(request, experiment)
+            if is_success:
+                status = query_emulab_instance_status(request, experiment)
+                # add a thread here
+                # t = threading.Thread(target=bg_deploy_emulab,args=(request, experiment), daemon=True)
+                # t.setDaemon(True)
+                # t.start()
+                return redirect('experiment_detail', experiment_uuid=experiment_uuid)
+            else:
+                logger.error('Need to pop up something to indicate "Retry later"')
+    return render(request, 'experiment_initiate.html',
+                  {'experiment': experiment, 'experimenter': experiment.experimenter.all(),
+                   'experiment_reservations': experiment_reservations})
+
+@csrf_exempt
+@login_required
+def experiment_session_list(request, experiment_id):
+    message = 'INFO: Be sure there is only one active session'
+    try:
+        # check for query parameters
+        current_page = 1
+        search_term = None
+        data_dict = {'experiment_id': experiment_id}
+        if request.GET.get('search'):
+            data_dict['search'] = request.GET.get('search')
+            search_term = request.GET.get('search')
+        if request.GET.get('page'):
+            data_dict['page'] = request.GET.get('page')
+            current_page = int(request.GET.get('page'))
+        request.query_params = QueryDict('', mutable=True)
+        request.query_params.update(data_dict)
+        r = ExperimentSessionViewSet(request=request)
+        sessions = r.list(request=request)
+        # get prev, next and item range
+        next_page = None
+        prev_page = None
+        count = 0
+        min_range = 0
+        max_range = 0
+        if sessions.data:
+            sessions = dict(sessions.data)
+            prev_url = sessions.get('previous', None)
+            if prev_url:
+                prev_dict = parse_qs(urlparse(prev_url).query)
+                try:
+                    prev_page = prev_dict['page'][0]
+                except Exception as exc:
+                    print(exc)
+                    prev_page = 1
+            next_url = sessions.get('next', None)
+            if next_url:
+                next_dict = parse_qs(urlparse(next_url).query)
+                try:
+                    next_page = next_dict['page'][0]
+                except Exception as exc:
+                    print(exc)
+                    next_page = 1
+            count = int(sessions.get('count'))
+            min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
+            max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
+            if max_range > count:
+                max_range = count
+        item_range = '{0} - {1}'.format(str(min_range), str(max_range))
+    except Exception as exc:
+        message = exc
+        sessions = None
+        item_range = None
+        next_page = None
+        prev_page = None
+        search_term = None
+        count = 0
+    return render(request,
+                  'experiment_session_list.html',
+                  {
+                      'user': request.user,
+                      'sessions': sessions,
+                      'experiment_id': experiment_id,
+                      'item_range': item_range,
+                      'message': message,
+                      'next_page': next_page,
+                      'prev_page': prev_page,
+                      'search': search_term,
+                      'count': count,
+                      'debug': DEBUG
+                  })

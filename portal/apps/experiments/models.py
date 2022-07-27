@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_fsm import transition, FSMIntegerField
 
 from portal.apps.mixins.models import AuditModelMixin, BaseModel, BaseTimestampModel
 from portal.apps.operations.models import CanonicalNumber
@@ -8,6 +9,9 @@ from portal.apps.projects.models import AerpawProject
 from portal.apps.resources.models import AerpawResource
 from portal.apps.users.models import AerpawUser
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     """
@@ -30,16 +34,39 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     - uuid
     """
 
-    class ExperimentState(models.TextChoices):
-        ACTIVE_DEVELOPMENT = 'active_development', _('Active Development')
-        ACTIVE_EMULATION = 'active_emulation', _('Active Emulation')
-        ACTIVE_SANDBOX = 'active_sandbox', _('Active Sandbox')
-        ACTIVE_TESTBED = 'active_testbed', _('Active Testbed')
-        SAVED = 'saved', _('Saved')
-        WAIT_DEVELOPMENT_DEPLOY = 'wait_development_deploy', _('Wait Development Deploy')
-        WAIT_EMULATION_DEPLOY = 'wait_emulation_deploy', _('Wait Emulation Deploy')
-        WAIT_SANDBOX_DEPLOY = 'wait_sandbox_deploy', _('Wait Sandbox Deploy')
-        WAIT_TESTBED_DEPLOY = 'wait_testbed_deploy', _('Wait Testbed Deploy')
+    #class ExperimentState(models.TextChoices):
+        #ACTIVE_DEVELOPMENT = 'active_development', _('Active Development')
+        #ACTIVE_EMULATION = 'active_emulation', _('Active Emulation')
+        #ACTIVE_SANDBOX = 'active_sandbox', _('Active Sandbox')
+        #ACTIVE_TESTBED = 'active_testbed', _('Active Testbed')
+        #SAVED = 'saved', _('Saved')
+        #WAIT_DEVELOPMENT_DEPLOY = 'wait_development_deploy', _('Wait Development Deploy')
+        #WAIT_EMULATION_DEPLOY = 'wait_emulation_deploy', _('Wait Emulation Deploy')
+        #WAIT_SANDBOX_DEPLOY = 'wait_sandbox_deploy', _('Wait Sandbox Deploy')
+        #WAIT_TESTBED_DEPLOY = 'wait_testbed_deploy', _('Wait Testbed Deploy')
+
+    STATE_SAVED = 0
+    STATE_WAIT_DEVELOPMENT_DEPLOY = 1
+    STATE_ACTIVE_DEVELOPMENT = 2
+    STATE_WAIT_EMULATION_DEPLOY = 3
+    STATE_ACTIVE_EMULATION = 4
+
+    STATE_WAIT_SANDBOX_DEPLOY = 5
+    STATE_ACTIVE_SANDBOX = 6
+    STATE_WAIT_TESTBED_DEPLOY  = 7
+    STATE_ACTIVE_TESTBED = 8
+
+    STATE_CHOICES = (
+        (STATE_SAVED, 'Saved'),
+        (STATE_WAIT_DEVELOPMENT_DEPLOY, 'Wait Development Deploy'),
+        (STATE_ACTIVE_DEVELOPMENT, 'Active Development'),
+        (STATE_WAIT_EMULATION_DEPLOY, 'Wait Emulation Deploy'),
+        (STATE_ACTIVE_EMULATION, 'Active Emulation'),
+        (STATE_WAIT_SANDBOX_DEPLOY, 'Wait Sandbox Deploy'),
+        (STATE_ACTIVE_SANDBOX , 'deploying'),
+        (STATE_WAIT_TESTBED_DEPLOY, 'Wait Testbed Deploy'),
+        (STATE_ACTIVE_TESTBED, 'submitted'),
+    )
 
     canonical_number = models.ForeignKey(
         CanonicalNumber,
@@ -58,11 +85,11 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         through='UserExperiment',
         through_fields=('experiment', 'user')
     )
-    experiment_state = models.CharField(
-        max_length=255,
-        choices=ExperimentState.choices,
-        default=ExperimentState.SAVED
-    )
+    #experiment_state = models.CharField(
+    #    max_length=255,
+    #    choices=STATE_CHOICES,
+    #    default=STATE_WAIT_DEVELOPMENT_DEPLOY
+    #)
     is_canonical = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     is_retired = models.BooleanField(default=False)
@@ -78,8 +105,64 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     )
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
+    experiment_state = FSMIntegerField(default=0, blank=True, null=True, choices=STATE_CHOICES)
+
+    @transition(field=experiment_state, source=STATE_SAVED, target=STATE_WAIT_DEVELOPMENT_DEPLOY)
+    def provision_development(self):
+        logger.warning("[{}] Experiment.state : {} -> {}".format(self.name, self.state, AerpawExperiment.STATE_WAIT_DEVELOPMENT_DEPLOY))
+
+    @transition(field=experiment_state, source=STATE_WAIT_DEVELOPMENT_DEPLOY, target=STATE_ACTIVE_DEVELOPMENT)
+    def deploy_development(self):
+        logger.warning("[{}] Experiment.state : {} -> {}".format(self.name, self.state, AerpawExperiment.STATE_ACTIVE_DEVELOPMENT))
+
+    @transition(field=experiment_state, source=STATE_ACTIVE_DEVELOPMENT, target=STATE_WAIT_TESTBED_DEPLOY)
+    def submit_testbed(self):
+        logger.warning("[{}] Experiment.state : {} -> {}".format(self.name, self.state, AerpawExperiment.STATE_WAIT_TESTBED_DEPLOY))
+
+    @transition(field=experiment_state, source=STATE_WAIT_TESTBED_DEPLOY, target=STATE_ACTIVE_TESTBED)
+    def deploy_testbed(self):
+        logger.warning("[{}] Experiment.state : {} -> {}".format(self.name, self.state, AerpawExperiment.STATE_ACTIVE_TESTBED))
+
+    @transition(field=experiment_state, source=[STATE_SAVED, STATE_WAIT_DEVELOPMENT_DEPLOY, STATE_ACTIVE_DEVELOPMENT, STATE_WAIT_TESTBED_DEPLOY, STATE_ACTIVE_TESTBED], target=STATE_SAVED)
+    def idle(self):
+        logger.warning("[{}] Experiment.state : {} -> {}".format(self.name, self.state, AerpawExperiment.STATE_SAVED))
+
+    deployment_bn = models.IntegerField(blank=True, null=True) # not being used
+    message = models.TextField(blank=True, null=True) # message from system/ops
+    submit_notes = models.TextField(blank=True, null=True)
+
     class Meta:
         verbose_name = 'AERPAW Experiment'
+
+    def __str__(self):
+        return self.name
+
+    def status(self):
+        return dict(self.STATE_CHOICES).get(int(self.experiment_state))
+
+    def can_initiate(self):
+        if int(self.experiment_state) == AerpawExperiment.STATE_SAVED:
+            return True
+        else:
+            return False
+
+    def can_terminate(self):
+        if int(self.experiment_state) != AerpawExperiment.STATE_SAVED:
+            return True
+        else:
+            return False
+
+    def can_snapshot(self):
+        if int(self.experiment_state) == AerpawExperiment.STATE_ACTIVE_DEVELOPMENT:
+            return True
+        else:
+            return False
+
+    def can_submit(self):
+        if int(self.experiment_state) == AerpawExperiment.STATE_ACTIVE_DEVELOPMENT:
+            return True
+        else:
+            return False
 
     def __str__(self):
         return self.name
@@ -98,6 +181,8 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
 
     def state(self):
         return self.experiment_state
+
+    
 
 
 class UserExperiment(BaseModel, models.Model):
@@ -161,6 +246,12 @@ class ExperimentSession(BaseModel, BaseTimestampModel, models.Model):
     )
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
+    def __str__(self):
+        return str(self.id) + ";" + str(self.started_by.id)
+    
+    def is_creator(self, user: AerpawUser) -> bool:
+        #return user == self.started_by
+        return True
 
 class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     """
