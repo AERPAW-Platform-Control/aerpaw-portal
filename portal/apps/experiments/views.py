@@ -6,9 +6,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
+from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet, ExperimentSessionViewSet
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentMembershipForm, \
     ExperimentResourceTargetsForm, ExperimentResourceTargetModifyForm
+
+from .experiments import experiment_state_change, generate_experiment_session_request
+
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
@@ -99,7 +103,16 @@ def experiment_detail(request, experiment_id):
         experiment = e.retrieve(request=request, pk=experiment_id).data
         if request.method == "POST":
             if request.POST.get('delete-experiment') == "true":
+                print("delete")
                 exp = e.destroy(request=request, pk=experiment_id).data
+                return redirect('experiment_list')
+            if request.POST.get('initiate-development') == "true":
+                print("initiate development")
+                exp = e.update(request=request, pk=experiment_id, state=AerpawExperiment.STATE_WAIT_DEVELOPMENT_DEPLOY).data
+                return redirect('experiment_list')
+            if request.POST.get('save-exit-experiment') == "true":
+                print("save and exit")
+                exp = e.update(request=request, pk=experiment_id, state=AerpawExperiment.STATE_SAVED).data
                 return redirect('experiment_list')
         # get canonical experiment resource definitions
         try:
@@ -133,6 +146,7 @@ def experiment_detail(request, experiment_id):
         message = exc
         experiment = None
         sessions = []
+        resources = []
     return render(request,
                   'experiment_detail.html',
                   {
@@ -438,14 +452,11 @@ def experiment_session_initiate(request, experiment_id):
     """
     message = None
     project = None
-    if request.method == "POST":
-        pass
-    else:
-        experiment_id = request.GET.get('experiment_id')
-        e = ExperimentViewSet()
-        experiment = e.retrieve(request=request, pk=experiment_id).data
 
     if request.method == "POST":
+        experiment_id = request.POST.get('experiment_id')
+        e = ExperimentViewSet()
+        experiment = e.retrieve(request=request, pk=experiment_id).data
         if experiment.can_initiate():
             # we are going to initiate the development
             experiment.stage = 'Development'
@@ -455,49 +466,34 @@ def experiment_session_initiate(request, experiment_id):
             experiment_state_change(request, experiment, "terminating")
             experiment.stage = 'Idle'
             experiment.save()
-            return redirect('experiment_detail', experiment_uuid=experiment_uuid)
+            return redirect('experiment_detail', experiment_id=experiment_id)
         else:
             logger.error("wrong state!")
-            return redirect('experiment_detail', experiment_uuid=experiment_uuid)
+            return redirect('experiment_detail', experiment_id=experiment_id)
 
-        if not is_emulab_stage(experiment.stage):
             # should check reservation
             # ...
-            if experiment.created_by.publickey is None:
-                return render(request, 'experiment_initiate.html', {'experiment': experiment,
-                                                                    'experimenter': experiment.experimenter.all(),
-                                                                    'experiment_reservations': experiment_reservations,
-                                                                    'msg': '* Please check if you have ssh publickey uploaded (under Credential Menu).'})
+        if experiment.created_by.publickey is None:
+            return render(request, 'experiment_initiate.html', {'experiment': experiment,
+                                                                'experimenter': experiment.experimenter.all(),
+                                                                'msg': '* Please check if you have ssh publickey uploaded (under Credential Menu).'})
 
-            session_req = generate_experiment_session_request(request, experiment)
-            if session_req is None:
-                return render(request, 'experiment_initiate.html', {'experiment': experiment,
-                                                                    'experimenter': experiment.experimenter.all(),
-                                                                    'experiment_reservations': experiment_reservations,
-                                                                    'msg': '* [ERROR] Invalid entry for "Definition".'})
+        session_req = generate_experiment_session_request(request, experiment)
+        if session_req is None:
+            return render(request, 'experiment_initiate.html', {'experiment': experiment,
+                                                                'experimenter': experiment.experimenter.all(),
+                                                                'msg': '* [ERROR] Invalid entry for "Definition".'})
 
-            if experiment.state < Experiment.STATE_DEPLOYING:  # and if reservation is_valid
-                experiment_state_change(request, experiment, "ready")
-            else:
-                # should do something to tell node agent to terminate experiment
-                # ...
-                experiment_state_change(request, experiment, "not_started")
-            return redirect('experiment_detail', experiment_uuid=experiment_uuid)
-
+        if experiment.state < AerpawExperiment.STATE_DEPLOYING:  # and if reservation is_valid
+            experiment_state_change(request, experiment, "ready")
         else:
-            is_success = initiate_emulab_instance(request, experiment)
-            if is_success:
-                status = query_emulab_instance_status(request, experiment)
-                # add a thread here
-                # t = threading.Thread(target=bg_deploy_emulab,args=(request, experiment), daemon=True)
-                # t.setDaemon(True)
-                # t.start()
-                return redirect('experiment_detail', experiment_uuid=experiment_uuid)
-            else:
-                logger.error('Need to pop up something to indicate "Retry later"')
+            # should do something to tell node agent to terminate experiment
+            # ...
+            experiment_state_change(request, experiment, "not_started")
+        return redirect('experiment_detail', experiment_id=experiment_id)
+
     return render(request, 'experiment_initiate.html',
-                  {'experiment': experiment, 'experimenter': experiment.experimenter.all(),
-                   'experiment_reservations': experiment_reservations})
+                  {'experiment': experiment, 'experimenter': experiment.experimenter.all()})
 
 @csrf_exempt
 @login_required

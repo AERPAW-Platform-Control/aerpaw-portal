@@ -47,13 +47,25 @@
                                 </button>
                             {% endif %}
                             {% if experiment.membership.is_experiment_creator and not experiment.is_retired and experiment.can_initiate%}
-                                <input type="hidden" name="initiate-experiment" value="true">
+                                <input type="hidden" name="initiate-development" value="true">
                                 <button class="btn btn-danger mr-2" type="submit">
                                     <a onclick="return confirm('Are you sure you want to initiate development of this experiment?')">Initiate Development</a>
                                 </button>
                             {% endif %}
+                            {% if experiment.membership.is_experiment_creator and not experiment.is_retired and experiment.can_submit%}
+                                <input type="hidden" name="submit-experiment" value="true">
+                                    <button class="btn btn-danger mr-2" type="submit">
+                                        <a onclick="return confirm('Are you sure you want to submit this experiment?')">Submit</a>
+                                </button>
+                            {% endif %}
+                            {% if experiment.membership.is_experiment_creator and not experiment.is_retired and experiment.can_initiate%}
+                                <input type="hidden" name="save-exit-experiment" value="true">
+                                    <button class="btn btn-danger mr-2" type="submit">
+                                        <a onclick="return confirm('Are you sure you want to save and exit this experiment?')">Save and Exit</a>
+                                </button>
+                            {% endif %}
                             <button class="btn btn-secondary mr-2">
-                                <a href="{% url 'project_detail' project_id=experiment.project_id %}"
+                                <a href="{% url 'experiment_list' %}"
                                    class="unlink">Back</a>
                             </button>
                         </form>

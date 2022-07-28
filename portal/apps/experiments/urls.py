@@ -17,6 +17,6 @@ urlpatterns = [
          name='experiment_resource_target_edit'),
     path('<int:experiment_id>/sessions', experiment_session_list, name='experiment_session_list'),
     path('<int:experiment_id>/sessions/<int:session_id>', session_detail, name='session_detail'),
-    path('<int:experiment_id>/sessions/initiate', experiment_session_initiate,
+    path('<int:experiment_id>/sessions/<int:session_id>/initiate', experiment_session_initiate,
          name='experiment_session_initiate'),
 ]
