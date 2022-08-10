@@ -738,7 +738,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
             #TODO: the 4 session types
             if not session_type:
                 raise ValidationError(
-                    detail="session_type:  must be one of the four types")
+                    detail="session_type: must be one of the four types")
             
             session_id = request.data.get('session_id', None)
             if not session_id:
@@ -746,7 +746,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
 
             # create session
             session = ExperimentSession()
-            session.experiment=experiment
+            session.experiment = experiment
             session.started_by = user
             session.session_type = session_type
             session.created = timezone.now()
@@ -897,15 +897,15 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             queryset = CanonicalExperimentResource.objects.filter(
                 experiment__id=experiment_id,
                 resource__id=resource_id
-            ).order_by('created').distinct()
+            ).order_by('-created').distinct()
         elif experiment_id:
             queryset = CanonicalExperimentResource.objects.filter(
                 experiment__id=experiment_id
-            ).order_by('created').distinct()
+            ).order_by('-created').distinct()
         elif resource_id:
             queryset = CanonicalExperimentResource.objects.filter(
                 resource__id=resource_id
-            ).order_by('created').distinct()
+            ).order_by('-created').distinct()
         else:
             queryset = CanonicalExperimentResource.objects.filter().order_by('-created').distinct()
         return queryset

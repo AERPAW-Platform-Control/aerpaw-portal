@@ -145,8 +145,8 @@ def experiment_detail(request, experiment_id):
     except Exception as exc:
         message = exc
         experiment = None
-        sessions = []
-        resources = []
+        sessions = None
+        resources = None
     return render(request,
                   'experiment_detail.html',
                   {
