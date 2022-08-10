@@ -19,6 +19,8 @@ $ source venv/bin/activate
 (venv)$ pip install -r requirements.txt
 ```
 
+**NOTE**: `/usr/local/bin/python3.10` is the full path to Python on my local machine, yours may be different... adjust accordingly
+
 ### Configuration
 
 Update the `config.py` file with appropriate values. Initial `access_token` and `refresh_token` values can be retrieved from the AERPAW Portal user profile page.
