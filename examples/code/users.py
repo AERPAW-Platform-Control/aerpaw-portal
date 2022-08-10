@@ -2,7 +2,7 @@
 
 Examples:
     - /users: paginated list with search
-    - /users/{int:pk}: detail for single user
+    - /users/{int:pk}: detail for single user, update single user
     - /users/{int:pk}/credentials: list of user credentials
     - /users/{int:pk}/tokens: user tokens
     - /token/refresh: refresh user access_token
