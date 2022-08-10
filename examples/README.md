@@ -12,7 +12,7 @@ A script has been included for each API endpoint to demonstrate simple usage in 
 
 [Virtualenv](https://virtualenv.pypa.io/en/latest/) will be used for the included examples.
 
-```console
+```
 $ cd aerpaw-portal/examples/code
 $ virtualenv -p /usr/local/bin/python3.10 venv
 $ source venv/bin/activate
