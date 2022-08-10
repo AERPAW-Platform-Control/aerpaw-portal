@@ -39,7 +39,7 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-GET /users/{int:pk}
+GET, PUT /users/{int:pk}
 
 - details for user with pk = 1
 """
