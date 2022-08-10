@@ -27,7 +27,7 @@ project_membership = {
 }
 
 """
-/projects
+GET /projects
 
 - all projects as paginated list
 - search for "stea" in name or email
@@ -50,7 +50,7 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/projects/{int:pk}
+GET /projects/{int:pk}
 
 - details for project with pk = 2
 """
@@ -63,7 +63,7 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/projects/{int:pk}/experiments
+GET /projects/{int:pk}/experiments
 
 - experiments for project with pk = 2
 """
@@ -76,7 +76,7 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/projects/{int:pk}/membership
+GET /projects/{int:pk}/membership
 
 - membership for project with pk = 2
 """
@@ -94,7 +94,7 @@ Running code in the following sections will generate a new project and add proje
 """
 
 """
-/projects
+POST /projects
 
 - create new project
 """
@@ -109,7 +109,7 @@ print(json.dumps(python_object, indent=2))
 project_id = python_object.get('project_id')
 
 """
-/projects/{int:pk}
+PUT /projects/{int:pk}
 
 - update single project with pk = project_id
 """
@@ -123,7 +123,7 @@ print('*** PUT: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/projects/{int:pk}/membership
+PUT /projects/{int:pk}/membership
 
 - update project_members and project_owners for a single project with pk = project_id
 """
@@ -137,7 +137,7 @@ print('*** PUT: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/projects/{int:pk}
+GET /projects/{int:pk}
 
 - details for project with pk = project_id
 """

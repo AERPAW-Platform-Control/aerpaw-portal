@@ -31,10 +31,10 @@ REFRESH_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8PSBzKFWiYqKOxBHwi7LZ6T8
 
 Script [`projects.py`](./code/projects.py) examples:
     
-- `/projects`: paginated list with search, create new project
-- `/projects/{int:pk}`: detail for single project, update single project
-- `/projects/{int:pk}/experiments`: list of project experiments
-- `/projects/{int:pk}/membership`: list of project membership, edit project membership
+- `/projects`: paginated list with search (GET), create new project (POST)
+- `/projects/{int:pk}`: detail for single project (GET), update single project (PUT)
+- `/projects/{int:pk}/experiments`: list of project experiments (GET)
+- `/projects/{int:pk}/membership`: list of project membership (GET), edit project membership (PUT)
 
 Expected [example output](./output-projects.md)
 
@@ -50,11 +50,11 @@ Expected [example output](./output-projects.md)
 
 Script [`users.py`](./code/users.py) examples:
 
-- `/users`: paginated list with search
-- `/users/{int:pk}`: detail for single user
-- `/users/{int:pk}/credentials`: list of user credentials
-- `/users/{int:pk}/tokens`: user tokens
-- `/token/refresh`: refresh user access_token
+- `/users`: paginated list with search (GET)
+- `/users/{int:pk}`: detail for single user (GET), update single user (PUT)
+- `/users/{int:pk}/credentials`: list of user credentials (GET)
+- `/users/{int:pk}/tokens`: user tokens (GET)
+- `/token/refresh`: refresh user access_token (POST)
 
 Expected [example output](./output-users.md)
 

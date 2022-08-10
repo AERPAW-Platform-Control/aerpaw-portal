@@ -79,21 +79,36 @@ $ python -m users
   "user_id": 1,
   "username": "stealey@unc.edu"
 }
+*** PUT: http://aerpaw-dev.renci.org:8000/api/users/1 ***
+{
+  "aerpaw_roles": [
+    "experimenter",
+    "pi",
+    "operator",
+    "site_admin"
+  ],
+  "display_name": "Michael J. Stealey, Sr.",
+  "email": "stealey@unc.edu",
+  "is_active": true,
+  "openid_sub": "http://cilogon.org/serverA/users/242181",
+  "user_id": 1,
+  "username": "stealey@unc.edu"
+}
 
-*** TODO: /users/{int:pk}/credentials: list of user credentials ***
+*** /users/{int:pk}/credentials: list of user credentials ***
 *** GET: http://aerpaw-dev.renci.org:8000/api/users/1/credentials ***
 {}
 
 *** /users/{int:pk}/tokens: user tokens ***
 *** GET: http://aerpaw-dev.renci.org:8000/api/users/1/tokens ***
 {
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...RfvRnEoxaAxrz93-Q8MIGggyi4EEdklSqw2OqGN2lz0",
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8PSBzKFWiYqKOxBHwi7LZ6T89uH5tz0L01s0gVoqOOU"
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...qsP5zZIbDrcA4zW6Xw8q4nV3fRz6XeVDg8MrfRij3xE",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8si595TTlwAVxhEfOVZq9wNoSNCNdmzDsRr3yHwbPZQ"
 }
 
 *** /token/refresh/: refresh user access_token ***
 *** POST: http://aerpaw-dev.renci.org:8000/api/token/refresh/ ***
 {
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...NaSFyZ4O6XTrisSxb4R0SxgxqDu7zMNhY9M1-mFXZgw"
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...1OIhf5-1M89SN3H-TeDs-e20DirciplWXptNT1t5rDE"
 }
 ```

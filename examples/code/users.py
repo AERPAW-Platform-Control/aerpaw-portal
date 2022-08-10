@@ -13,9 +13,10 @@ import json
 from config import api_session as api, API_URL, REFRESH_TOKEN
 
 refresh_data = {'refresh': REFRESH_TOKEN}
+user_data = {'display_name': 'Michael J. Stealey, Sr.'}
 
 """
-/users
+GET /users
 
 - all users as paginated list
 - search for "stea" in name or email
@@ -38,10 +39,11 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/users/{int:pk}
+GET /users/{int:pk}
 
 - details for user with pk = 1
 """
+# get details for user with pk = 1
 print('')
 print('*** /users/{int:pk}: detail for single user ***')
 API_CALL = API_URL + '/users/1'
@@ -50,8 +52,16 @@ python_object = json.loads(response.text)
 print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
+# update "disoplay_name" for user with pk = 1
+API_CALL = API_URL + '/users/1'
+data = json.dumps(user_data)
+response = api.put(API_CALL, data=data)
+python_object = json.loads(response.text)
+print('*** PUT: {0} ***'.format(API_CALL))
+print(json.dumps(python_object, indent=2))
+
 """
-/users/{int:pk}/credentials
+GET /users/{int:pk}/credentials
 
 - credentials for user with pk = 1
 """
@@ -65,7 +75,7 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/users/{int:pk}/tokens
+GET /users/{int:pk}/tokens
 
 - tokens for user with pk = 1
 """
@@ -78,7 +88,7 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-/token/refresh/
+POST /token/refresh/
 
 - refresh access_token for user
 - endpoint requires trailing slash
