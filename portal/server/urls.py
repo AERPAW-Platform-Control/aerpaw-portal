@@ -20,6 +20,7 @@ from django.views.generic.base import TemplateView
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
+from portal.apps.credentials.api.viewsets import CredentialViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
@@ -32,6 +33,7 @@ from portal.apps.users.api.viewsets import UserViewSet
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'canonical-experiment-resource', CanonicalExperimentResourceViewSet,
                 basename='canonical-experiment-resource')
+router.register(r'credentials', CredentialViewSet, basename='credentials')
 router.register(r'experiments', ExperimentViewSet, basename='experiments')
 router.register(r'p-canonical-experiment-number', CanonicalNumberViewSet, basename='canonical-experiment-number')
 router.register(r'projects', ProjectViewSet, basename='projects')

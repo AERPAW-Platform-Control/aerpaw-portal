@@ -34,6 +34,7 @@ def profile(request):
                       'user': user,
                       'user_data': user_data.retrieve(request=request, pk=request.user.id).data,
                       'user_tokens': user_data.tokens(request=request, pk=request.user.id).data,
+                      'user_credentials': user_data.credentials(request=request, pk=request.user.id).data,
                       'message': message,
                       'debug': DEBUG
                   })

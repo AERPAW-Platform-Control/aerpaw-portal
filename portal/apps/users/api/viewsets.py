@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
@@ -7,6 +9,8 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateMode
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from portal.apps.credentials.api.serializers import CredentialSerializerDetail
+from portal.apps.credentials.models import PublicCredentials
 from portal.apps.users.api.serializers import UserSerializerDetail, UserSerializerList, UserSerializerTokens
 from portal.apps.users.models import AerpawUser
 
@@ -167,21 +171,48 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
     def credentials(self, request, *args, **kwargs):
         """
         GET: credentials
-        - name                   - string
-        - public_key_credential  - string
-        - public_key_id          - int
+        - created_date            - string
+        - is_expired:             - boolean
+        - last_modified_by        - int
+        - modified_date           - string
+        - public_key_credential   - string
+        - public_key_expiration   - int
+        - public_key_id           - int
+        - public_key_name         - string
+        - user_id                 - int
 
         Permission:
         - user is_self
         """
         user = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         if request.user.id == user.id:
-            # TODO: credential serializer and response
-            response_data = {}
+            credentials = PublicCredentials.objects.filter(
+                owner__id=user.id,
+                is_deleted=False
+            ).order_by('name').distinct()
+            serializer = CredentialSerializerDetail(credentials, many=True)
+            response_data = []
+            for u in serializer.data:
+                du = dict(u)
+                is_expired = True if datetime.strptime(
+                    du.get('public_key_expiration'), "%Y-%m-%dT%H:%M:%S.%f%z") < datetime.now(timezone.utc) else False
+                response_data.append(
+                    {
+                        'created_date': du.get('created_date'),
+                        'is_expired': is_expired,
+                        'last_modified_by': du.get('last_modified_by'),
+                        'modified_date': du.get('modified_date'),
+                        'public_key_credential': du.get('public_key_credential'),
+                        'public_key_expiration': du.get('public_key_expiration'),
+                        'public_key_id': du.get('public_key_id'),
+                        'public_key_name': du.get('public_key_name'),
+                        'user_id': du.get('user_id')
+                    }
+                )
             return Response(response_data)
         else:
             raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /users/{0}/credentials".format(kwargs.get('pk')))
+                detail="PermissionDenied: unable to GET /projects/{0}/experiments".format(kwargs.get('pk')))
 
     @action(detail=True, methods=['get'])
     def tokens(self, request, *args, **kwargs):

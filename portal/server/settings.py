@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'portal.apps.projects',  # aerpaw projects
     'portal.apps.experiments',  # aerpaw experiments
     'portal.apps.operations',  # aerpaw operations
+    'portal.apps.credentials',  # aerpaw credentials
 ]
 
 # Add 'mozilla_django_oidc' authentication backend
