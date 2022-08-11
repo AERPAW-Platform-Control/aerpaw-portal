@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from django.shortcuts import get_object_or_404
@@ -11,7 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from portal.apps.credentials.api.serializers import CredentialSerializerDetail, CredentialSerializerList
 from portal.apps.credentials.api.utils import generate_rsa_2048_key
-from portal.apps.credentials.models import PublicCredentials
+from portal.apps.credentials.models import CREDENTIAL_EXPIRY_DAYS, PublicCredentials
 
 # constants
 PUBLIC_KEY_MIN_NAME_LEN = 5
@@ -115,6 +115,7 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 new_key = None
             # create project
             pub_key = PublicCredentials()
+            pub_key.expiry_date = datetime.now(timezone.utc) + timedelta(days=CREDENTIAL_EXPIRY_DAYS)
             pub_key.name = public_key_name
             pub_key.public_credential = public_key_credential
             pub_key.uuid = uuid4()
