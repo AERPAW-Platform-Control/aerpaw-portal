@@ -64,6 +64,7 @@ PUT /users/{int:pk}?display_name=string
 """
 print('')
 print('*** /users/{int:pk}: update "disoplay_name" for user with pk = 1 ***')
+print('*** data = {0} ***'.format(json.dumps(user_data)))
 API_CALL = API_URL + '/users/1'
 data = json.dumps(user_data)
 response = api.put(API_CALL, data=data)
