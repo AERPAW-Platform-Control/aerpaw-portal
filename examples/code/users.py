@@ -1,11 +1,14 @@
 """ examples/code/users.py
 
 Examples:
-    - /users: paginated list with search
-    - /users/{int:pk}: detail for single user, update single user
+    - /users: paginated list of users
+    - /users?search=string: paginated list of users with search
+    - /users/{int:pk}: retrieve single user
+    - /users/{int:pk}?display_name=string: update single user display_name
     - /users/{int:pk}/credentials: list of user credentials
-    - /users/{int:pk}/tokens: user tokens
-    - /token/refresh: refresh user access_token
+    - /users/{int:pk}/tokens: retrieve user tokens
+    - /users/{int:pk}/tokens?refresh=true: refresh user tokens
+    - /users/{int:pk}/tokens?generate=true: generate user tokens
 
 """
 import json
@@ -18,20 +21,23 @@ user_data = {'display_name': 'Michael J. Stealey, Sr.'}
 """
 GET /users
 
-- all users as paginated list
-- search for "stea" in name or email
+- paginated list of users
 """
 print('')
-print('*** /users: paginated list with search***')
-
-# all users
+print('*** /users: paginated list of users ***')
 API_CALL = API_URL + '/users'
 response = api.get(API_CALL)
 python_object = json.loads(response.text)
 print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
-# search for "stea" in name or email
+"""
+GET /users?search=string
+
+- paginated list of users with search
+"""
+print('')
+print('*** /users?search=stea: paginated list of users with search ***')
 API_CALL = API_URL + '/users?search=stea'
 response = api.get(API_CALL)
 python_object = json.loads(response.text)
@@ -39,20 +45,25 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-GET, PUT /users/{int:pk}
+GET /users/{int:pk}
 
-- details for user with pk = 1
+- retrieve details for user with pk = 1
 """
-# get details for user with pk = 1
 print('')
-print('*** /users/{int:pk}: detail for single user ***')
+print('*** /users/{int:pk}: retrieve details for user with pk = 1 ***')
 API_CALL = API_URL + '/users/1'
 response = api.get(API_CALL)
 python_object = json.loads(response.text)
 print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
-# update "disoplay_name" for user with pk = 1
+"""
+PUT /users/{int:pk}?display_name=string
+
+- update "disoplay_name" for user with pk = 1
+"""
+print('')
+print('*** /users/{int:pk}: update "disoplay_name" for user with pk = 1 ***')
 API_CALL = API_URL + '/users/1'
 data = json.dumps(user_data)
 response = api.put(API_CALL, data=data)
@@ -65,9 +76,8 @@ GET /users/{int:pk}/credentials
 
 - credentials for user with pk = 1
 """
-# TODO: /users/{int:pk}/credentials
 print('')
-print('*** /users/{int:pk}/credentials: list of user credentials ***')
+print('*** /users/{int:pk}/credentials: credentials for user with pk = 1 ***')
 API_CALL = API_URL + '/users/1/credentials'
 response = api.get(API_CALL)
 python_object = json.loads(response.text)
@@ -77,10 +87,10 @@ print(json.dumps(python_object, indent=2))
 """
 GET /users/{int:pk}/tokens
 
-- tokens for user with pk = 1
+- retrieve tokens for user with pk = 1
 """
 print('')
-print('*** /users/{int:pk}/tokens: user tokens ***')
+print('*** /users/{int:pk}/tokens: retrieve tokens for user with pk = 1 ***')
 API_CALL = API_URL + '/users/1/tokens'
 response = api.get(API_CALL)
 python_object = json.loads(response.text)
@@ -88,16 +98,27 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-POST /token/refresh/
+GET /users/{int:pk}/tokens?refresh=true
 
-- refresh access_token for user
-- endpoint requires trailing slash
+- refresh tokens for user with pk = 1
 """
 print('')
-print('*** /token/refresh/: refresh user access_token ***')
-API_CALL = API_URL + '/token/refresh/'
-data = json.dumps(refresh_data)
-response = api.post(API_CALL, data=data)
+print('*** /users/{int:pk}/tokens?refresh=true: refresh tokens for user with pk = 1 ***')
+API_CALL = API_URL + '/users/1/tokens?refresh=true'
+response = api.get(API_CALL)
 python_object = json.loads(response.text)
-print('*** POST: {0} ***'.format(API_CALL))
+print('*** GET: {0} ***'.format(API_CALL))
+print(json.dumps(python_object, indent=2))
+
+"""
+GET /users/{int:pk}/tokens?generate=true
+
+- generate tokens for user with pk = 1
+"""
+print('')
+print('*** /users/{int:pk}/tokens?generate=true: generate tokens for user with pk = 1 ***')
+API_CALL = API_URL + '/users/1/tokens?generate=true'
+response = api.get(API_CALL)
+python_object = json.loads(response.text)
+print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))

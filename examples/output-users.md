@@ -1,50 +1,12 @@
-Output observed from running the `users.py` script
+Output observed from running the `users.py` script (credentials and tokens shortened for readability)
 
 ```console
 $ python -m users
 
-*** /users: paginated list with search***
-*** GET: http://aerpaw-dev.renci.org:8000/api/users ***
+*** /users: paginated list of users ***
+*** GET: http://127.0.0.1:8000/api/users ***
 {
-  "count": 7,
-  "next": "http://aerpaw-dev.renci.org:8000/api/users?page=2",
-  "previous": null,
-  "results": [
-    {
-      "display_name": "Magreth Mushi",
-      "email": "mjmushi@ncsu.edu",
-      "user_id": 5,
-      "username": "mjmushi@ncsu.edu"
-    },
-    {
-      "display_name": "Michael Stealey",
-      "email": "stealey@unc.edu",
-      "user_id": 1,
-      "username": "stealey@unc.edu"
-    },
-    {
-      "display_name": "mj stealey",
-      "email": "mjstealey@gmail.com",
-      "user_id": 4,
-      "username": "mjstealey@gmail.com"
-    },
-    {
-      "display_name": "Rudra Dutta",
-      "email": "rdutta@ncsu.edu",
-      "user_id": 6,
-      "username": "rdutta@ncsu.edu"
-    },
-    {
-      "display_name": "Sonali Chaudhari",
-      "email": "sschaud2@ncsu.edu",
-      "user_id": 2,
-      "username": "sschaud2@ncsu.edu"
-    }
-  ]
-}
-*** GET: http://aerpaw-dev.renci.org:8000/api/users?search=stea ***
-{
-  "count": 2,
+  "count": 1,
   "next": null,
   "previous": null,
   "results": [
@@ -53,18 +15,28 @@ $ python -m users
       "email": "stealey@unc.edu",
       "user_id": 1,
       "username": "stealey@unc.edu"
-    },
-    {
-      "display_name": "mj stealey",
-      "email": "mjstealey@gmail.com",
-      "user_id": 4,
-      "username": "mjstealey@gmail.com"
     }
   ]
 }
 
-*** /users/{int:pk}: detail for single user ***
-*** GET: http://aerpaw-dev.renci.org:8000/api/users/1 ***
+*** /users?search=stea: paginated list of users with search ***
+*** GET: http://127.0.0.1:8000/api/users?search=stea ***
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "display_name": "Michael Stealey",
+      "email": "stealey@unc.edu",
+      "user_id": 1,
+      "username": "stealey@unc.edu"
+    }
+  ]
+}
+
+*** /users/{int:pk}: retrieve details for user with pk = 1 ***
+*** GET: http://127.0.0.1:8000/api/users/1 ***
 {
   "aerpaw_roles": [
     "experimenter",
@@ -79,7 +51,9 @@ $ python -m users
   "user_id": 1,
   "username": "stealey@unc.edu"
 }
-*** PUT: http://aerpaw-dev.renci.org:8000/api/users/1 ***
+
+*** /users/{int:pk}: update "disoplay_name" for user with pk = 1 ***
+*** PUT: http://127.0.0.1:8000/api/users/1 ***
 {
   "aerpaw_roles": [
     "experimenter",
@@ -95,20 +69,51 @@ $ python -m users
   "username": "stealey@unc.edu"
 }
 
-*** /users/{int:pk}/credentials: list of user credentials ***
-*** GET: http://aerpaw-dev.renci.org:8000/api/users/1/credentials ***
-{}
+*** /users/{int:pk}/credentials: credentials for user with pk = 1 ***
+*** GET: http://127.0.0.1:8000/api/users/1/credentials ***
+[
+  {
+    "created_date": "2022-08-26T08:22:51.353415-04:00",
+    "is_expired": false,
+    "last_modified_by": "stealey@unc.edu",
+    "modified_date": "2022-08-26T08:22:51.353429-04:00",
+    "public_key_credential": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdS9SYWzMZba7w3jI/.../eAFHmxECSZN",
+    "public_key_expiration": "2023-08-26T08:22:51.353180-04:00",
+    "public_key_id": 1,
+    "public_key_name": "credential one",
+    "user_id": 1
+  },
+  {
+    "created_date": "2022-08-26T08:23:11.152547-04:00",
+    "is_expired": false,
+    "last_modified_by": "stealey@unc.edu",
+    "modified_date": "2022-08-26T08:23:11.152559-04:00",
+    "public_key_credential": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDWwN/.../S+kZhGHuERZTDz57Z",
+    "public_key_expiration": "2023-08-26T08:23:11.152315-04:00",
+    "public_key_id": 2,
+    "public_key_name": "credential two",
+    "user_id": 1
+  }
+]
 
-*** /users/{int:pk}/tokens: user tokens ***
-*** GET: http://aerpaw-dev.renci.org:8000/api/users/1/tokens ***
+*** /users/{int:pk}/tokens: retrieve tokens for user with pk = 1 ***
+*** GET: http://127.0.0.1:8000/api/users/1/tokens ***
 {
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...qsP5zZIbDrcA4zW6Xw8q4nV3fRz6XeVDg8MrfRij3xE",
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8si595TTlwAVxhEfOVZq9wNoSNCNdmzDsRr3yHwbPZQ"
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...Zif4Jg00r3SzqFlpHXxFkaSIBq4v45g62SR6X--Vi0E",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...kbimneSIb1-IlPkoJ-ImRvjobUA-fCWN0Y5CufM1hr8"
 }
 
-*** /token/refresh/: refresh user access_token ***
-*** POST: http://aerpaw-dev.renci.org:8000/api/token/refresh/ ***
+*** /users/{int:pk}/tokens?refresh=true: refresh tokens for user with pk = 1 ***
+*** GET: http://127.0.0.1:8000/api/users/1/tokens?refresh=true ***
 {
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...1OIhf5-1M89SN3H-TeDs-e20DirciplWXptNT1t5rDE"
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8YkIDjb1LAkj8f7bHn7HRh21jlwuDzKzIMc1LSUoV9I",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...kbimneSIb1-IlPkoJ-ImRvjobUA-fCWN0Y5CufM1hr8"
+}
+
+*** /users/{int:pk}/tokens?generate=true: generate tokens for user with pk = 1 ***
+*** GET: http://127.0.0.1:8000/api/users/1/tokens?generate=true ***
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...lZB_nTU3Uzwrm-iNOk9FLXfx_oyS28J0Wou-W9DemCA",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...mWuaoebhSB_K65l5vpO_WyhplmhFcehE3P8Ghp2O634"
 }
 ```

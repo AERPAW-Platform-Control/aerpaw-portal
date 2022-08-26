@@ -12,6 +12,7 @@ from rest_framework.viewsets import GenericViewSet
 from portal.apps.credentials.api.serializers import CredentialSerializerDetail
 from portal.apps.credentials.models import PublicCredentials
 from portal.apps.users.api.serializers import UserSerializerDetail, UserSerializerList, UserSerializerTokens
+from portal.apps.users.api.utils import get_tokens_for_user, refresh_access_token_for_user
 from portal.apps.users.models import AerpawUser
 
 # constants
@@ -217,6 +218,9 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
     @action(detail=True, methods=['get'])
     def tokens(self, request, *args, **kwargs):
         """
+        param: generate - generate new token pair if true
+        param: refresh - refresh access_token if true
+
         GET: tokens
         - access_token           - string
         - refresh_token          - string
@@ -225,7 +229,13 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
         - user is_self
         """
         user = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
+        generate = self.request.query_params.get('generate', None)
+        refresh = self.request.query_params.get('refresh', None)
         if request.user.id == user.id:
+            if generate and str(generate).casefold() == 'true':
+                get_tokens_for_user(user=user)
+            if refresh and str(refresh).casefold() == 'true':
+                refresh_access_token_for_user(user=user)
             serializer = UserSerializerTokens(user)
             du = dict(serializer.data)
             response_data = {
