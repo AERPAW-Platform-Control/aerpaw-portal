@@ -1,14 +1,14 @@
 """ examples/code/users.py
 
 Examples:
-    - /users: paginated list of users
-    - /users?search=string: paginated list of users with search
-    - /users/{int:pk}: retrieve single user
-    - /users/{int:pk}?display_name=string: update single user display_name
-    - /users/{int:pk}/credentials: list of user credentials
-    - /users/{int:pk}/tokens: retrieve user tokens
-    - /users/{int:pk}/tokens?refresh=true: refresh user tokens
-    - /users/{int:pk}/tokens?generate=true: generate user tokens
+    - /users: paginated list of users (GET)
+    - /users?search=string: paginated list of users with search (GET)
+    - /users/{int:pk}: retrieve single user (GET)
+    - /users/{int:pk}: update single user display_name (PUT)
+    - /users/{int:pk}/credentials: list of user credentials (GET)
+    - /users/{int:pk}/tokens: retrieve user tokens (GET)
+    - /users/{int:pk}/tokens?refresh=true: refresh user tokens (GET)
+    - /users/{int:pk}/tokens?generate=true: generate user tokens (GET)
 
 """
 import json
@@ -58,12 +58,13 @@ print('*** GET: {0} ***'.format(API_CALL))
 print(json.dumps(python_object, indent=2))
 
 """
-PUT /users/{int:pk}?display_name=string
+PUT /users/{int:pk}
 
-- update "disoplay_name" for user with pk = 1
+- data = {"display_name": "string"}
+- update "display_name" for user with pk = 1
 """
 print('')
-print('*** /users/{int:pk}: update "disoplay_name" for user with pk = 1 ***')
+print('*** /users/{int:pk}: update "display_name" for user with pk = 1 ***')
 print('*** data = {0} ***'.format(json.dumps(user_data)))
 API_CALL = API_URL + '/users/1'
 data = json.dumps(user_data)

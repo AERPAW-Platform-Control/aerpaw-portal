@@ -82,7 +82,7 @@ $ python -m users
   "username": "stealey@unc.edu"
 }
 
-*** /users/{int:pk}: update "disoplay_name" for user with pk = 1 ***
+*** /users/{int:pk}: update "display_name" for user with pk = 1 ***
 *** data = {"display_name": "Michael J. Stealey, Sr."} ***
 *** PUT: http://aerpaw-dev.renci.org:8000/api/users/1 ***
 {
