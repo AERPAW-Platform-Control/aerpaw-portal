@@ -11,7 +11,8 @@ from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
 from portal.apps.experiments.api.serializers import CanonicalExperimentResourceSerializer, ExperimentSerializerDetail, \
-    ExperimentSerializerList, ExperimentSessionSerializer, UserExperimentSerializer
+    ExperimentSerializerList, ExperimentSerializerState, ExperimentSessionSerializer, UserExperimentSerializer
+from portal.apps.experiments.api.utils import is_valid_transition, transition_experiment_state
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
     UserExperiment
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, \
@@ -275,7 +276,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 (request.user is experiment.experiment_creator or experiment.is_member(request.user)):
             if experiment.is_retired:
                 raise PermissionDenied(
-                    detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /experiments/{0} details".format(kwargs.get('pk')))
+                    detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /experiments/{0} details".format(
+                        kwargs.get('pk')))
             modified = False
             # check for description
             if request.data.get('description', None):
@@ -505,6 +507,48 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         else:
             raise PermissionDenied(
                 detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/membership".format(kwargs.get('pk')))
+
+    @action(detail=True, methods=['get', 'put', 'patch'])
+    def state(self, request, *args, **kwargs):
+        """
+        GET, PUT, PATCH: retrieve / update experiment state
+        - experiment_state     - string
+
+        Permission:
+        - user is_experiment_creator OR
+        - user is_experiment_member OR
+        - user is_operator
+        """
+        experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
+        # check if experiment is retired
+        if experiment.is_retired:
+            raise PermissionDenied(
+                detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/state".format(
+                    kwargs.get('pk')))
+        # check if user is experimenter or operator
+        if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
+            if str(request.method).casefold() in ['put', 'patch']:
+                # check for state transition request
+                next_state = request.data.get('next_state', experiment.state())
+                if is_valid_transition(experiment=experiment, next_state=next_state):
+                    transition_experiment_state(request=request, experiment=experiment, next_state=next_state)
+                else:
+                    raise ValidationError(
+                        detail="ValidationError: invalid transition {0} --> {1} for /experiments/{2}/state".format(
+                            experiment.state(), next_state, kwargs.get('pk')))
+            # End of PUT, PATCH section - All reqeust types return experiment state
+            serializer = ExperimentSerializerState(experiment)
+            du = dict(serializer.data)
+            response_data = {
+                'experiment_flags': du.get('experiment_flags'),
+                'experiment_id': du.get('experiment_id'),
+                'experiment_state': du.get('experiment_state'),
+                'experiment_uuid': du.get('experiment_uuid')
+            }
+            return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/state".format(kwargs.get('pk')))
 
 
 class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
@@ -961,7 +1005,8 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             if request.data.get('node_uhd', None):
                 if request.data.get('node_uhd') not in [c[0] for c in CanonicalExperimentResource.NodeUhd.choices]:
                     raise ValidationError(
-                        detail="node_uhd:  valid choices are {0}".format([c[0] for c in CanonicalExperimentResource.NodeUhd.choices]))
+                        detail="node_uhd:  valid choices are {0}".format(
+                            [c[0] for c in CanonicalExperimentResource.NodeUhd.choices]))
                 cer.node_uhd = request.data.get('node_uhd')
                 modified = True
             # check node_vehicle
@@ -969,13 +1014,17 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                 node_vehicle = request.data.get('node_vehicle')
                 if node_vehicle not in [c[0] for c in CanonicalExperimentResource.NodeVehicle.choices]:
                     raise ValidationError(
-                        detail="node_vehicle:  valid choices are {0}".format([c[0] for c in CanonicalExperimentResource.NodeVehicle.choices]))
+                        detail="node_vehicle:  valid choices are {0}".format(
+                            [c[0] for c in CanonicalExperimentResource.NodeVehicle.choices]))
                 # AFRN must be vehicle_none
                 if cer.resource.resource_type == AerpawResource.ResourceType.AFRN and node_vehicle != CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE:
                     raise ValidationError(
                         detail="node_vehicle: resource type AFRN must be vehicle_none")
                 # APRN must be in [vehicle_uav, vehicle_ugv, vehicle_none]
-                if cer.resource.resource_type == AerpawResource.ResourceType.APRN and node_vehicle not in [CanonicalExperimentResource.NodeVehicle.VEHICLE_UAV, CanonicalExperimentResource.NodeVehicle.VEHICLE_UGV, CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE]:
+                if cer.resource.resource_type == AerpawResource.ResourceType.APRN and node_vehicle not in [
+                    CanonicalExperimentResource.NodeVehicle.VEHICLE_UAV,
+                    CanonicalExperimentResource.NodeVehicle.VEHICLE_UGV,
+                    CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE]:
                     raise ValidationError(
                         detail="node_vehicle: resource type APRN must be in [vehicle_uav, vehicle_ugv, vehicle_none]")
                 # TODO: other checks for UAV, UGV, 3PBBE, Other
@@ -988,7 +1037,8 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             return self.retrieve(request, pk=cer.id)
         else:
             raise PermissionDenied(
-                detail="PermissionDenied: unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(kwargs.get('pk')))
+                detail="PermissionDenied: unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(
+                    kwargs.get('pk')))
 
     def partial_update(self, request, *args, **kwargs):
         """

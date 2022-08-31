@@ -38,8 +38,10 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         SAVED = 'saved', _('Saved')
         WAIT_DEVELOPMENT_DEPLOY = 'wait_development_deploy', _('Wait Development Deploy')
         WAIT_EMULATION_DEPLOY = 'wait_emulation_deploy', _('Wait Emulation Deploy')
+        WAIT_EMULATION_SCHEDULE = 'wait_emulation_schedule', _('Wait Emulation Schedule')
         WAIT_SANDBOX_DEPLOY = 'wait_sandbox_deploy', _('Wait Sandbox Deploy')
         WAIT_TESTBED_DEPLOY = 'wait_testbed_deploy', _('Wait Testbed Deploy')
+        WAIT_TESTBED_SCHEDULE = 'wait_testbed_schedule', _('Wait Testbed Schedule')
 
     canonical_number = models.ForeignKey(
         CanonicalNumber,
@@ -52,6 +54,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         related_name='experiment_creator',
         on_delete=models.PROTECT
     )
+    experiment_flags = models.CharField(max_length=3, default='000')
     experiment_membership = models.ManyToManyField(
         AerpawUser,
         related_name='experiment_membership',

@@ -8,7 +8,7 @@ from rest_framework.request import Request
 
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentMembershipForm, \
-    ExperimentResourceTargetsForm, ExperimentResourceTargetModifyForm
+    ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
@@ -383,4 +383,3 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
                       'is_experiment_member': is_experiment_member,
                       'cer': cer
                   })
-

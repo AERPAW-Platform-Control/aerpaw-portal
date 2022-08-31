@@ -41,6 +41,16 @@ class ExperimentSerializerDetail(serializers.ModelSerializer):
                   'last_modified_by', 'modified_date', 'name', 'project_id', 'resources']
 
 
+class ExperimentSerializerState(serializers.ModelSerializer):
+    experiment_id = serializers.IntegerField(source='id', read_only=True)
+    experiment_state = serializers.DateTimeField(source='state')
+    experiment_uuid = serializers.CharField(source='uuid')
+
+    class Meta:
+        model = AerpawExperiment
+        fields = ['experiment_flags', 'experiment_id', 'experiment_state', 'experiment_uuid']
+
+
 class ExperimentSessionSerializer(serializers.ModelSerializer):
     ended_by = serializers.IntegerField(source='ended_by.id')
     experiment_id = serializers.IntegerField(source='experiment.id')
