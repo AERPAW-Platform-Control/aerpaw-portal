@@ -135,13 +135,14 @@ def experiment_detail(request, experiment_id):
             request.query_params.update({'experiment_id': experiment_id})
             for ses_id in experiment.get('sessions'):
                 request.query_params.update({'session_id': ses_id})
-                r = ExperimentSessionViewSet(request=request)
-                ses = r.list(request=request)
+                s = ExperimentSessionViewSet(request=request)
+                ses = s.list(request=request)
                 if ses.data:
                     sessions.append(ses.data.get('results')[0])
         except Exception as exc:
             sessions = []
             print(exc)
+    # What does this code do after the sessions have supposedly been printed above?
     except Exception as exc:
         message = exc
         experiment = None

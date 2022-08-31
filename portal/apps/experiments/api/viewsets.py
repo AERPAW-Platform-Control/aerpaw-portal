@@ -650,16 +650,16 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         print(user_id)
         if experiment_id and user_id:
             queryset = ExperimentSession.objects.filter(
-                experiment__id=experiment_id,
-                user__id=user_id
+                experiment__id=True,
+                user__id=True
             ).order_by('-created').distinct()
         elif experiment_id:
             queryset = ExperimentSession.objects.filter(
-                experiment__id=experiment_id
+                experiment__id=True
             ).order_by('-created').distinct()
         elif user_id:
             queryset = ExperimentSession.objects.filter(
-                user__id=user_id
+                user__id=True
             ).order_by('-created').distinct()
         else:
             queryset = ExperimentSession.objects.filter().order_by('-created').distinct()
@@ -747,7 +747,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
             # create session
             session = ExperimentSession()
             session.experiment = experiment
-            session.started_by = user
+            session.started_by = user.username
             session.session_type = session_type
             session.created = timezone.now()
             session.uuid = uuid4()
@@ -774,10 +774,12 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - started_by (fk)        - user_id
 
         Permission:
-        - user is_operator
+        - user is_operator OR
+        - user is_experimenter
         """
         experiment_session = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         #experiment_session = self.get_queryset()
+        session = get_object_or_404()
         print(experiment_session)
         if request.user.is_operator() or request.user.is_experimenter():
             serializer = ExperimentSessionSerializer(experiment_session)
@@ -807,7 +809,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - start_date_time        - string
         - started_by (fk)        - user_id
 
-        Permission:
+        Permission:x
         - user is_operator
         """
         session = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
