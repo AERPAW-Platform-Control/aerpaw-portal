@@ -102,7 +102,7 @@ def project_detail(request, project_id):
                 return redirect('project_list')
         project = p.retrieve(request=request, pk=project_id).data
         if project.get('membership').get('is_project_creator') or project.get('membership').get('is_project_owner') or \
-                project.get('membership').get('is_project_member'):
+                project.get('membership').get('is_project_member') or request.user.is_operator():
             experiments = p.experiments(request=request, pk=project_id).data
         else:
             experiments = None

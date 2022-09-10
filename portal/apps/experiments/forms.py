@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
+from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
 from portal.apps.projects.models import AerpawProject
 from portal.apps.resources.models import AerpawResource
@@ -148,3 +149,39 @@ class ExperimentResourceTargetModifyForm(forms.ModelForm):
     class Meta:
         model = CanonicalExperimentResource
         fields = ['node_uhd', 'node_vehicle']
+
+
+class ExperimentFilesForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ExperimentFilesForm, self).__init__(*args, **kwargs)
+        exp = kwargs.get('instance')
+        experiment_files = ExperimentFile.objects.filter(is_deleted=False).order_by('file_name').distinct()
+        self.fields['experiment_files'].queryset = experiment_files
+
+    experiment_files = forms.ModelMultipleChoiceField(
+        queryset=None,
+        widget=FilteredSelectMultiple('Files', is_stacked=False),
+        required=False
+    )
+
+    class Media:
+        extend = False
+        css = {
+            'all': [
+                'admin/css/widgets.css'
+            ]
+        }
+        js = (
+            'js/django_global.js',
+            'admin/js/jquery.init.js',
+            'admin/js/core.js',
+            'admin/js/prepopulate_init.js',
+            'admin/js/prepopulate.js',
+            'admin/js/SelectBox.js',
+            'admin/js/SelectFilter2.js',
+            'admin/js/admin/RelatedObjectLookups.js',
+        )
+
+    class Meta:
+        model = AerpawExperiment
+        fields = ['experiment_files']

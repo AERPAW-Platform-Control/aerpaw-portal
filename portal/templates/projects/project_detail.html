@@ -51,7 +51,7 @@
                     <td style="width: 25%">Description</td>
                     <td style="width: 75%"><strong>{{ project.description }}</strong></td>
                 </tr>
-                {% if project.membership.is_project_creator or project.membership.is_project_owner or project.membership.is_project_member %}
+                {% if project.membership.is_project_creator or project.membership.is_project_owner or project.membership.is_project_member or user.is_operator %}
                     <tr>
                         <td style="width: 25%">
                             Owners

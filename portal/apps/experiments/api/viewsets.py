@@ -4,15 +4,17 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.decorators import action
-from rest_framework.exceptions import MethodNotAllowed, PermissionDenied, ValidationError
+from rest_framework.exceptions import MethodNotAllowed, NotFound, PermissionDenied, ValidationError
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
+from portal.apps.experiment_files.api.serializers import ExperimentFileSerializerDetail
+from portal.apps.experiment_files.models import ExperimentFile
+from portal.apps.experiments.api.experiment_states import is_valid_transition, transition_experiment_state
 from portal.apps.experiments.api.serializers import CanonicalExperimentResourceSerializer, ExperimentSerializerDetail, \
     ExperimentSerializerList, ExperimentSerializerState, ExperimentSessionSerializer, UserExperimentSerializer
-from portal.apps.experiments.api.utils import is_valid_transition, transition_experiment_state
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
     UserExperiment
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, \
@@ -199,6 +201,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         - created_date           - string
         - description            - string
         - experiment_creator     - int
+        - experiment_files       - array of experiment_files
+        - experiment_flags       - string
         - experiment_id          - int
         - experiment_uuid        - string
         - experiment_members     - array of user-experiment
@@ -221,6 +225,21 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 project.is_owner(request.user) or request.user.is_operator():
             serializer = ExperimentSerializerDetail(experiment)
             du = dict(serializer.data)
+            # add experiment_files
+            linked_files = []
+            lf_serializer = ExperimentFileSerializerDetail(experiment.experiment_files, many=True)
+            for f in lf_serializer.data:
+                df = dict(f)
+                linked_files.append(
+                    {
+                        'file_id': df.get('file_id'),
+                        'file_location': df.get('file_location'),
+                        'file_name': df.get('file_name'),
+                        'file_notes': df.get('file_notes'),
+                        'file_type': df.get('file_type'),
+                        'is_deleted': df.get('is_deleted')
+                    }
+                )
             # add experiment membership
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)
@@ -237,6 +256,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 'created_date': du.get('created_date'),
                 'description': du.get('description'),
                 'experiment_creator': du.get('experiment_creator'),
+                'experiment_files': linked_files,
+                'experiment_flags': du.get('experiment_flags'),
                 'experiment_id': du.get('experiment_id'),
                 'experiment_uuid': du.get('experiment_uuid'),
                 'experiment_members': experiment_membership,
@@ -530,11 +551,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             if str(request.method).casefold() in ['put', 'patch']:
                 # check for state transition request
                 next_state = request.data.get('next_state', experiment.state())
-                if is_valid_transition(experiment=experiment, next_state=next_state):
+                if is_valid_transition(experiment=experiment, next_state=next_state, user=request.user):
                     transition_experiment_state(request=request, experiment=experiment, next_state=next_state)
                 else:
                     raise ValidationError(
-                        detail="ValidationError: invalid transition {0} --> {1} for /experiments/{2}/state".format(
+                        detail="ValidationError: invalid role or transition '{0}' --> '{1}' for /experiments/{2}/state".format(
                             experiment.state(), next_state, kwargs.get('pk')))
             # End of PUT, PATCH section - All reqeust types return experiment state
             serializer = ExperimentSerializerState(experiment)
@@ -549,6 +570,80 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         else:
             raise PermissionDenied(
                 detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/state".format(kwargs.get('pk')))
+
+    @action(detail=True, methods=['get', 'put', 'patch'])
+    def files(self, request, *args, **kwargs):
+        """
+        GET, PUT, PATCH: list / update experiment files
+        - experiment_files     - array of linked files
+
+        Permission:
+        - user is_experiment_creator OR
+        - user is_experiment_member OR
+        - user is_operator
+        """
+        experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
+        if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
+            if str(request.method).casefold() in ['put', 'patch']:
+                if request.data.get('experiment_files') or isinstance(request.data.get('experiment_files'), list):
+                    if experiment.is_retired:
+                        raise PermissionDenied(
+                            detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/files".format(
+                                kwargs.get('pk')))
+                    experiment_files = request.data.get('experiment_files')
+                    if isinstance(experiment_files, list) and all(
+                            [isinstance(item, int) for item in experiment_files]):
+                        experiment_files_orig = [lf.id for lf in experiment.experiment_files.all()]
+                        experiment_files_added = list(
+                            set(experiment_files).difference(set(experiment_files_orig)))
+                        experiment_files_removed = list(
+                            set(experiment_files_orig).difference(set(experiment_files)))
+                        for pk in experiment_files_added:
+                            if ExperimentFile.objects.filter(pk=pk).exists():
+                                linked_file = ExperimentFile.objects.get(pk=pk)
+                                # limited to operator
+                                if request.user.is_operator and not linked_file.is_deleted:
+                                    experiment.experiment_files.add(linked_file)
+                                    experiment.save()
+                                else:
+                                    raise PermissionDenied(
+                                        detail="PermissionDenied: non-operator or deleted file - unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
+                                            kwargs.get('pk'), pk))
+                            else:
+                                raise NotFound(
+                                    detail="NotFound: unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
+                                        kwargs.get('pk'), pk))
+                        for pk in experiment_files_removed:
+                            # limited to operator
+                            if request.user.is_operator:
+                                linked_file = ExperimentFile.objects.get(pk=pk)
+                                experiment.experiment_files.remove(linked_file)
+                                experiment.save()
+                            else:
+                                raise PermissionDenied(
+                                    detail="PermissionDenied: non-operator - unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
+                                        kwargs.get('pk'), pk))
+                        # End of PUT, PATCH section - All reqeust types return linked files
+            serializer = ExperimentFileSerializerDetail(experiment.experiment_files, many=True)
+            experiment_files = []
+            for u in serializer.data:
+                du = dict(u)
+                experiment_files.append(
+                    {
+                        'file_id': du.get('file_id'),
+                        'file_location': du.get('file_location'),
+                        'file_name': du.get('file_name'),
+                        'file_notes': du.get('file_notes'),
+                        'file_type': du.get('file_type'),
+                        'is_deleted': du.get('is_deleted')
+                    }
+                )
+            response_data = {'experiment_files': experiment_files}
+            return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/files".format(
+                    kwargs.get('pk')))
 
 
 class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):

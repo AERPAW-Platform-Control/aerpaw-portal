@@ -6,6 +6,7 @@ APPS_LIST=(
     "profiles"
     "resources"
     "projects"
+    "experiment_files"
     "experiments"
     "operations"
     "credentials"

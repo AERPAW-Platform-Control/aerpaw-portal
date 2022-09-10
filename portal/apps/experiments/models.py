@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.mixins.models import AuditModelMixin, BaseModel, BaseTimestampModel
 from portal.apps.operations.models import CanonicalNumber
 from portal.apps.projects.models import AerpawProject
@@ -16,6 +17,8 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     - created (from AuditModelMixin)
     - created_by (from AuditModelMixin)
     - description
+    - experiment_files - array of fk to ExperimentFile
+    - experiment_flags
     - experiment_membership
     - experiment_state
     - id (from Basemodel)
@@ -53,6 +56,10 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         AerpawUser,
         related_name='experiment_creator',
         on_delete=models.PROTECT
+    )
+    experiment_files = models.ManyToManyField(
+        ExperimentFile,
+        related_name='experiment_files'
     )
     experiment_flags = models.CharField(max_length=3, default='000')
     experiment_membership = models.ManyToManyField(

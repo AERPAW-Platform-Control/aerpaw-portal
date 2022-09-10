@@ -49,11 +49,12 @@ INSTALLED_APPS = [
     'portal.apps.mixins',  # mixins
     'portal.apps.users',  # custom user model
     'portal.apps.profiles',  # custom user profile
-    'portal.apps.resources',  # aerpaw resources
-    'portal.apps.projects',  # aerpaw projects
-    'portal.apps.experiments',  # aerpaw experiments
-    'portal.apps.operations',  # aerpaw operations
-    'portal.apps.credentials',  # aerpaw credentials
+    'portal.apps.resources',  # resources
+    'portal.apps.projects',  # projects
+    'portal.apps.experiment_files',  # experiment files
+    'portal.apps.experiments',  # experiments
+    'portal.apps.operations',  # operations
+    'portal.apps.credentials',  # credentials
 ]
 
 # Add 'mozilla_django_oidc' authentication backend
@@ -129,6 +130,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates/experiment_files'),
             os.path.join(BASE_DIR, 'templates/experiments'),
             os.path.join(BASE_DIR, 'templates/portal'),
             os.path.join(BASE_DIR, 'templates/profiles'),

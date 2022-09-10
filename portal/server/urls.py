@@ -21,6 +21,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
+from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
@@ -34,6 +35,7 @@ router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'canonical-experiment-resource', CanonicalExperimentResourceViewSet,
                 basename='canonical-experiment-resource')
 router.register(r'credentials', CredentialViewSet, basename='credentials')
+router.register(r'experiment-files', ExperimentFileViewSet, basename='experiment-files')
 router.register(r'experiments', ExperimentViewSet, basename='experiments')
 router.register(r'p-canonical-experiment-number', CanonicalNumberViewSet, basename='canonical-experiment-number')
 router.register(r'projects', ProjectViewSet, basename='projects')
@@ -55,6 +57,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('auth/', include('django.contrib.auth.urls')),
     path('oidc/', include('mozilla_django_oidc.urls')),
+    # path('experiment-files/', include('portal.apps.experiment_files.urls')),  # experiment_files app
     path('experiments/', include('portal.apps.experiments.urls')),  # experiments app
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app

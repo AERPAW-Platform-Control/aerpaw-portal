@@ -18,8 +18,9 @@
                     {% else %}
                         <em class="text-danger" style="font-size: medium">(is retired: Yes)</em>
                     {% endif %}
-                    <em class="text-primary" style="font-size: medium">(canonical: {{ experiment.is_canonical }} )</em>
-                    <em class="text-primary" style="font-size: medium">(state: {{ experiment.experiment_state }})</em>
+                    <em class="text-primary" style="font-size: medium">
+                        (state: {{ experiment.experiment_state }})
+                    </em>
                 </h2>
                 {% if experiment.is_deleted %}
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
@@ -61,7 +62,11 @@
                 </tr>
                 <tr>
                     <td style="width: 25%">State</td>
-                    <td style="width: 75%"><strong>{{ experiment.experiment_state }}</strong></td>
+                    <td style="width: 75%">
+                        <strong>{{ experiment.experiment_state }}</strong>
+                        <em class="text-secondary"
+                            style="font-size: small">(flags: {{ experiment.experiment_flags }})</em>
+                    </td>
                 </tr>
                 <tr>
                     <td style="width: 25%">UUID</td>
@@ -79,7 +84,42 @@
                         </strong>
                     </td>
                 </tr>
-                {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
+                {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member or user.is_operator %}
+                    <tr>
+                        <td style="width: 25%">
+                            Linked Files
+                            {% if not experiment.is_retired %}
+                                {% if user.is_operator %}
+                                    <button class="btn btn-secondary mr-2" style="float: right">
+                                        <a href="{% url 'experiment_files' experiment_id=experiment.experiment_id %}"
+                                           class="unlink">Update</a>
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="width: 75%">
+                            {% for f in experiment.experiment_files %}
+                                <strong>{{ f.file_name }}</strong>
+                                <em class="text-secondary" style="font-size: medium">
+                                    (type: {{ f.file_type }}, notes: {{ f.file_notes|truncatechars:30 }})
+                                </em>
+                                {% if not f.is_deleted %}
+                                    <button class="btn btn-success mr-2"
+                                            style="float: right; font-size: small; padding: 0">
+                                        <a href=""
+                                           class="unlink">download</a>
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-secondary mr-2"
+                                            style="float: right; font-size: small; padding: 0" disabled>
+                                        <a href=""
+                                           class="unlink">not available</a>
+                                    </button>
+                                {% endif %}
+                                <br>
+                            {% endfor %}
+                        </td>
+                    </tr>
                     <tr>
                         <td style="width: 25%">
                             Members
