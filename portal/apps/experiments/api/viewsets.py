@@ -227,19 +227,21 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             du = dict(serializer.data)
             # add experiment_files
             linked_files = []
-            lf_serializer = ExperimentFileSerializerDetail(experiment.experiment_files, many=True)
-            for f in lf_serializer.data:
-                df = dict(f)
-                linked_files.append(
-                    {
-                        'file_id': df.get('file_id'),
-                        'file_location': df.get('file_location'),
-                        'file_name': df.get('file_name'),
-                        'file_notes': df.get('file_notes'),
-                        'file_type': df.get('file_type'),
-                        'is_deleted': df.get('is_deleted')
-                    }
-                )
+            if experiment.is_creator(request.user) or experiment.is_member(request.user):
+                lf_serializer = ExperimentFileSerializerDetail(experiment.experiment_files, many=True)
+                for f in lf_serializer.data:
+                    df = dict(f)
+                    linked_files.append(
+                        {
+                            'file_id': df.get('file_id'),
+                            'file_location': df.get('file_location'),
+                            'file_name': df.get('file_name'),
+                            'file_notes': df.get('file_notes'),
+                            'file_type': df.get('file_type'),
+                            'is_active': df.get('is_active'),
+                            'is_deleted': df.get('is_deleted')
+                        }
+                    )
             # add experiment membership
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)

@@ -103,7 +103,7 @@
                                 <em class="text-secondary" style="font-size: medium">
                                     (type: {{ f.file_type }}, notes: {{ f.file_notes|truncatechars:30 }})
                                 </em>
-                                {% if not f.is_deleted %}
+                                {% if f.is_active %}
                                     <button class="btn btn-success mr-2"
                                             style="float: right; font-size: small; padding: 0">
                                         <a href=""

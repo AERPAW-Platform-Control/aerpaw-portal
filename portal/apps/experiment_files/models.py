@@ -21,7 +21,7 @@ class ExperimentFile(BaseModel, AuditModelMixin, models.Model):
     - is_deleted
     - modified (from AuditModelMixin)
     - modified_by (from AuditModelMixin)
-    - notes
+    - file_notes
     - uuid
     """
 
@@ -29,6 +29,7 @@ class ExperimentFile(BaseModel, AuditModelMixin, models.Model):
         IP_LIST = 'ip_list', _('IP List')
         OVPN = 'ovpn', _('OVPN')
 
+    is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     file_location = models.CharField(max_length=255, blank=False, null=False)
     file_name = models.CharField(max_length=255, blank=False, null=False)
@@ -37,15 +38,17 @@ class ExperimentFile(BaseModel, AuditModelMixin, models.Model):
         choices=LinkedFileType.choices,
         default=LinkedFileType.OVPN
     )
-    notes = models.TextField(blank=True, null=True)
+    file_notes = models.TextField(blank=True, null=True)
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
     class Meta:
-        ordering = ['file_name']
+        ordering = ["file_type", "file_name"]
 
     def __str__(self):
         max_length = 40
-        display_name = '{0} - {1}'.format(self.file_name, self.notes) if self.notes else self.file_name
+        display_name = '[{0}] {1} - {2}'.format(self.file_type, self.file_name,
+                                                self.file_notes) if self.file_notes else '[{0}] {1}'.format(
+            self.file_type, self.file_name)
         str_end = '...'
         length = len(display_name)
         if length > max_length:
