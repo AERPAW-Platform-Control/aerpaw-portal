@@ -30,13 +30,35 @@
                     <a class="nav-link" href="{% url 'experiment_list' %}">Experiments</a>
                 </li>
                 {% if user.is_operator %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Operators</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Operators
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'experiment_file_list' %}">
+                                Experiment Files
+                            </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'home' %}">
+                                Experiment Sessions
+                            </a></li>
+                        </ul>
                     </li>
                 {% endif %}
                 {% if user.is_site_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Administrators</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            Administrators
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'home' %}">
+                                Role Requests
+                            </a></li>
+                        </ul>
                     </li>
                 {% endif %}
                 {% if user.is_operator or user.is_site_admin %}

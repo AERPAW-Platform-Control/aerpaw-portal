@@ -102,7 +102,7 @@ def project_detail(request, project_id):
                 return redirect('project_list')
         project = p.retrieve(request=request, pk=project_id).data
         if project.get('membership').get('is_project_creator') or project.get('membership').get('is_project_owner') or \
-                project.get('membership').get('is_project_member'):
+                project.get('membership').get('is_project_member') or request.user.is_operator():
             experiments = p.experiments(request=request, pk=project_id).data
         else:
             experiments = None
@@ -162,10 +162,10 @@ def project_edit(request, project_id):
             try:
                 request.data = QueryDict('', mutable=True)
                 data_dict = form.data.dict()
-                if data_dict.get('is_active', '') == 'on':
-                    data_dict.update({'is_active': 'true'})
+                if data_dict.get('is_public', '') == 'on':
+                    data_dict.update({'is_public': 'true'})
                 else:
-                    data_dict.update({'is_active': 'false'})
+                    data_dict.update({'is_public': 'false'})
                 request.data.update(data_dict)
                 p = ProjectViewSet(request=request)
                 request.data.update(data_dict)

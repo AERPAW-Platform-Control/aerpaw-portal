@@ -6,6 +6,7 @@ APPS_LIST=(
     "profiles"
     "resources"
     "projects"
+    "experiment_files"
     "experiments"
     "operations"
     "credentials"
@@ -13,6 +14,16 @@ APPS_LIST=(
 
 FIXTURES_LIST=(
   "aerpaw_roles"
+  "resources"
+  "operations"
+  "profiles"
+  "users"
+  "credentials"
+  "projects"
+  "experiment_files"
+  "experiments"
+  "user_messages"
+  "user_requests"
 )
 
 #APPS_LIST=()

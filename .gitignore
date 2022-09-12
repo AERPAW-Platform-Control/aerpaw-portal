@@ -14,6 +14,12 @@ portal/apps/*/migrations/
 # local data files
 db_data
 
+# deployment specific fixture files
+portal/apps/users/fixtures/
+!portal/apps/users/fixtures/aerpaw_roles.json
+dumpdata/
+!dumpdata/.gitkeep
+
 ### macOS files
 .idea
 .DS_Store

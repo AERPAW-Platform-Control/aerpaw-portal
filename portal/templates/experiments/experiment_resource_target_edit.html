@@ -12,7 +12,8 @@
     {% if user.is_authenticated %}
         {% if is_experiment_creator or is_experiment_member %}
             <div class="container w-85">
-                <h2>Target: {{ cer.resource_id|id_to_resource_name }} <em class="text-primary" style="font-size: medium">
+                <h2>Target: {{ cer.resource_id|id_to_resource_name }} <em class="text-primary"
+                                                                          style="font-size: medium">
                     (Experiment: {{ cer.experiment_id|id_to_experiment_name }})</em>
                 </h2>
                 Name: <strong>{{ cer.resource.name }}</strong><br><br>

@@ -7,8 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet
-from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentMembershipForm, \
-    ExperimentResourceTargetsForm, ExperimentResourceTargetModifyForm
+from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
+    ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
@@ -90,9 +90,9 @@ def experiment_list(request):
 @csrf_exempt
 @login_required
 def experiment_detail(request, experiment_id):
+    e = ExperimentViewSet(request=request)
     message = None
     try:
-        e = ExperimentViewSet(request=request)
         experiment = e.retrieve(request=request, pk=experiment_id).data
         if request.method == "POST":
             if request.POST.get('delete-experiment') == "true":
@@ -114,6 +114,7 @@ def experiment_detail(request, experiment_id):
             print(exc)
     except Exception as exc:
         message = exc
+        experiment = None
         resources = []
     return render(request,
                   'experiment_detail.html',
@@ -384,3 +385,37 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
                       'cer': cer
                   })
 
+
+@csrf_exempt
+@login_required
+def experiment_files(request, experiment_id):
+    message = None
+    experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
+    is_operator = request.user.is_operator()
+    if request.method == "POST":
+        form = ExperimentFilesForm(request.POST, instance=experiment)
+        if form.is_valid():
+            try:
+                api_request = Request(request=HttpRequest())
+                api_request.data.update(
+                    {'experiment_files': [int(i) for i in request.POST.getlist('experiment_files')]})
+                api_request.user = request.user
+                api_request.method = 'PUT'
+                e = ExperimentViewSet(request=api_request)
+                experiment = e.files(request=api_request, pk=experiment_id)
+                return redirect('experiment_detail', experiment_id=experiment_id)
+            except Exception as exc:
+                message = exc
+    else:
+        initial_dict = {
+            'experiment_files': [f.id for f in experiment.experiment_files.all()]
+        }
+        form = ExperimentFilesForm(instance=experiment, initial=initial_dict)
+    return render(request,
+                  'experiment_files.html',
+                  {
+                      'form': form,
+                      'message': message,
+                      'experiment_id': experiment_id,
+                      'is_operator': is_operator
+                  })

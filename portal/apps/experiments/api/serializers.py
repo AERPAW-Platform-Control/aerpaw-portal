@@ -36,9 +36,19 @@ class ExperimentSerializerDetail(serializers.ModelSerializer):
 
     class Meta:
         model = AerpawExperiment
-        fields = ['canonical_number', 'created_date', 'description', 'experiment_creator', 'experiment_id',
-                  'experiment_uuid', 'experiment_membership', 'experiment_state', 'is_canonical', 'is_retired',
-                  'last_modified_by', 'modified_date', 'name', 'project_id', 'resources']
+        fields = ['canonical_number', 'created_date', 'description', 'experiment_creator', 'experiment_flags',
+                  'experiment_id', 'experiment_uuid', 'experiment_membership', 'experiment_state', 'is_canonical',
+                  'is_retired', 'last_modified_by', 'modified_date', 'name', 'project_id', 'resources']
+
+
+class ExperimentSerializerState(serializers.ModelSerializer):
+    experiment_id = serializers.IntegerField(source='id', read_only=True)
+    experiment_state = serializers.DateTimeField(source='state')
+    experiment_uuid = serializers.CharField(source='uuid')
+
+    class Meta:
+        model = AerpawExperiment
+        fields = ['experiment_flags', 'experiment_id', 'experiment_state', 'experiment_uuid']
 
 
 class ExperimentSessionSerializer(serializers.ModelSerializer):

@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.mixins.models import AuditModelMixin, BaseModel, BaseTimestampModel
 from portal.apps.operations.models import CanonicalNumber
 from portal.apps.projects.models import AerpawProject
@@ -16,6 +17,8 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     - created (from AuditModelMixin)
     - created_by (from AuditModelMixin)
     - description
+    - experiment_files - array of fk to ExperimentFile
+    - experiment_flags
     - experiment_membership
     - experiment_state
     - id (from Basemodel)
@@ -38,8 +41,10 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         SAVED = 'saved', _('Saved')
         WAIT_DEVELOPMENT_DEPLOY = 'wait_development_deploy', _('Wait Development Deploy')
         WAIT_EMULATION_DEPLOY = 'wait_emulation_deploy', _('Wait Emulation Deploy')
+        WAIT_EMULATION_SCHEDULE = 'wait_emulation_schedule', _('Wait Emulation Schedule')
         WAIT_SANDBOX_DEPLOY = 'wait_sandbox_deploy', _('Wait Sandbox Deploy')
         WAIT_TESTBED_DEPLOY = 'wait_testbed_deploy', _('Wait Testbed Deploy')
+        WAIT_TESTBED_SCHEDULE = 'wait_testbed_schedule', _('Wait Testbed Schedule')
 
     canonical_number = models.ForeignKey(
         CanonicalNumber,
@@ -52,6 +57,11 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         related_name='experiment_creator',
         on_delete=models.PROTECT
     )
+    experiment_files = models.ManyToManyField(
+        ExperimentFile,
+        related_name='experiment_files'
+    )
+    experiment_flags = models.CharField(max_length=3, default='000')
     experiment_membership = models.ManyToManyField(
         AerpawUser,
         related_name='experiment_membership',
