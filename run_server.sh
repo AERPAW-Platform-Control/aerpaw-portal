@@ -27,6 +27,7 @@ FIXTURES_LIST=(
 )
 
 #APPS_LIST=()
+#FIXTURES_LIST=()
 
 for app in "${APPS_LIST[@]}";do
     python manage.py makemigrations $app
