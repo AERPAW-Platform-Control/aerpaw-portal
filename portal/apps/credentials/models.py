@@ -25,7 +25,7 @@ class PublicCredentials(BaseModel, AuditModelMixin):
     - uuid
     """
 
-    expiry_date = models.DateTimeField(default=datetime.now(timezone.utc) + timedelta(days=CREDENTIAL_EXPIRY_DAYS))
+    expiry_date = models.DateTimeField(blank=False, null=False)
     is_deleted = models.BooleanField(default=False)
     name = models.CharField(max_length=255, blank=False, null=False)
     owner = models.ForeignKey(

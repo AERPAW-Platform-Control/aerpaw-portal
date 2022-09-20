@@ -76,7 +76,6 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     - experimenter
     """
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY
-    experiment.experiment_flags = '000'
     experiment.save()
 
 
@@ -89,7 +88,6 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     - experimenter
     """
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY
-    experiment.experiment_flags = '000'
     experiment.save()
 
 
@@ -102,7 +100,6 @@ def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
     - experimenter
     """
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
-    experiment.experiment_flags = '000'
     experiment.save()
 
 
@@ -115,7 +112,6 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     - experimenter
     """
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
-    experiment.experiment_flags = '000'
     experiment.save()
 
 
@@ -128,6 +124,7 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
     - operator
     """
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
+    experiment.experiment_flags = '000'
     experiment.save()
 
 
@@ -203,6 +200,7 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
     - operator
     """
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_SANDBOX
+    experiment.experiment_flags = '000'
     experiment.save()
 
 

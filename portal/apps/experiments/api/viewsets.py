@@ -227,7 +227,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             du = dict(serializer.data)
             # add experiment_files
             linked_files = []
-            if experiment.is_creator(request.user) or experiment.is_member(request.user):
+            if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
                 lf_serializer = ExperimentFileSerializerDetail(experiment.experiment_files, many=True)
                 for f in lf_serializer.data:
                     df = dict(f)

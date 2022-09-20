@@ -12,7 +12,7 @@ class ExperimentFileCreateForm(forms.ModelForm):
 
     file_notes = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 6, 'cols': 60}),
-        required=True,
+        required=False,
         label='Notes',
     )
 

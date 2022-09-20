@@ -1,4 +1,4 @@
-# local-docker-compose.yml
+# compose/docker-compose.yml.local-dev
 # - database port 5432 exposed to host (security risk)
 
 version: '3.9'

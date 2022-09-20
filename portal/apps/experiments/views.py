@@ -12,6 +12,7 @@ from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditFo
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
+from portal.apps.experiments.dashboard import get_dashboard_buttons, evaluate_dashboard_action
 
 
 @csrf_exempt
@@ -92,6 +93,13 @@ def experiment_list(request):
 def experiment_detail(request, experiment_id):
     e = ExperimentViewSet(request=request)
     message = None
+
+    if request.method == 'POST':
+        try:
+            evaluate_dashboard_action(request)
+        except Exception as exc:
+            message = exc
+
     try:
         experiment = e.retrieve(request=request, pk=experiment_id).data
         if request.method == "POST":
@@ -116,12 +124,14 @@ def experiment_detail(request, experiment_id):
         message = exc
         experiment = None
         resources = []
+    dashboard_buttons = get_dashboard_buttons(request, experiment_id=experiment_id)
     return render(request,
                   'experiment_detail.html',
                   {
                       'user': request.user,
                       'experiment': experiment,
                       'resources': resources,
+                      'buttons': dashboard_buttons,
                       'message': message,
                       'debug': DEBUG
                   })
