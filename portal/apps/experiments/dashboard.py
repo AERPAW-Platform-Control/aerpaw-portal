@@ -121,47 +121,47 @@ def evaluate_dashboard_action(request):
 
     try:
         if request.POST.get('b_dev_init'):
-            experiment_id = request.POST.get('b_dev_init')[0]
+            experiment_id = request.POST.get('b_dev_init')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save'):
-            experiment_id = request.POST.get('b_dev_save')[0]
+            experiment_id = request.POST.get('b_dev_save')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save_exit'):
-            experiment_id = request.POST.get('b_dev_save_exit')[0]
+            experiment_id = request.POST.get('b_dev_save_exit')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_submit'):
-            experiment_id = request.POST.get('b_sandbox_submit')[0]
+            experiment_id = request.POST.get('b_sandbox_submit')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_cancel'):
-            experiment_id = request.POST.get('b_sandbox_cancel')[0]
+            experiment_id = request.POST.get('b_sandbox_cancel')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save'):
-            experiment_id = request.POST.get('b_sandbox_save')[0]
+            experiment_id = request.POST.get('b_sandbox_save')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save_exit'):
-            experiment_id = request.POST.get('b_sandbox_save_exit')[0]
+            experiment_id = request.POST.get('b_sandbox_save_exit')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_emu_submit'):
-            experiment_id = request.POST.get('b_emu_submit')[0]
+            experiment_id = request.POST.get('b_emu_submit')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_emu_cancel'):
-            experiment_id = request.POST.get('b_emu_cancel')[0]
+            experiment_id = request.POST.get('b_emu_cancel')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_testbed_submit'):
-            experiment_id = request.POST.get('b_testbed_submit')[0]
+            experiment_id = request.POST.get('b_testbed_submit')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_testbed_cancel'):
-            experiment_id = request.POST.get('b_testbed_cancel')[0]
+            experiment_id = request.POST.get('b_testbed_cancel')
             api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
             op = e.state(api_request, pk=int(experiment_id))
 
