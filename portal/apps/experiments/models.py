@@ -126,16 +126,20 @@ class UserExperiment(BaseModel, models.Model):
     user = models.ForeignKey(AerpawUser, related_name='experiment_user', on_delete=models.CASCADE)
 
 
-class ExperimentSession(BaseModel, BaseTimestampModel, models.Model):
+class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
     """
     Experiment Session
-    - created (from BaseTimestampModel)
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
     - ended_by
     - ended_date_time
     - experiment
     - id (from Basemodel)
-    - modified (from BaseTimestampModel)
+    - is_active
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
     - session_type
+    - start_date_time
     - started_by
     - uuid
     """
@@ -159,6 +163,7 @@ class ExperimentSession(BaseModel, BaseTimestampModel, models.Model):
         related_name='session_experiment',
         on_delete=models.PROTECT
     )
+    is_active = models.BooleanField(default=True)
     session_type = models.CharField(
         max_length=255,
         choices=SessionType.choices,
@@ -167,8 +172,11 @@ class ExperimentSession(BaseModel, BaseTimestampModel, models.Model):
     started_by = models.ForeignKey(
         AerpawUser,
         related_name='session_started_by',
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
     )
+    start_date_time = models.DateTimeField(blank=True, null=True)
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
 

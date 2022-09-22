@@ -6,10 +6,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet, \
+    ExperimentSessionViewSet
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
-from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource
+from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 from portal.apps.experiments.dashboard import get_dashboard_buttons, evaluate_dashboard_action
@@ -125,6 +126,15 @@ def experiment_detail(request, experiment_id):
         experiment = None
         resources = []
     dashboard_buttons = get_dashboard_buttons(request, experiment_id=experiment_id)
+    try:
+        session_obj = ExperimentSession.objects.filter(
+            experiment_id=experiment_id,
+            is_active=True
+        ).first()
+        s = ExperimentSessionViewSet(request=request)
+        session = s.retrieve(request=request, pk=session_obj.pk).data
+    except Exception as exc:
+        session = {}
     return render(request,
                   'experiment_detail.html',
                   {
@@ -132,6 +142,7 @@ def experiment_detail(request, experiment_id):
                       'experiment': experiment,
                       'resources': resources,
                       'buttons': dashboard_buttons,
+                      'session': session,
                       'message': message,
                       'debug': DEBUG
                   })

@@ -52,16 +52,31 @@ class ExperimentSerializerState(serializers.ModelSerializer):
 
 
 class ExperimentSessionSerializer(serializers.ModelSerializer):
-    ended_by = serializers.IntegerField(source='ended_by.id')
+    """
+    Experiment Session
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
+    - ended_by
+    - ended_date_time
+    - experiment
+    - id (from Basemodel)
+    - is_active
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
+    - session_type
+    - start_date_time
+    - started_by
+    - uuid
+    """
+    created_time = serializers.DateTimeField(source='created')
     experiment_id = serializers.IntegerField(source='experiment.id')
+    modified_time = serializers.DateTimeField(source='modified')
     session_id = serializers.IntegerField(source='id')
-    start_date_time = serializers.DateTimeField(source='created')
-    started_by = serializers.IntegerField(source='started_by.id')
 
     class Meta:
         model = ExperimentSession
-        fields = ['end_date_time', 'ended_by', 'experiment_id', 'session_id', 'session_type',
-                  'start_date_time', 'started_by']
+        fields = ['created_by', 'created_time', 'end_date_time', 'ended_by', 'experiment_id', 'is_active',
+                  'modified_by', 'modified_time', 'session_id', 'session_type', 'start_date_time', 'started_by']
 
 
 class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):

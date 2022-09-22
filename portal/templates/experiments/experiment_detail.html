@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static users_tags projects_tags resources_tags %}
+{% load static users_tags projects_tags resources_tags experiments_tags %}
 
 {% block title %}
     Experiments
@@ -72,7 +72,16 @@
             </table>
             {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_owner %}
                 <div class="d-flex flex-row align-items-center justify-content-between">
-                    <h4>Dashboard</h4>
+                    <h4>
+                        Dashboard
+                        {% if session %}
+                            <em class="text-success" style="font-size: medium">
+                                (session: {{ session.session_type }}, time elapsed: {{ session.session_id|session_running_time }})
+                            </em>
+                        {% else %}
+                            <em class="text-secondary" style="font-size: medium">(no active session)</em>
+                        {% endif %}
+                    </h4>
                     {% if not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
                         <button class="btn btn-primary mr-2">
                             <a href="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
@@ -390,8 +399,9 @@
         </div>
         {% if debug %}
             <hr>
-            <pre>{{ experiment|pprint }}</pre>
-            <pre>{{ resources|pprint }}</pre>
+            <pre><strong>experiment</strong>:<br>{{ experiment|pprint }}</pre>
+            <pre><strong>resources</strong>:<br>{{ resources|pprint }}</pre>
+            <pre><strong>session</strong>:<br>{{ session|pprint }}</pre>
             <br>
         {% endif %}
     {% else %}

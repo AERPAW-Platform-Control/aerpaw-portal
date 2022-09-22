@@ -802,9 +802,11 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
     def list(self, request, *args, **kwargs):
         """
         GET: list experiment-session as paginated results
+        - created_by (fk)        - int
         - end_date_time          - string
         - ended_by (fk)          - user_id
         - experiment_id (fk)     - int
+        - is_active              - bool
         - session_id (pk)        - int
         - session_type           - string
         - start_date_time        - string
@@ -824,9 +826,11 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
                 du = dict(u)
                 response_data.append(
                     {
+                        'created_by': du.get('created_by'),
                         'end_date_time': du.get('end_date_time'),
                         'ended_by': du.get('ended_by'),
                         'experiment_id': du.get('experiment_id'),
+                        'is_active': du.get('is_active'),
                         'session_id': du.get('session_id'),
                         'session_type': du.get('session_type'),
                         'start_date_time': du.get('start_date_time'),
@@ -844,13 +848,18 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
     def create(self, request):
         """
         POST: create a new experiment-session
+        - created_by (fk)        - int
+        - created_time           - string
         - end_date_time          - string
         - ended_by (fk)          - user_id
         - experiment_id (fk)     - int
+        - modified_by (fk)       - int
+        - modified_time          - string
         - session_id (pk)        - int
         - session_type           - string
         - start_date_time        - string
         - started_by (fk)        - user_id
+        - uuid                   - string
 
         Permission:
         - user is_operator
@@ -860,9 +869,11 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
     def retrieve(self, request, *args, **kwargs):
         """
         GET: retrieve experiment-session as detailed result
+        - created_by (fk)        - int
         - end_date_time          - string
         - ended_by (fk)          - user_id
         - experiment_id (fk)     - int
+        - is_active              - bool
         - session_id (pk)        - int
         - session_type           - string
         - start_date_time        - string
@@ -876,9 +887,11 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
             serializer = ExperimentSessionSerializer(experiment_session)
             du = dict(serializer.data)
             response_data = {
+                'created_by': du.get('created_by'),
                 'end_date_time': du.get('end_date_time'),
                 'ended_by': du.get('ended_by'),
                 'experiment_id': du.get('experiment_id'),
+                'is_active': du.get('is_active'),
                 'session_id': du.get('session_id'),
                 'session_type': du.get('session_type'),
                 'start_date_time': du.get('start_date_time'),

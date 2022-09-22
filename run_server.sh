@@ -55,12 +55,12 @@ if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
     FIXTURES_LIST=(
         "aerpaw_roles"
         "resources"
+        "experiment_files"
         "operations"
         "profiles"
         "users"
         "credentials"
         "projects"
-        "experiment_files"
         "experiments"
         "user_messages"
         "user_requests"
