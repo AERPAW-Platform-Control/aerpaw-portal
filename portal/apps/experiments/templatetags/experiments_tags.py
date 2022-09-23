@@ -35,7 +35,9 @@ def session_elapsed_time(session_id):
 def session_run_time(session_id):
     try:
         session = ExperimentSession.objects.get(pk=int(session_id))
-        if not session.start_date_time:
+        if not session.is_active and not session.start_date_time:
+            return 'cancelled by user/operator'
+        elif not session.start_date_time:
             return 'waiting to start'
         elif not session.end_date_time:
             return 'still running'
