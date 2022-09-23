@@ -840,7 +840,6 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
             active_set = [False]
         else:
             active_set = [True, False]
-
         if experiment_id:
             queryset = ExperimentSession.objects.filter(
                 experiment__id=experiment_id,
@@ -868,7 +867,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         Permission:
         - user is_operator
         """
-        if request.user.is_operator():
+        if request.user.is_active:
             page = self.paginate_queryset(self.get_queryset())
             if page:
                 serializer = ExperimentSessionSerializerList(page, many=True)
@@ -935,7 +934,7 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - user is_operator
         """
         experiment_session = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
-        if request.user.is_operator():
+        if request.user.is_active:
             serializer = ExperimentSessionSerializerDetail(experiment_session)
             du = dict(serializer.data)
             try:
