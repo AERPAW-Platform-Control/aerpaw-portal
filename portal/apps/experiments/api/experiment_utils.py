@@ -1,7 +1,8 @@
-from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
+from rest_framework.exceptions import NotFound
+
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
     start_experiment_session, stop_experiment_session
-from rest_framework.exceptions import MethodNotAllowed, NotFound
+from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
 
 
 def active_development_to_saved(request, experiment: AerpawExperiment):

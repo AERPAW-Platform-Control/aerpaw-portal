@@ -14,6 +14,7 @@ class UserExperimentSerializer(serializers.ModelSerializer):
 
 
 class ExperimentSerializerList(serializers.ModelSerializer):
+    canonical_number = serializers.IntegerField(source='canonical_number.canonical_number')
     created_date = serializers.DateTimeField(source='created')
     experiment_id = serializers.IntegerField(source='id', read_only=True)
     experiment_uuid = serializers.CharField(source='uuid')
@@ -51,9 +52,35 @@ class ExperimentSerializerState(serializers.ModelSerializer):
         fields = ['experiment_flags', 'experiment_id', 'experiment_state', 'experiment_uuid']
 
 
-class ExperimentSessionSerializer(serializers.ModelSerializer):
+class ExperimentSessionSerializerList(serializers.ModelSerializer):
     """
-    Experiment Session
+    Experiment Session List
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
+    - * ended_by
+    - * ended_date_time
+    - * experiment
+    - * id (from Basemodel)
+    - * is_active
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
+    - * session_type
+    - * start_date_time
+    - * started_by
+    - uuid
+    """
+    experiment_id = serializers.IntegerField(source='experiment.id')
+    session_id = serializers.IntegerField(source='id')
+
+    class Meta:
+        model = ExperimentSession
+        fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'session_id', 'session_type',
+                  'start_date_time', 'started_by']
+
+
+class ExperimentSessionSerializerDetail(serializers.ModelSerializer):
+    """
+    Experiment Session Detail
     - created (from AuditModelMixin)
     - created_by (from AuditModelMixin)
     - ended_by

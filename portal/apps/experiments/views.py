@@ -6,14 +6,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentViewSet, \
-    ExperimentSessionViewSet
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
+    ExperimentViewSet
+from portal.apps.experiments.dashboard import evaluate_dashboard_action, get_dashboard_buttons
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.server.settings import DEBUG, REST_FRAMEWORK
-from portal.apps.experiments.dashboard import get_dashboard_buttons, evaluate_dashboard_action
 
 
 @csrf_exempt
@@ -439,4 +439,100 @@ def experiment_files(request, experiment_id):
                       'message': message,
                       'experiment_id': experiment_id,
                       'is_operator': is_operator
+                  })
+
+
+@csrf_exempt
+@login_required
+def experiment_sessions(request, experiment_id):
+    message = None
+    experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
+    try:
+        # check for query parameters
+        current_page = 1
+        search_term = None
+        data_dict = {'experiment_id': experiment.id}
+        if request.GET.get('search'):
+            data_dict['search'] = request.GET.get('search')
+            search_term = request.GET.get('search')
+        if request.GET.get('page'):
+            data_dict['page'] = request.GET.get('page')
+            current_page = int(request.GET.get('page'))
+        request.query_params = QueryDict('', mutable=True)
+        request.query_params.update(data_dict)
+        e = ExperimentSessionViewSet(request=request)
+        sessions = e.list(request=request, many=True)
+        # get prev, next and item range
+        next_page = None
+        prev_page = None
+        count = 0
+        min_range = 0
+        max_range = 0
+        if sessions.data:
+            sessions = dict(sessions.data)
+            prev_url = sessions.get('previous', None)
+            if prev_url:
+                prev_dict = parse_qs(urlparse(prev_url).query)
+                try:
+                    prev_page = prev_dict['page'][0]
+                except Exception as exc:
+                    print(exc)
+                    prev_page = 1
+            next_url = sessions.get('next', None)
+            if next_url:
+                next_dict = parse_qs(urlparse(next_url).query)
+                try:
+                    next_page = next_dict['page'][0]
+                except Exception as exc:
+                    print(exc)
+                    next_page = 1
+            count = int(sessions.get('count'))
+            min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
+            max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
+            if max_range > count:
+                max_range = count
+        item_range = '{0} - {1}'.format(str(min_range), str(max_range))
+    except Exception as exc:
+        message = exc
+        sessions = None
+        item_range = None
+        next_page = None
+        prev_page = None
+        search_term = None
+        count = 0
+    return render(request,
+                  'experiment_sessions.html',
+                  {
+                      'user': request.user,
+                      'experiment': experiment,
+                      'sessions': sessions,
+                      'item_range': item_range,
+                      'message': message,
+                      'next_page': next_page,
+                      'prev_page': prev_page,
+                      'search': search_term,
+                      'count': count,
+                      'debug': DEBUG
+                  })
+
+
+@csrf_exempt
+@login_required
+def session_detail(request, experiment_id, session_id):
+    message = None
+    experiment_obj = get_object_or_404(AerpawExperiment, id=experiment_id)
+    session_obj = get_object_or_404(ExperimentSession, id=session_id)
+    try:
+        s = ExperimentSessionViewSet(request=request)
+        session = s.retrieve(request=request, pk=session_id).data
+    except Exception as exc:
+        message = exc
+        session = None
+    return render(request,
+                  'session_detail.html',
+                  {
+                      'user': request.user,
+                      'session': session,
+                      'message': message,
+                      'debug': DEBUG
                   })

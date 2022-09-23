@@ -41,20 +41,24 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                     detail="NotFound: unable to GET /experiment-files list")
             if search and show_deleted:
                 q_filter = Q(id__in=experiment.experiment_files.all()) & \
-                           (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(file_notes__icontains=search))
+                           (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(
+                               file_notes__icontains=search))
             elif search and not show_deleted:
                 q_filter = Q(id__in=experiment.experiment_files.all()) & Q(is_deleted=False) & \
-                           (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(file_notes__icontains=search))
+                           (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(
+                               file_notes__icontains=search))
             elif not search and not show_deleted:
                 q_filter = Q(id__in=experiment.experiment_files.all()) & Q(is_deleted=False)
             elif not search and show_deleted:
                 q_filter = Q(id__in=experiment.experiment_files.all())
         else:
             if search and show_deleted:
-                q_filter = (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(file_notes__icontains=search))
+                q_filter = (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(
+                    file_notes__icontains=search))
             elif search and not show_deleted:
                 q_filter = Q(is_deleted=False) & \
-                           (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(file_notes__icontains=search))
+                           (Q(file_type__icontains=search) | Q(file_name__icontains=search) | Q(
+                               file_notes__icontains=search))
             elif not search and not show_deleted:
                 q_filter = Q(is_deleted=False)
             elif not search and show_deleted:

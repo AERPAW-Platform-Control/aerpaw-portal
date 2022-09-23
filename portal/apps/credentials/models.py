@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta, timezone
-
 from django.db import models
 
 from portal.apps.mixins.models import AuditModelMixin, BaseModel

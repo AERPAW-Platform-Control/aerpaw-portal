@@ -2,7 +2,7 @@ from django.urls import path
 
 from portal.apps.experiments.views import experiment_create, experiment_detail, experiment_edit, experiment_files, \
     experiment_list, experiment_members, experiment_resource_list, experiment_resource_target_edit, \
-    experiment_resource_targets
+    experiment_resource_targets, experiment_sessions, session_detail
 
 urlpatterns = [
     path('', experiment_list, name='experiment_list'),
@@ -17,4 +17,6 @@ urlpatterns = [
          experiment_resource_target_edit,
          name='experiment_resource_target_edit'),
     path('<int:experiment_id>/files', experiment_files, name='experiment_files'),
+    path('<int:experiment_id>/sessions', experiment_sessions, name='experiment_sessions'),
+    path('<int:experiment_id>/sessions/<int:session_id>', session_detail, name='session_detail'),
 ]

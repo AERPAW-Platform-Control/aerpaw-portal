@@ -26,6 +26,7 @@ def create_experiment_session(session_type: str, experiment: AerpawExperiment, u
     session.created_by = user.username
     session.experiment = experiment
     session.is_active = True
+    session.modified_by = user.username
     session.session_type = session_type
     session.uuid = uuid4()
     session.save()

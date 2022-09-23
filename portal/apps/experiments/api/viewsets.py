@@ -14,7 +14,8 @@ from portal.apps.experiment_files.api.serializers import ExperimentFileSerialize
 from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.experiments.api.experiment_states import is_valid_transition, transition_experiment_state
 from portal.apps.experiments.api.serializers import CanonicalExperimentResourceSerializer, ExperimentSerializerDetail, \
-    ExperimentSerializerList, ExperimentSerializerState, ExperimentSessionSerializer, UserExperimentSerializer
+    ExperimentSerializerList, ExperimentSerializerState, ExperimentSessionSerializerDetail, \
+    ExperimentSessionSerializerList, UserExperimentSerializer
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
     UserExperiment
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, \
@@ -647,6 +648,57 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/files".format(
                     kwargs.get('pk')))
 
+    @action(detail=True, methods=['get', 'put', 'patch'])
+    def sessions(self, request, *args, **kwargs):
+        """
+        GET: list experiment sessions
+        - experiment_sessions     - array of sessions
+
+        Permission:
+        - user is_experiment_creator OR
+        - user is_experiment_member OR
+        - user is_operator
+        """
+        experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
+        if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
+            sessions = ExperimentSession.objects.filter(experiment_id=experiment.id).order_by('-created')
+            serializer = ExperimentSessionSerializerDetail(sessions, many=True)
+            experiment_sessions = []
+            for u in serializer.data:
+                du = dict(u)
+                try:
+                    created_by = AerpawUser.objects.get(username=du.get('created_by')).id
+                except Exception as exc:
+                    print(exc)
+                    created_by = None
+                try:
+                    modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
+                except Exception as exc:
+                    print(exc)
+                    modified_by = None
+                experiment_sessions.append(
+                    {
+                        'created_by': created_by,
+                        'created_time': du.get('created_time'),
+                        'end_date_time': du.get('end_date_time'),
+                        'ended_by': du.get('ended_by'),
+                        'experiment_id': du.get('experiment_id'),
+                        'is_active': du.get('is_active'),
+                        'modified_by': modified_by,
+                        'modified_time': du.get('modified_time'),
+                        'session_id': du.get('session_id'),
+                        'session_type': du.get('session_type'),
+                        'start_date_time': du.get('start_date_time'),
+                        'started_by': du.get('started_by')
+                    }
+                )
+            response_data = {'experiment_sessions': experiment_sessions}
+            return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/sessions".format(
+                    kwargs.get('pk')))
+
 
 class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
     """
@@ -777,26 +829,27 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
     """
     permission_classes = [permissions.IsAuthenticated]
     queryset = ExperimentSession.objects.all().order_by('-created').distinct()
-    serializer_class = ExperimentSessionSerializer
+    serializer_class = ExperimentSessionSerializerDetail
 
     def get_queryset(self):
         experiment_id = self.request.query_params.get('experiment_id', None)
-        user_id = self.request.query_params.get('user_id', None)
-        if experiment_id and user_id:
+        active = self.request.query_params.get('active', None)
+        if active and str(active).casefold() == 'true':
+            active_set = [True]
+        elif active and str(active).casefold() == 'false':
+            active_set = [False]
+        else:
+            active_set = [True, False]
+
+        if experiment_id:
             queryset = ExperimentSession.objects.filter(
                 experiment__id=experiment_id,
-                user__id=user_id
-            ).order_by('-created').distinct()
-        elif experiment_id:
-            queryset = ExperimentSession.objects.filter(
-                experiment__id=experiment_id
-            ).order_by('-created').distinct()
-        elif user_id:
-            queryset = ExperimentSession.objects.filter(
-                user__id=user_id
+                is_active__in=active_set
             ).order_by('-created').distinct()
         else:
-            queryset = ExperimentSession.objects.filter().order_by('-created').distinct()
+            queryset = ExperimentSession.objects.filter(
+                is_active__in=active_set
+            ).order_by('-created').distinct()
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -818,15 +871,14 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         if request.user.is_operator():
             page = self.paginate_queryset(self.get_queryset())
             if page:
-                serializer = ExperimentSessionSerializer(page, many=True)
+                serializer = ExperimentSessionSerializerList(page, many=True)
             else:
-                serializer = ExperimentSessionSerializer(self.get_queryset(), many=True)
+                serializer = ExperimentSessionSerializerList(self.get_queryset(), many=True)
             response_data = []
             for u in serializer.data:
                 du = dict(u)
                 response_data.append(
                     {
-                        'created_by': du.get('created_by'),
                         'end_date_time': du.get('end_date_time'),
                         'ended_by': du.get('ended_by'),
                         'experiment_id': du.get('experiment_id'),
@@ -884,14 +936,27 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         """
         experiment_session = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         if request.user.is_operator():
-            serializer = ExperimentSessionSerializer(experiment_session)
+            serializer = ExperimentSessionSerializerDetail(experiment_session)
             du = dict(serializer.data)
+            try:
+                created_by = AerpawUser.objects.get(username=du.get('created_by')).id
+            except Exception as exc:
+                print(exc)
+                created_by = None
+            try:
+                modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
+            except Exception as exc:
+                print(exc)
+                modified_by = None
             response_data = {
-                'created_by': du.get('created_by'),
+                'created_by': created_by,
+                'created_time': du.get('created_time'),
                 'end_date_time': du.get('end_date_time'),
                 'ended_by': du.get('ended_by'),
                 'experiment_id': du.get('experiment_id'),
                 'is_active': du.get('is_active'),
+                'modified_by': modified_by,
+                'modified_time': du.get('modified_time'),
                 'session_id': du.get('session_id'),
                 'session_type': du.get('session_type'),
                 'start_date_time': du.get('start_date_time'),
