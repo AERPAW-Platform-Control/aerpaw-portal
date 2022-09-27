@@ -7,6 +7,8 @@ from portal.apps.experiments.models import AerpawExperiment
 
 def check_initiate_development():
     # TODO: define checks for initiate development
+    # 1 or more resources
+    # user public key
     return True
 
 
@@ -126,7 +128,7 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save'):
             experiment_id = request.POST.get('b_dev_save')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save_exit'):
             experiment_id = request.POST.get('b_dev_save_exit')
@@ -142,7 +144,7 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save'):
             experiment_id = request.POST.get('b_sandbox_save')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.ACTIVE_SANDBOX})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save_exit'):
             experiment_id = request.POST.get('b_sandbox_save_exit')

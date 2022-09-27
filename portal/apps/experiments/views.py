@@ -13,6 +13,7 @@ from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditFo
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
+from portal.server.download_utils import download_sftp_experiment_file
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 
@@ -104,6 +105,15 @@ def experiment_detail(request, experiment_id):
     try:
         experiment = e.retrieve(request=request, pk=experiment_id).data
         if request.method == "POST":
+            if request.POST.get('file-id'):
+                try:
+                    response = download_sftp_experiment_file(
+                        int(request.user.id), int(experiment_id), int(request.POST.get('file-id'))
+                    )
+                    return response
+                except Exception as exc:
+                    print(exc)
+                    message = exc
             if request.POST.get('delete-experiment') == "true":
                 exp = e.destroy(request=request, pk=experiment_id).data
                 return redirect('experiment_list')
@@ -120,7 +130,7 @@ def experiment_detail(request, experiment_id):
                     resources.append(res.data.get('results')[0])
         except Exception as exc:
             resources = []
-            print(exc)
+            message = exc
     except Exception as exc:
         message = exc
         experiment = None
@@ -135,6 +145,7 @@ def experiment_detail(request, experiment_id):
         session = s.retrieve(request=request, pk=session_obj.pk).data
     except Exception as exc:
         session = {}
+        print(exc)
     return render(request,
                   'experiment_detail.html',
                   {

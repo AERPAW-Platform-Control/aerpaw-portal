@@ -9,5 +9,6 @@ djangorestframework-simplejwt
 fontawesomefree
 markdown
 mozilla-django-oidc
+paramiko
 psycopg2-binary
 uwsgi

@@ -87,7 +87,9 @@
                         <div>
                             <button class="btn btn-primary mr-2">
                                 <a href="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
-                                   class="unlink">Refresh Status</a>
+                                   class="unlink">
+                                    <em class="fa fa-fw fa-refresh"></em> Refresh Status
+                                </a>
                             </button>
                             <button class="btn btn-secondary mr-2">
                                 <a href="{% url 'experiment_sessions' experiment_id=experiment.experiment_id %}"
@@ -309,23 +311,29 @@
                         </td>
                         <td style="width: 75%">
                             {% for f in experiment.experiment_files %}
-                                <strong>{{ f.file_name }}</strong>
-                                <em class="text-secondary" style="font-size: medium">
-                                    (type: {{ f.file_type }}, notes: {{ f.file_notes|truncatechars:30 }})
-                                </em>
-                                {% if f.is_active %}
-                                    <button class="btn btn-success mr-2"
-                                            style="float: right; font-size: small; padding: 0">
-                                        <a href=""
-                                           class="unlink">download</a>
-                                    </button>
-                                {% else %}
-                                    <button class="btn btn-secondary mr-2"
-                                            style="float: right; font-size: small; padding: 0" disabled>
-                                        <a href=""
-                                           class="unlink">not available</a>
-                                    </button>
-                                {% endif %}
+                                <form action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
+                                      method="POST">
+                                    {% csrf_token %}
+                                    <strong>{{ f.file_name }}</strong>
+                                    <em class="text-secondary" style="font-size: medium">
+                                        (type: {{ f.file_type }}, notes: {{ f.file_notes|truncatechars:30 }})
+                                    </em>
+                                    {% if f.is_active %}
+                                        <button class="btn btn-success mr-2"
+                                                style="float: right; font-size: small; padding: 0"
+                                                type="submit"
+                                        >
+                                            download
+                                        </button>
+                                        <input type="hidden" name="file-id" value="{{ f.file_id }}">
+                                    {% else %}
+                                        <button class="btn btn-secondary mr-2"
+                                                style="float: right; font-size: small; padding: 0" disabled>
+                                            <a href=""
+                                               class="unlink">not available</a>
+                                        </button>
+                                    {% endif %}
+                                </form>
                                 <br>
                             {% endfor %}
                         </td>

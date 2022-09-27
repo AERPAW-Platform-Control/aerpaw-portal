@@ -14,7 +14,9 @@ Valid experiment transition states
 - ref: https://user-images.githubusercontent.com/5332509/186757199-86f44e94-e590-4e1d-9763-5f8401c69b5d.png
 """
 _VALID_EXPERIMENTER_TRANSITION = [
+    ('active_development', 'active_development'),
     ('active_development', 'saved'),
+    ('active_sandbox', 'active_sandbox'),
     ('active_sandbox', 'saved'),
     ('saved', 'wait_development_deploy'),
     ('saved', 'wait_sandbox_deploy'),

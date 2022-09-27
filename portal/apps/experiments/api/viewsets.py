@@ -866,8 +866,18 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
 
         Permission:
         - user is_operator
+        - user is_experiment_creator
+        - user is_experiment_member
         """
-        if request.user.is_active:
+        try:
+            experiment = AerpawExperiment.objects.get(pk=request.query_params.get('experiment_id'))
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
             page = self.paginate_queryset(self.get_queryset())
             if page:
                 serializer = ExperimentSessionSerializerList(page, many=True)
@@ -932,9 +942,19 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
 
         Permission:
         - user is_operator
+        - user is_experiment_creator
+        - user is_experiment_member
         """
         experiment_session = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
-        if request.user.is_active:
+        try:
+            experiment = AerpawExperiment.objects.get(pk=experiment_session.experiment_id)
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
             serializer = ExperimentSessionSerializerDetail(experiment_session)
             du = dict(serializer.data)
             try:

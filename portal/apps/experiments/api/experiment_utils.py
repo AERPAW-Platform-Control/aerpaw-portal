@@ -506,4 +506,5 @@ def same_to_same(request, experiment: AerpawExperiment):
     - operator
     """
     # TODO: placeholder for same state update options
-    pass
+    # valid same states: ('active_development', 'active_development'), ('active_sandbox', 'active_sandbox')
+    print(experiment.experiment_state)
