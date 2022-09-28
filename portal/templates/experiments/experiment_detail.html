@@ -37,9 +37,9 @@
                                 </button>
                             {% endif %}
                             {% if experiment.membership.is_experiment_creator and not experiment.is_retired %}
-                                <input type="hidden" name="delete-experiment" value="true">
+                                <input type="hidden" name="retire_experiment" value="true">
                                 <button class="btn btn-danger mr-2" type="submit">
-                                    <a onclick="return confirm('Are you sure you want to delete this experiment?')">Delete</a>
+                                    <a onclick="return confirm('Are you sure you want to retire this experiment?')">Retire</a>
                                 </button>
                             {% endif %}
                             <button class="btn btn-secondary mr-2">
@@ -364,10 +364,17 @@
                             Targeted Resources
                             {% if not experiment.is_retired %}
                                 {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
-                                    <button class="btn btn-secondary mr-2" style="float: right">
-                                        <a href="{% url 'experiment_resource_list' experiment_id=experiment.experiment_id %}"
-                                           class="unlink">Update</a>
-                                    </button>
+                                    {% if not experiment.resources_locked %}
+                                        <button class="btn btn-secondary mr-2" style="float: right">
+                                            <a href="{% url 'experiment_resource_list' experiment_id=experiment.experiment_id %}"
+                                               class="unlink">Update</a>
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-secondary mr-2" style="float: right" disabled>
+                                            <a href="{% url 'experiment_resource_list' experiment_id=experiment.experiment_id %}"
+                                               class="unlink">Locked</a>
+                                        </button>
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                         </td>

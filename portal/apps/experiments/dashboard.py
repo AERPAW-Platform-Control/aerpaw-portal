@@ -1,14 +1,23 @@
 from django.http import HttpRequest
 from rest_framework.request import Request
 
+from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.experiments.models import AerpawExperiment
+from portal.apps.users.models import AerpawUser
 
 
-def check_initiate_development():
+def check_initiate_development(user: AerpawUser, experiment: AerpawExperiment):
     # TODO: define checks for initiate development
-    # 1 or more resources
-    # user public key
+    # experiment has one or more resources
+    if not experiment.resources.exists():
+        return False
+    # user has one or more public keys
+    if not PublicCredentials.objects.filter(
+            owner=user,
+            is_deleted=False
+    ).exists():
+        return False
     return True
 
 
@@ -60,7 +69,12 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
     }
 
     try:
+        user = request.user
         experiment = AerpawExperiment.objects.get(id=experiment_id)
+
+        # is_retired or is_deleted
+        if experiment.is_retired or experiment.is_deleted:
+            return buttons
 
         # ACTIVE_DEVELOPMENT       - Save, Save & Exit
         if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
@@ -79,7 +93,7 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
         # SAVED                    - Initiate Development, Submit to Sandbox, Submit to Emulation, Submit to Testbed
         elif experiment.experiment_state == AerpawExperiment.ExperimentState.SAVED:
             # initiate development
-            buttons['b_dev_init'] = check_initiate_development()
+            buttons['b_dev_init'] = check_initiate_development(user=user, experiment=experiment)
             # submit to sandbox
             buttons['b_sandbox_submit'] = check_submit_to_sandbox()
             # submit to emulation

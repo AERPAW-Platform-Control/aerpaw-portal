@@ -1,8 +1,35 @@
-from rest_framework.exceptions import NotFound
+"""
+Define the following for each transition between states
+- PREFLIGHT CHECK: Preflight validation for requested state change / logic / data collection
+- ACTION ITEMS: Transition action items (e.g. start/stop Session)
+- UPDATE STATE: Update experiment state
+"""
 
+from rest_framework.exceptions import NotFound, ValidationError
+
+from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
     start_experiment_session, stop_experiment_session
 from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
+
+
+def active_development_to_active_development(request, experiment: AerpawExperiment):
+    """
+    ACTIVE_DEVELOPMENT --> ACTIVE_DEVELOPMENT
+    - save development session and remain active
+
+    Session: update DEVELOPMENT --> no change
+
+    Permissions:
+    - experimenter
+    """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
+    # no session change
+
+    # UPDATE STATE: no change
+    pass
 
 
 def active_development_to_saved(request, experiment: AerpawExperiment):
@@ -17,6 +44,9 @@ def active_development_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and stop
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -27,7 +57,8 @@ def active_development_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     stop_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.experiment_flags = '000'
     experiment.save()
@@ -44,6 +75,9 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and stop
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -54,7 +88,8 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     stop_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     try:
         emulation_passed = request.data.get('emulation_passed', False)
     except Exception as exc:
@@ -66,6 +101,25 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
     else:
         experiment.experiment_flags = '100'
     experiment.save()
+
+
+def active_sandbox_to_active_sandbox(request, experiment: AerpawExperiment):
+    """
+    ACTIVE_SANDBOX --> ACTIVE_SANDBOX
+    - save sandbox session and remain active
+
+    Session: update SANDBOX --> no change
+
+    Permissions:
+    - experimenter
+    """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
+    # no session change
+
+    # UPDATE STATE: no change
+    pass
 
 
 def active_sandbox_to_saved(request, experiment: AerpawExperiment):
@@ -80,6 +134,9 @@ def active_sandbox_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and stop
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -90,7 +147,8 @@ def active_sandbox_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     stop_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.experiment_flags = '000'
     experiment.save()
@@ -107,6 +165,9 @@ def active_testbed_to_saved(request, experiment: AerpawExperiment):
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and stop
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -117,7 +178,8 @@ def active_testbed_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     stop_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.experiment_flags = '010'
     experiment.save()
@@ -133,13 +195,32 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     Permissions:
     - experimenter
     """
+    # PREFLIGHT CHECK:
+    # experiment has one or more resources
+    if not experiment.resources.exists():
+        raise ValidationError(
+            detail="ValidationError: one or more resources required for /experiments/{0}/state".format(experiment.id))
+    # user has one or more credentials
+    if not PublicCredentials.objects.filter(
+            owner=request.user,
+            is_deleted=False
+    ).exists():
+        raise ValidationError(
+            detail="ValidationError: one or more user credentials required for /experiments/{0}/state".format(
+                experiment.id))
+
+    # ACTION ITEMS:
+    # lock experiment resources from being further modified
+    experiment.resources_locked = True
+    experiment.save()
     # create new DEVELOPMENT session
     create_experiment_session(
         session_type=ExperimentSession.SessionType.DEVELOPMENT,
         experiment=experiment,
         user=request.user
     )
-    # update experiment state
+
+    # UPDATE STATE: wait_development_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY
     experiment.save()
 
@@ -154,13 +235,17 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     Permissions:
     - experimenter
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # create new SANDBOX session
     create_experiment_session(
         session_type=ExperimentSession.SessionType.SANDBOX,
         experiment=experiment,
         user=request.user
     )
-    # update experiment state
+
+    # UPDATE STATE: wait_sandbox_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY
     experiment.save()
 
@@ -175,13 +260,17 @@ def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
     Permissions:
     - experimenter
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # create new EMULATION session
     create_experiment_session(
         session_type=ExperimentSession.SessionType.EMULATION,
         experiment=experiment,
         user=request.user
     )
-    # update experiment state
+
+    # UPDATE STATE: wait_emulation_schedule
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
     experiment.save()
 
@@ -196,13 +285,17 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     Permissions:
     - experimenter
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # create new TESTBED session
     create_experiment_session(
         session_type=ExperimentSession.SessionType.TESTBED,
         experiment=experiment,
         user=request.user
     )
-    # update experiment state
+
+    # UPDATE STATE: wait_testbed_schedule
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
     experiment.save()
 
@@ -217,6 +310,9 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and start
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -227,7 +323,8 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     start_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: active_development
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
     experiment.experiment_flags = '000'
     experiment.save()
@@ -244,6 +341,9 @@ def wait_development_deploy_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and cancel
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -254,7 +354,8 @@ def wait_development_deploy_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     cancel_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -269,6 +370,9 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and start
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -279,7 +383,8 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     start_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: active_emulation
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_EMULATION
     experiment.save()
 
@@ -295,6 +400,9 @@ def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and cancel
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -305,7 +413,8 @@ def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     cancel_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -320,8 +429,12 @@ def wait_emulation_schedule_to_wait_emulation_deploy(request, experiment: Aerpaw
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # no change to session
-    # get active session and update
+
+    # UPDATE STATE: wait_emulation_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_DEPLOY
     experiment.save()
 
@@ -337,6 +450,9 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and cancel
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -347,8 +463,8 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     cancel_experiment_session(session=session, user=request.user)
-    # update experiment state
-    # get active session and update
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -363,6 +479,9 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and start
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -373,7 +492,8 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     start_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: active_sandbox
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_SANDBOX
     experiment.experiment_flags = '000'
     experiment.save()
@@ -390,6 +510,9 @@ def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and cancel
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -400,7 +523,8 @@ def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     cancel_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -415,6 +539,9 @@ def wait_testbed_deploy_to_active_testbed(request, experiment: AerpawExperiment)
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and start
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -425,7 +552,8 @@ def wait_testbed_deploy_to_active_testbed(request, experiment: AerpawExperiment)
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     start_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: active_testbed
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_TESTBED
     experiment.save()
 
@@ -440,6 +568,9 @@ def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and cancel
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -450,7 +581,8 @@ def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     cancel_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -465,8 +597,12 @@ def wait_testbed_schedule_to_wait_testbed_deploy(request, experiment: AerpawExpe
     Permissions:
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # no change to session
-    # get active session and update
+
+    # UPDATE STATE: wait_testbed_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY
     experiment.save()
 
@@ -482,6 +618,9 @@ def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
     - experimenter OR
     - operator
     """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
     # get active session and cancel
     session = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
@@ -492,7 +631,8 @@ def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
     cancel_experiment_session(session=session, user=request.user)
-    # update experiment state
+
+    # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -506,5 +646,8 @@ def same_to_same(request, experiment: AerpawExperiment):
     - operator
     """
     # TODO: placeholder for same state update options
+    # PREFLIGHT CHECK:
+    # ACTION ITEMS:
+    # UPDATE STATE:
     # valid same states: ('active_development', 'active_development'), ('active_sandbox', 'active_sandbox')
     print(experiment.experiment_state)

@@ -1,11 +1,11 @@
-from portal.apps.experiments.api.experiment_utils import active_development_to_saved, active_emulation_to_saved, \
-    active_sandbox_to_saved, active_testbed_to_saved, same_to_same, saved_to_wait_development_deploy, \
-    saved_to_wait_emulation_schedule, saved_to_wait_sandbox_deploy, saved_to_wait_testbed_schedule, \
-    wait_development_deploy_to_active_development, wait_development_deploy_to_saved, \
-    wait_emulation_deploy_to_active_emulation, wait_emulation_deploy_to_saved, wait_emulation_schedule_to_saved, \
-    wait_emulation_schedule_to_wait_emulation_deploy, wait_sandbox_deploy_to_active_sandbox, \
-    wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, wait_testbed_deploy_to_saved, \
-    wait_testbed_schedule_to_saved, wait_testbed_schedule_to_wait_testbed_deploy
+from portal.apps.experiments.api.experiment_utils import active_development_to_active_development, \
+    active_development_to_saved, active_emulation_to_saved, active_sandbox_to_active_sandbox, active_sandbox_to_saved, \
+    active_testbed_to_saved, same_to_same, saved_to_wait_development_deploy, saved_to_wait_emulation_schedule, \
+    saved_to_wait_sandbox_deploy, saved_to_wait_testbed_schedule, wait_development_deploy_to_active_development, \
+    wait_development_deploy_to_saved, wait_emulation_deploy_to_active_emulation, wait_emulation_deploy_to_saved, \
+    wait_emulation_schedule_to_saved, wait_emulation_schedule_to_wait_emulation_deploy, \
+    wait_sandbox_deploy_to_active_sandbox, wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, \
+    wait_testbed_deploy_to_saved, wait_testbed_schedule_to_saved, wait_testbed_schedule_to_wait_testbed_deploy
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.users.models import AerpawUser
 
@@ -69,8 +69,10 @@ def is_valid_transition(experiment: AerpawExperiment, next_state: str, user: Aer
 def transition_experiment_state(request, experiment: AerpawExperiment, next_state: str = None):
     """
     Transition experiment state with actions
+    - ACTIVE_DEVELOPMENT --> ACTIVE_DEVELOPMENT - save development session and remain active
     - ACTIVE_DEVELOPMENT --> SAVED - save development session - Flags 000
     - ACTIVE_EMULATION --> SAVED - emulation complete - Flags 100 or 101
+    - ACTIVE_SANDBOX --> ACTIVE_SANDBOX - save sandbox session and remain active
     - ACTIVE_SANDBOX --> SAVED - save sandbox session - Flags 000
     - ACTIVE_TESTBED --> SAVED - execution complete - Flags 010
     - SAVED --> WAIT_DEVELOPMENT_DEPLOY - start development session
@@ -92,14 +94,20 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     - SAME_STATE --> SAME_STATE - non-transition option for ???
     """
     transition = (experiment.state(), next_state)
+    # ACTIVE_DEVELOPMENT --> ACTIVE_DEVELOPMENT - no change to development session
+    if transition == ('active_development', 'active_development'):
+        active_development_to_active_development(request=request, experiment=experiment)
     # ACTIVE_DEVELOPMENT --> SAVED - save development session
     # Flags 000 (e.g. experimenter logged out of all VMs for one hour)
-    if transition == ('active_development', 'saved'):
+    elif transition == ('active_development', 'saved'):
         active_development_to_saved(request=request, experiment=experiment)
     # ACTIVE_EMULATION --> SAVED - emulation complete
     # Flags 100 or 101
     elif transition == ('active_emulation', 'saved'):
         active_emulation_to_saved(request=request, experiment=experiment)
+    # ACTIVE_SANDBOX --> ACTIVE_SANDBOX - no change to sandbox session
+    elif transition == ('active_sandbox', 'active_sandbox'):
+        active_sandbox_to_active_sandbox(request=request, experiment=experiment)
     # ACTIVE_SANDBOX --> SAVED - save sandbox session
     # Flags 000 (e.g. end of scheduled sandbox session)
     elif transition == ('active_sandbox', 'saved'):

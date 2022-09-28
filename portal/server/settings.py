@@ -29,6 +29,12 @@ if os.getenv('DJANGO_DEBUG').casefold() == 'true':
 else:
     DEBUG = False
 
+# AERPAW OPS WARNING: don't run with mock turned on in production!
+if os.getenv('AERPAW_OPS_MOCK').casefold() == 'true':
+    MOCK_OPS = True
+else:
+    MOCK_OPS = False
+
 # ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
 ALLOWED_HOSTS = [os.getenv('DJANGO_ALLOWED_HOSTS')]
 

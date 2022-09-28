@@ -213,6 +213,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         - name                   - string
         - project_id             - int
         - resources              - array of int
+        - resources_locked       - boolean
 
         Permission:
         - user is_creator OR
@@ -275,7 +276,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 'modified_date': str(du.get('modified_date')),
                 'name': du.get('name'),
                 'project_id': du.get('project_id'),
-                'resources': du.get('resources')
+                'resources': du.get('resources'),
+                'resources_locked': du.get('resources_locked')
             }
             if experiment.is_deleted:
                 response_data['is_deleted'] = du.get('is_deleted')
@@ -386,6 +388,10 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                     if experiment.is_retired:
                         raise PermissionDenied(
                             detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/resources".format(
+                                kwargs.get('pk')))
+                    if experiment.resources_locked:
+                        raise PermissionDenied(
+                            detail="PermissionDenied: RESOURCES_LOCKED - unable to PUT,PATCH /experiments/{0}/resources".format(
                                 kwargs.get('pk')))
                     resource_ids = request.data.get('experiment_resources')
                     if isinstance(resource_ids, list) and all([isinstance(item, int) for item in resource_ids]):

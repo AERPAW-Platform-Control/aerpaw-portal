@@ -86,6 +86,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         AerpawResource,
         related_name='experiment_resources'
     )
+    resources_locked = models.BooleanField(default=False)
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
     class Meta:

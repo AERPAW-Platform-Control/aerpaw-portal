@@ -114,8 +114,11 @@ def experiment_detail(request, experiment_id):
                 except Exception as exc:
                     print(exc)
                     message = exc
-            if request.POST.get('delete-experiment') == "true":
-                exp = e.destroy(request=request, pk=experiment_id).data
+            if request.POST.get('retire_experiment') == "true":
+                request.data = QueryDict('', mutable=True)
+                request.data.update({'is_retired': 'true'})
+                e = ExperimentViewSet(request=request)
+                exp = e.partial_update(request=request, pk=experiment_id)
                 return redirect('experiment_list')
         # get canonical experiment resource definitions
         try:

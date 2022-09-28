@@ -66,74 +66,86 @@
                 </tbody>
             </table>
         </div>
-        <div class="w-85">
-            <form method="POST" class="post-form">
-                <h3>Authorization Tokens
-                    {% csrf_token %}
-                    <button type="submit" class="message-btn btn btn-success"
-                            style="float: right; margin-left: 10px"
-                            name="generate_tokens" value="generate_tokens"
-                    >
-                        <em class="fa fa-fw fa-gears"></em> generate
-                    </button>
-                    <button type="submit" class="message-btn btn btn-success"
-                            style="float: right; margin-left: 10px"
-                            name="download_tokens" value="download_tokens"
-                    >
-                        <em class="fa fa-fw fa-download"></em> download
-                    </button>
-                </h3>
-            </form>
-            <table class="table table-striped table-bordered my-4">
-                <tbody>
-                <tr>
-                    <td style="width: 25%">Access
+        {% if user.is_operator or user.is_site_admin %}
+            <div class="w-85">
+                <form method="POST" class="post-form">
+                    <h3>Authorization Tokens
+                        {% csrf_token %}
+                        <button type="submit" class="message-btn btn btn-success"
+                                style="float: right; margin-left: 10px"
+                                name="generate_tokens" value="generate_tokens"
+                        >
+                            <em class="fa fa-fw fa-gears"></em> generate
+                        </button>
                         {% if user_tokens.access_token %}
-                            <br>
-                            <span class="text-muted" style="font-size: small">
+                            <button type="submit" class="message-btn btn btn-success"
+                                    style="float: right; margin-left: 10px"
+                                    name="download_tokens" value="download_tokens"
+                            >
+                                <em class="fa fa-fw fa-download"></em> download
+                            </button>
+                        {% else %}
+                            <button type="submit" class="message-btn btn btn-success"
+                                    style="float: right; margin-left: 10px"
+                                    name="download_tokens" value="download_tokens" disabled
+                            >
+                                <em class="fa fa-fw fa-download"></em> download
+                            </button>
+                        {% endif %}
+                    </h3>
+                </form>
+                <table class="table table-striped table-bordered my-4">
+                    <tbody>
+                    <tr>
+                        <td style="width: 25%">Access
+                            {% if user_tokens.access_token %}
+                                <br>
+                                <span class="text-muted" style="font-size: small">
                                 Exp: {{ user_tokens.access_token|token_expiry }}
                             </span>
-                        {% endif %}
-                    </td>
-                    <td style="width: 75%">
-                        {% if user_tokens.access_token %}
-                            <form method="POST" class="post-form">
-                                {% csrf_token %}
-                                <input type="text" size="40" value="{{ user_tokens.access_token }}" id="access_token"
-                                       disabled>
-                                <button type="submit" class="message-btn btn btn-primary"
-                                        style="float: right; margin-left: 10px"
-                                        name="refresh_access_token" value="refresh_access_token"
-                                >
-                                    <em class="fa fa-fw fa-refresh"></em> refresh
-                                </button>
-                            </form>
-                        {% else %}
-                            <span class="text-danger">No Access Token</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 25%">Refresh
-                        {% if user_tokens.refresh_token %}
-                            <br>
-                            <span class="text-muted" style="font-size: small">
+                            {% endif %}
+                        </td>
+                        <td style="width: 75%">
+                            {% if user_tokens.access_token %}
+                                <form method="POST" class="post-form">
+                                    {% csrf_token %}
+                                    <input type="text" size="40" value="{{ user_tokens.access_token }}"
+                                           id="access_token"
+                                           disabled>
+                                    <button type="submit" class="message-btn btn btn-primary"
+                                            style="float: right; margin-left: 10px"
+                                            name="refresh_access_token" value="refresh_access_token"
+                                    >
+                                        <em class="fa fa-fw fa-refresh"></em> refresh
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-danger">No Access Token</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%">Refresh
+                            {% if user_tokens.refresh_token %}
+                                <br>
+                                <span class="text-muted" style="font-size: small">
                                 Exp: {{ user_tokens.refresh_token|token_expiry }}
                             </span>
-                        {% endif %}
-                    </td>
-                    <td style="width: 75%">
-                        {% if user_tokens.refresh_token %}
-                            <input type="text" size="40" value="{{ user_tokens.refresh_token }}" id="refresh_token"
-                                   disabled>
-                        {% else %}
-                            <span class="text-danger">No Refresh Token</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+                            {% endif %}
+                        </td>
+                        <td style="width: 75%">
+                            {% if user_tokens.refresh_token %}
+                                <input type="text" size="40" value="{{ user_tokens.refresh_token }}" id="refresh_token"
+                                       disabled>
+                            {% else %}
+                                <span class="text-danger">No Refresh Token</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
         <div class="w-85">
             <form method="POST" class="post-form">
                 <h3>Public Credentials

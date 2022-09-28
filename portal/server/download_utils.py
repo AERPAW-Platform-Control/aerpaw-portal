@@ -26,7 +26,7 @@ def download_sftp_experiment_file(user_id: int, experiment_id: int, file_id: int
         if not experiment.is_creator(user) or not experiment.is_member(user):
             raise HttpResponseForbidden
 
-        dest_dir_path = _TMP_FILE_PATH + '/{0}'.format(str(experiment.uuid))
+        dest_dir_path = _TMP_FILE_PATH + '/{0}'.format(str(user.uuid))
         filename = file.file_location.split('/')[-1]
         dest_file_path = dest_dir_path + '/{0}'.format(filename)
 
@@ -120,7 +120,8 @@ def download_db_credential_private_key(user_id: int, private_key: str):
             fh.writelines(private_key)
 
         # download file to user
-        mime_type, _ = mimetypes.guess_type(dest_file_path)
+        # mime_type, _ = mimetypes.guess_type(dest_file_path)
+        mime_type = 'application/octet-stream'
         if os.path.exists(dest_file_path):
             with open(dest_file_path, 'r') as fh:
                 data = fh.read()

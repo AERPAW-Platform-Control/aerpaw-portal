@@ -15,6 +15,44 @@
                 <h2>Create Experiment <em class="text-success" style="font-size: medium">
                     (Project: {{ project.project_id|id_to_project_name }})</em>
                 </h2>
+                <hr>
+                <div>
+                    <h5>Step 1:</h5>
+                    <p>
+                        Decide whether you are trying to create a <strong>canonical</strong> (Program-it-Yourself)
+                        experiment, or any other type of experiment.
+                        (Refer to the <a
+                            href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/1-aerpaw-overview/1-8-experiment-lifecycle-overview"
+                            target="_blank">AERPAW User Manual, Section 1.8</a>,
+                        if you need more information about these categories.)
+                    </p>
+                    <h5>Step 2:</h5>
+                    <p>
+                        Fill out the "<a
+                            href="https://docs.google.com/forms/d/e/1FAIpQLSdwFJ9CcxjrmCmnHCKa52vnrLrDZR1sdbopnkHlkgiCIERM3A/viewform?usp=sf_link"
+                            target="_blank">AERPAW Experiment Information Request Form</a>"
+                        (do this whether your experiment is canonical or not.)
+                        Note: If you are envisioning a custom experiment, one that falls outside of AERPAW's general
+                        availability framework,
+                        you will be prompted to fill out an alternate form instead - please do so. Contact AERPAW
+                        Operations at: <a href="mailto:aerpaw-operations@ncsu.edu">aerpaw-operations@ncsu.edu</a> with
+                        any questions.
+                    </p>
+                    <h5>Step 3a:</h5>
+                    <p>
+                        For all <strong>non-canonical</strong> experiments, after filing out the above form, please log
+                        out of this Portal,
+                        and await communication back from the AERPAW team regarding further planning your non-canonical
+                        experiment. <strong>Do NOT hit “Save”</strong> on this page!
+                    </p>
+                    <h5>Step 3b:</h5>
+                    <p>
+                        For all <strong>canonical</strong> experiments, after filling out the above form, please
+                        continue below to give your experiment
+                        a short name and a short description, and save it, in order to continue.
+                    </p>
+                </div>
+                <hr>
                 <form id="create-experiment" method="POST" class="post-form">
                     {% csrf_token %}
                     {{ form.as_p }}
