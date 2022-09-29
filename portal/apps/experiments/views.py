@@ -105,10 +105,10 @@ def experiment_detail(request, experiment_id):
     try:
         experiment = e.retrieve(request=request, pk=experiment_id).data
         if request.method == "POST":
-            if request.POST.get('file-id'):
+            if request.POST.get('file_id'):
                 try:
                     response = download_sftp_experiment_file(
-                        int(request.user.id), int(experiment_id), int(request.POST.get('file-id'))
+                        int(request.user.id), int(experiment_id), int(request.POST.get('file_id'))
                     )
                     return response
                 except Exception as exc:
@@ -141,14 +141,17 @@ def experiment_detail(request, experiment_id):
     dashboard_buttons = get_dashboard_buttons(request, experiment_id=experiment_id)
     try:
         session_obj = ExperimentSession.objects.filter(
-            experiment_id=experiment_id,
-            is_active=True
-        ).first()
-        s = ExperimentSessionViewSet(request=request)
-        session = s.retrieve(request=request, pk=session_obj.pk).data
+            experiment_id=experiment_id
+        ).order_by('-created').first()
+        if session_obj.is_active:
+            s = ExperimentSessionViewSet(request=request)
+            session = s.retrieve(request=request, pk=session_obj.pk).data
+        else:
+            session = {}
+            if not session_obj.start_date_time:
+                message = 'DeploymentError: most recent deployment attempt was cancelled by user/operator'
     except Exception as exc:
         session = {}
-        print(exc)
     return render(request,
                   'experiment_detail.html',
                   {

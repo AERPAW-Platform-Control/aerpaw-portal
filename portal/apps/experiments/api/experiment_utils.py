@@ -5,12 +5,22 @@ Define the following for each transition between states
 - UPDATE STATE: Update experiment state
 """
 
+import os
+
 from rest_framework.exceptions import NotFound, ValidationError
 
 from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
     start_experiment_session, stop_experiment_session
 from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
+from portal.server.ops_ssh_utils import AerpawSsh
+from portal.server.settings import MOCK_OPS
+
+aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
+aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
+aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
+aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
+_TMP_FILE_PATH = '/tmp/aerpaw_files'
 
 
 def active_development_to_active_development(request, experiment: AerpawExperiment):
@@ -210,6 +220,19 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
                 experiment.id))
 
     # ACTION ITEMS:
+    # aerpaw ops: apcf_deploy_ve_exp.py
+    if MOCK_OPS:
+        # MOCK OPS: always pass
+        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+            experiment.id)
+        # MOCK OPS: always fail
+        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(experiment.id)
+    else:
+        # PRODUCTION:
+        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
+    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    response, exit_code = ssh_call.send_command(command, verbose=False)
+
     # lock experiment resources from being further modified
     experiment.resources_locked = True
     experiment.save()
@@ -223,6 +246,20 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     # UPDATE STATE: wait_development_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY
     experiment.save()
+
+    # TODO: Portal to manage next_state transition - normally this would be an Operator call
+    if exit_code == 0:
+        # apcf_deploy_ve_exp - success
+        # - wait_development_deploy --> active_development
+        wait_development_deploy_to_active_development(request=request, experiment=experiment)
+        raise NotFound(
+            detail="Success: deployed active_development for /experiments/{0}/state".format(experiment.id))
+    else:
+        # apcf_deploy_ve_exp - failure
+        # - wait_development_deploy --> saved
+        wait_development_deploy_to_saved(request=request, experiment=experiment)
+        raise NotFound(
+            detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
 
 
 def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
