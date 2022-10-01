@@ -213,7 +213,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
             return Response(response_data)
         else:
             raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /projects/{0}/experiments".format(kwargs.get('pk')))
+                detail="PermissionDenied: unable to GET /users/{0}/credentials".format(kwargs.get('pk')))
 
     @action(detail=True, methods=['get'])
     def tokens(self, request, *args, **kwargs):

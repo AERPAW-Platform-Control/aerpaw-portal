@@ -226,7 +226,8 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
         command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
             experiment.id)
         # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(experiment.id)
+        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
+        #     experiment.id)
     else:
         # PRODUCTION:
         command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
