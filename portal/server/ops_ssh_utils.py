@@ -19,11 +19,11 @@ class AerpawSsh:
                 response = b''
                 while not stdout.channel.exit_status_ready():
                     _out = stdout.channel.recv(1024)
-                    print(_out.decode('ascii').strip("\n"))
+                    print(_out.decode("utf-8").strip("\n"))
                     response += _out
-                response = response.decode('ascii').strip("\n")
+                response = response.decode("utf-8").strip("\n")
             else:
-                response = stdout.read().decode('ascii').strip("\n")
+                response = stdout.read().decode("utf-8").strip("\n")
             exit_code = stdout.channel.recv_exit_status()
             stdin.close()
             self.close()
