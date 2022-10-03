@@ -22,21 +22,16 @@ def project_list(request):
         current_page = 1
         search_term = None
         data_dict = {}
-
-        api_request = Request(request=HttpRequest())
-        api_request.user = request.user
-        api_request.method = 'PUT'
-
         if request.GET.get('search'):
-            api_request.query_params.update({'search': request.GET.get('search')})
+            data_dict['search'] = request.GET.get('search')
             search_term = request.GET.get('search')
         if request.GET.get('page'):
-            api_request.query_params.update({'page': request.GET.get('page')})
+            data_dict['page'] = request.GET.get('page')
             current_page = int(request.GET.get('page'))
         request.query_params = QueryDict('', mutable=True)
         request.query_params.update(data_dict)
-        p = ProjectViewSet(request=api_request)
-        projects = p.list(request=api_request)
+        p = ProjectViewSet(request=request)
+        projects = p.list(request=request)
         # get prev, next and item range
         next_page = None
         prev_page = None
