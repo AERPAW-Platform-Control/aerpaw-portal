@@ -52,7 +52,7 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
                     {
                         'canonical_number': du.get('canonical_number'),
                         'canonical_number_id': du.get('canonical_number_id'),
-                        'timestamp': du.get('timestamp')
+                        'timestamp': str(du.get('timestamp')) if du.get('timestamp') else None
                     }
                 )
             if page:
@@ -90,10 +90,10 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             response_data = {
                 'canonical_number': du.get('canonical_number'),
                 'canonical_number_id': du.get('canonical_number_id'),
-                'created_date': du.get('created_date'),
+                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                 'is_deleted': du.get('is_deleted'),
                 'is_retired': du.get('is_retired'),
-                'modified_date': du.get('modified_date'),
+                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
                 'timestamp': du.get('timestamp')
             }
             return Response(response_data)

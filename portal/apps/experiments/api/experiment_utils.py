@@ -3,9 +3,12 @@ Define the following for each transition between states
 - PREFLIGHT CHECK: Preflight validation for requested state change / logic / data collection
 - ACTION ITEMS: Transition action items (e.g. start/stop Session)
 - UPDATE STATE: Update experiment state
+- PORTAL CF: portal control framework decision points
 """
 
 import os
+import threading
+import time
 
 from rest_framework.exceptions import NotFound, ValidationError
 
@@ -220,20 +223,6 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
                 experiment.id))
 
     # ACTION ITEMS:
-    # aerpaw ops: apcf_deploy_ve_exp.py
-    if MOCK_OPS:
-        # MOCK OPS: always pass
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-        # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-        #     experiment.id)
-    else:
-        # PRODUCTION:
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
-    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    response, exit_code = ssh_call.send_command(command, verbose=False)
-
     # lock experiment resources from being further modified
     experiment.resources_locked = True
     experiment.save()
@@ -248,19 +237,41 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY
     experiment.save()
 
+    # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    if exit_code == 0:
-        # apcf_deploy_ve_exp - success
-        # - wait_development_deploy --> active_development
-        wait_development_deploy_to_active_development(request=request, experiment=experiment)
-        raise NotFound(
-            detail="Success: deployed active_development for /experiments/{0}/state".format(experiment.id))
+    # aerpaw ops: apcf_deploy_ve_exp.py
+    if MOCK_OPS:
+        # MOCK OPS: always pass
+        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+            experiment.id)
+        # MOCK OPS: always fail
+        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
+        #     experiment.id)
     else:
-        # apcf_deploy_ve_exp - failure
-        # - wait_development_deploy --> saved
-        wait_development_deploy_to_saved(request=request, experiment=experiment)
-        raise NotFound(
-            detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
+        # PRODUCTION:
+        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
+
+    # ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command))
+    ssh_thread.start()
+
+    # response, exit_code = ssh_call.send_command(command, verbose=False)
+    # print(response, exit_code)
+    # exit_code = 0
+    #
+    # # next state transition
+    # if exit_code == 0:
+    #     # apcf_deploy_ve_exp - success
+    #     # - wait_development_deploy --> active_development
+    #     wait_development_deploy_to_active_development(request=request, experiment=experiment)
+    #     raise NotFound(
+    #         detail="Success: deployed active_development for /experiments/{0}/state".format(experiment.id))
+    # else:
+    #     # apcf_deploy_ve_exp - failure
+    #     # - wait_development_deploy --> saved
+    #     wait_development_deploy_to_saved(request=request, experiment=experiment)
+    #     raise NotFound(
+    #         detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
 
 
 def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
@@ -689,3 +700,25 @@ def same_to_same(request, experiment: AerpawExperiment):
     # UPDATE STATE:
     # valid same states: ('active_development', 'active_development'), ('active_sandbox', 'active_sandbox')
     print(experiment.experiment_state)
+
+
+def wait_development_deploy(request, experiment: AerpawExperiment, command: str) -> None:
+    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    response, exit_code = ssh_call.send_command(command, verbose=True)
+    if MOCK_OPS:
+        # add sleep when using mock to simulate remote procession delay
+        time.sleep(10)
+        print('response: ' + response)
+        print('exit code: ' + str(exit_code))
+
+    # next state transition
+    if exit_code == 0:
+        # apcf_deploy_ve_exp - success
+        # - wait_development_deploy --> active_development
+        wait_development_deploy_to_active_development(request=request, experiment=experiment)
+    else:
+        # apcf_deploy_ve_exp - failure
+        # - wait_development_deploy --> saved
+        wait_development_deploy_to_saved(request=request, experiment=experiment)
+        raise NotFound(
+            detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))

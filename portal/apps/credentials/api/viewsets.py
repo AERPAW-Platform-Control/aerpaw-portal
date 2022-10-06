@@ -154,12 +154,13 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             is_expired = True if public_key.expiry_date < datetime.now(timezone.utc) else False
             du = dict(serializer.data)
             response_data = {
-                'created_date': du.get('created_date'),
+                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                 'is_expired': is_expired,
                 'last_modified_by': du.get('last_modified_by'),
-                'modified_date': du.get('modified_date'),
+                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
                 'public_key_credential': du.get('public_key_credential'),
-                'public_key_expiration': du.get('public_key_expiration'),
+                'public_key_expiration': str(du.get('public_key_expiration')) if du.get(
+                    'public_key_expiration') else None,
                 'public_key_id': du.get('public_key_id'),
                 'public_key_name': du.get('public_key_name'),
                 'user_id': du.get('user_id')

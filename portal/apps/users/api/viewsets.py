@@ -199,10 +199,10 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                     du.get('public_key_expiration'), "%Y-%m-%dT%H:%M:%S.%f%z") < datetime.now(timezone.utc) else False
                 response_data.append(
                     {
-                        'created_date': du.get('created_date'),
+                        'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                         'is_expired': is_expired,
                         'last_modified_by': du.get('last_modified_by'),
-                        'modified_date': du.get('modified_date'),
+                        'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
                         'public_key_credential': du.get('public_key_credential'),
                         'public_key_expiration': du.get('public_key_expiration'),
                         'public_key_id': du.get('public_key_id'),

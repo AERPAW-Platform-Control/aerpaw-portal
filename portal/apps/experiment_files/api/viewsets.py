@@ -214,7 +214,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
             du = dict(serializer.data)
             response_data = {
                 'created_by': AerpawUser.objects.get(username=du.get('created_by')).id,
-                'created_date': du.get('created_date'),
+                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                 'file_id': du.get('file_id'),
                 'file_location': du.get('file_location'),
                 'file_name': du.get('file_name'),
@@ -223,7 +223,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                 'is_active': du.get('is_active'),
                 'is_deleted': du.get('is_deleted'),
                 'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
-                'modified_date': str(du.get('modified_date'))
+                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None
             }
             return Response(response_data)
         else:
@@ -242,7 +242,6 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
         Permission:
         - user is_operator
         """
-        print(request.data)
         linked_file = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         if request.user.is_operator():
             modified = False

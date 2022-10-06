@@ -212,14 +212,14 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
             serializer = ResourceSerializerDetail(resource)
             du = dict(serializer.data)
             response_data = {
-                'created_date': str(du.get('created_date')),
+                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                 'description': du.get('description'),
                 'hostname': du.get('hostname'),
                 'ip_address': du.get('ip_address'),
                 'is_active': du.get('is_active'),
                 'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
                 'location': du.get('location'),
-                'modified_date': du.get('modified_date'),
+                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
                 'name': du.get('name'),
                 'ops_notes': du.get('ops_notes'),
                 'resource_class': du.get('resource_class'),

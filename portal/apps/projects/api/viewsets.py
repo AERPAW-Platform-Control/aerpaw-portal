@@ -86,7 +86,7 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                 is_project_owner = project.is_owner(request.user)
                 response_data.append(
                     {
-                        'created_date': du.get('created_date'),
+                        'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                         'description': du.get('description'),
                         'is_public': du.get('is_public'),
                         'membership': {
@@ -183,7 +183,7 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             for p in du.get('project_membership'):
                 person = {
                     'granted_by': p.get('granted_by'),
-                    'granted_date': str(p.get('granted_date')),
+                    'granted_date': str(p.get('granted_date')) if p.get('granted_date') else None,
                     'user_id': p.get('user_id')
                 }
                 if p.get('project_role') == UserProject.RoleType.PROJECT_MEMBER:
@@ -195,7 +195,7 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             is_project_member = project.is_member(request.user)
             is_project_owner = project.is_owner(request.user)
             response_data = {
-                'created_date': str(du.get('created_date')),
+                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                 'description': du.get('description'),
                 'is_public': du.get('is_public'),
                 'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
@@ -204,7 +204,7 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                     'is_project_member': is_project_member,
                     'is_project_owner': is_project_owner
                 },
-                'modified_date': str(du.get('modified_date')),
+                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
                 'name': du.get('name'),
                 'project_creator': du.get('project_creator'),
                 'project_id': du.get('project_id'),
@@ -223,7 +223,7 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                 is_project_member = project.is_member(request.user)
                 is_project_owner = project.is_owner(request.user)
                 response_data = {
-                    'created_date': du.get('created_date'),
+                    'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                     'description': du.get('description'),
                     'is_public': du.get('is_public'),
                     'membership': {
@@ -349,7 +349,7 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                 response_data.append(
                     {
                         'canonical_number': du.get('canonical_number'),
-                        'created_date': du.get('created_date'),
+                        'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                         'description': du.get('description'),
                         'experiment_creator': du.get('experiment_creator'),
                         'experiment_id': du.get('experiment_id'),
@@ -506,7 +506,7 @@ class UserProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 response_data.append(
                     {
                         'granted_by': du.get('granted_by'),
-                        'granted_date': du.get('granted_date'),
+                        'granted_date': str(du.get('granted_date')) if du.get('granted_date') else None,
                         'id': du.get('id'),
                         'project_id': du.get('project_id'),
                         'project_role': du.get('project_role'),
@@ -546,7 +546,7 @@ class UserProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
             du = dict(serializer.data)
             response_data = {
                 'granted_by': du.get('granted_by'),
-                'granted_date': du.get('granted_date'),
+                'granted_date': str(du.get('granted_date')) if du.get('granted_date') else None,
                 'id': du.get('id'),
                 'project_id': du.get('project_id'),
                 'project_role': du.get('project_role'),

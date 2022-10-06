@@ -101,7 +101,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 response_data.append(
                     {
                         'canonical_number': du.get('canonical_number'),
-                        'created_date': du.get('created_date'),
+                        'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                         'description': du.get('description'),
                         'experiment_creator': du.get('experiment_creator'),
                         'experiment_id': du.get('experiment_id'),
@@ -251,13 +251,13 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             for p in du.get('experiment_membership'):
                 person = {
                     'granted_by': p.get('granted_by'),
-                    'granted_date': str(p.get('granted_date')),
+                    'granted_date': str(p.get('granted_date')) if p.get('granted_date') else None,
                     'user_id': p.get('user_id')
                 }
                 experiment_membership.append(person)
             response_data = {
                 'canonical_number': du.get('canonical_number'),
-                'created_date': du.get('created_date'),
+                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
                 'description': du.get('description'),
                 'experiment_creator': du.get('experiment_creator'),
                 'experiment_files': linked_files,
@@ -273,7 +273,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                     'is_experiment_creator': is_experiment_creator,
                     'is_experiment_member': is_experiment_member
                 },
-                'modified_date': str(du.get('modified_date')),
+                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
                 'name': du.get('name'),
                 'project_id': du.get('project_id'),
                 'resources': du.get('resources'),
@@ -685,16 +685,16 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 experiment_sessions.append(
                     {
                         'created_by': created_by,
-                        'created_time': du.get('created_time'),
-                        'end_date_time': du.get('end_date_time'),
+                        'created_time': str(du.get('created_time')) if du.get('created_time') else None,
+                        'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
                         'ended_by': du.get('ended_by'),
                         'experiment_id': du.get('experiment_id'),
                         'is_active': du.get('is_active'),
                         'modified_by': modified_by,
-                        'modified_time': du.get('modified_time'),
+                        'modified_time': str(du.get('modified_time')) if du.get('modified_time') else None,
                         'session_id': du.get('session_id'),
                         'session_type': du.get('session_type'),
-                        'start_date_time': du.get('start_date_time'),
+                        'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
                         'started_by': du.get('started_by')
                     }
                 )
@@ -761,7 +761,7 @@ class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                     {
                         'experiment_id': du.get('experiment_id'),
                         'granted_by': du.get('granted_by'),
-                        'granted_date': du.get('granted_date'),
+                        'granted_date': str(du.get('granted_date')) if du.get('granted_date') else None,
                         'id': du.get('id'),
                         'user_id': du.get('user_id')
                     }
@@ -799,7 +799,7 @@ class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
             response_data = {
                 'experiment_id': du.get('experiment_id'),
                 'granted_by': du.get('granted_by'),
-                'granted_date': du.get('granted_date'),
+                'granted_date': str(du.get('granted_date')) if du.get('granted_date') else None,
                 'id': du.get('id'),
                 'user_id': du.get('user_id')
             }
@@ -894,13 +894,13 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
                 du = dict(u)
                 response_data.append(
                     {
-                        'end_date_time': du.get('end_date_time'),
+                        'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
                         'ended_by': du.get('ended_by'),
                         'experiment_id': du.get('experiment_id'),
                         'is_active': du.get('is_active'),
                         'session_id': du.get('session_id'),
                         'session_type': du.get('session_type'),
-                        'start_date_time': du.get('start_date_time'),
+                        'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
                         'started_by': du.get('started_by')
                     }
                 )
@@ -975,16 +975,16 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
                 modified_by = None
             response_data = {
                 'created_by': created_by,
-                'created_time': du.get('created_time'),
-                'end_date_time': du.get('end_date_time'),
+                'created_time': str(du.get('created_time')) if du.get('created_time') else None,
+                'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
                 'ended_by': du.get('ended_by'),
                 'experiment_id': du.get('experiment_id'),
                 'is_active': du.get('is_active'),
                 'modified_by': modified_by,
-                'modified_time': du.get('modified_time'),
+                'modified_time': str(du.get('modified_time')) if du.get('modified_time') else None,
                 'session_id': du.get('session_id'),
                 'session_type': du.get('session_type'),
-                'start_date_time': du.get('start_date_time'),
+                'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
                 'started_by': du.get('started_by')
             }
             return Response(response_data)

@@ -16,11 +16,11 @@ class AerpawSsh:
         if self.client:
             stdin, stdout, stderr = self.client.exec_command(command, get_pty=True)
             if verbose:
-                response = b''
+                response = bytes()
                 while not stdout.channel.exit_status_ready():
                     _out = stdout.channel.recv(1024)
-                    print(_out.decode("utf-8").strip("\n"))
                     response += _out
+                    print(_out.decode("utf-8").strip("\n"))
                 response = response.decode("utf-8").strip("\n")
             else:
                 response = stdout.read().decode("utf-8").strip("\n")
