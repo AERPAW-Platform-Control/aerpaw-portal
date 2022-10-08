@@ -142,11 +142,13 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save'):
             experiment_id = request.POST.get('b_dev_save')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_DEVELOPMENT})
+            api_request.data.update({'exit_development': False})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save_exit'):
             experiment_id = request.POST.get('b_dev_save_exit')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_DEVELOPMENT})
+            api_request.data.update({'exit_development': True})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_submit'):
             experiment_id = request.POST.get('b_sandbox_submit')
@@ -158,11 +160,13 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save'):
             experiment_id = request.POST.get('b_sandbox_save')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.ACTIVE_SANDBOX})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_SANDBOX})
+            api_request.data.update({'exit_sandbox': False})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save_exit'):
             experiment_id = request.POST.get('b_sandbox_save_exit')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_SANDBOX})
+            api_request.data.update({'exit_sandbox': True})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_emu_submit'):
             experiment_id = request.POST.get('b_emu_submit')
