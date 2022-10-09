@@ -758,7 +758,12 @@ def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
     if not session:
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    cancel_experiment_session(session=session, user=request.user)
+    # stop session if it was previously running
+    if session.start_date_time:
+        stop_experiment_session(session=session, user=request.user)
+    # otherwise cancel the session if it has not yet started
+    else:
+        cancel_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
