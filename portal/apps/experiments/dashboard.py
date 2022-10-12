@@ -46,6 +46,8 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
     - ACTIVE_SANDBOX           - Save, Save & Exit
     - ACTIVE_TESTBED           - n/a
     - SAVED                    - Initiate Development, Submit to Sandbox, Submit to Emulation, Submit to Testbed
+    - SAVING_DEVELOPMENT       - n/a
+    - SAVING_SANDBOX           - n/a
     - WAIT_DEVELOPMENT_DEPLOY  - n/a
     - WAIT_EMULATION_DEPLOY    - Cancel
     - WAIT_EMULATION_SCHEDULE  - Cancel
@@ -100,6 +102,12 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
             buttons['b_emu_submit'] = check_submit_to_emulation()
             # submit to testbed
             buttons['b_testbed_submit'] = check_submit_to_testbed(experiment=experiment)
+        # SAVING_DEVELOPMENT  - n/a
+        elif experiment.experiment_state == AerpawExperiment.ExperimentState.SAVING_DEVELOPMENT:
+            pass
+        # SAVING_SANDBOX  - n/a
+        elif experiment.experiment_state == AerpawExperiment.ExperimentState.SAVING_SANDBOX:
+            pass
         # WAIT_DEVELOPMENT_DEPLOY  - n/a
         elif experiment.experiment_state == AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY:
             pass
@@ -142,12 +150,12 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save'):
             experiment_id = request.POST.get('b_dev_save')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_DEVELOPMENT})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVING_DEVELOPMENT})
             api_request.data.update({'exit_development': False})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_dev_save_exit'):
             experiment_id = request.POST.get('b_dev_save_exit')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_DEVELOPMENT})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVING_DEVELOPMENT})
             api_request.data.update({'exit_development': True})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_submit'):
@@ -160,12 +168,12 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save'):
             experiment_id = request.POST.get('b_sandbox_save')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_SANDBOX})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVING_SANDBOX})
             api_request.data.update({'exit_sandbox': False})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_save_exit'):
             experiment_id = request.POST.get('b_sandbox_save_exit')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVE_SANDBOX})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVING_SANDBOX})
             api_request.data.update({'exit_sandbox': True})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_emu_submit'):
