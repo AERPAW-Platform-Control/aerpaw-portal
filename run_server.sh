@@ -50,6 +50,7 @@ if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
         "experiments"
         "operations"
         "credentials"
+        "user_requests"
     )
 
     FIXTURES_LIST=(
