@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load profiles_tags users_tags %}
+{% load profiles_tags users_tags user_request_tags %}
 
 {% block title %}
     Profile
@@ -46,21 +46,73 @@
                 <tr>
                     <td>Roles</td>
                     <td>
-                        <form method="POST" class="post-form">
-                            {% if not user_data.aerpaw_roles %}
-                                <span class="text-danger">No Roles Found</span>
-                            {% endif %}
-                            {% for role in user_data.aerpaw_roles %}
-                                <strong>{{ role }}</strong><br>
-                            {% endfor %}
-                            {% csrf_token %}
-                            <button type="submit" class="message-btn btn btn-success disabled"
-                                    style="float: right; margin-left: 10px"
-                                    name="request_role" value="{{ user_data.user_id }}"
-                            >
-                                <em class="fa fa-fw fa-person-circle-plus"></em> request role
-                            </button>
-                        </form>
+                        <table class="table">
+                            <tbody>
+                            <form method="POST" class="post-form">
+                                {% csrf_token %}
+                                <tr>
+                                    <td>
+                                        {% if user.is_experimenter %}
+                                            <strong>Experimenter</strong>
+                                        {% elif user.id|pending_experimenter_request %}
+                                            <em>Experimenter role requested</em>
+                                            <em class="text-success" style="font-size: medium">
+                                                ({{ user.id|pending_experimenter_request }})
+                                            </em>
+                                        {% else %}
+                                            <span class="text-danger">No Roles Found</span>
+                                            <button type="submit" class="message-btn btn btn-success"
+                                                    style="float: right; margin-left: 10px"
+                                                    name="request_role_experimenter" value="{{ user_data.user_id }}"
+                                            >
+                                                <em class="fa fa-fw fa-person-circle-plus"></em> request Experimenter
+                                                role
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if user.is_pi %}
+                                    <tr>
+                                        <td>
+                                            <strong>Principal Investigator</strong>
+                                        </td>
+                                    </tr>
+                                {% elif user.is_experimenter %}
+                                    <tr>
+                                        <td>
+                                            {% if user.id|pending_pi_request %}
+                                                <em>Principal Investigator role requested</em>
+                                                <em class="text-success" style="font-size: medium">
+                                                    ({{ user.id|pending_pi_request }})
+                                                </em>
+                                            {% else %}
+                                                <button type="submit" class="message-btn btn btn-success"
+                                                        style="float: right; margin-left: 10px"
+                                                        name="request_role_pi" value="{{ user_data.user_id }}"
+                                                >
+                                                    <em class="fa fa-fw fa-person-circle-plus"></em> request PI role
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% if user.is_operator %}
+                                    <tr>
+                                        <td>
+                                            <strong>Operator</strong>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% if user.is_site_admin %}
+                                    <tr>
+                                        <td>
+                                            <strong>Site Admin</strong>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </form>
+                            </tbody>
+                        </table>
                     </td>
                 </tr>
                 </tbody>

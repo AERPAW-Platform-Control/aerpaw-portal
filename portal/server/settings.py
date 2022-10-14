@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'portal.apps.experiments',  # experiments
     'portal.apps.operations',  # operations
     'portal.apps.credentials',  # credentials
+    'portal.apps.user_requests',  # user requests
 ]
 
 # Add 'mozilla_django_oidc' authentication backend
@@ -144,6 +145,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'templates/projects'),
             os.path.join(BASE_DIR, 'templates/resources'),
             os.path.join(BASE_DIR, 'templates/rest_framework'),
+            os.path.join(BASE_DIR, 'templates/user_requests'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

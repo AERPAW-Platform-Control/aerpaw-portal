@@ -14,19 +14,24 @@ class AerpawSsh:
         response = ''
         exit_code = 1
         if self.client:
-            stdin, stdout, stderr = self.client.exec_command(command, get_pty=True)
-            if verbose:
-                response = bytes()
-                while not stdout.channel.exit_status_ready():
-                    _out = stdout.channel.recv(1024)
-                    response += _out
-                    print(_out.decode("utf-8").strip("\n"))
-                response = response.decode("utf-8").strip("\n")
-            else:
-                response = stdout.read().decode("utf-8").strip("\n")
-            exit_code = stdout.channel.recv_exit_status()
-            stdin.close()
-            self.close()
+            try:
+                stdin, stdout, stderr = self.client.exec_command(command, get_pty=True)
+                if verbose:
+                    response = bytes()
+                    while not stdout.channel.exit_status_ready():
+                        _out = stdout.channel.recv(1024)
+                        response += _out
+                        print(_out.decode("utf-8").strip("\n"))
+                    response = response.decode("utf-8").strip("\n")
+                else:
+                    response = stdout.read().decode("utf-8").strip("\n")
+                exit_code = stdout.channel.recv_exit_status()
+                stdin.close()
+                self.close()
+            except Exception as exc:
+                response = exc
+                exit_code = 1
+                self.close()
         else:
             print("Connection not opened.")
         return response, exit_code

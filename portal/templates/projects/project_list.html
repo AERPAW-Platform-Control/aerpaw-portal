@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static users_tags %}
+{% load static users_tags user_request_tags %}
 
 {% block title %}
     Projects
@@ -50,20 +50,37 @@
                             <td>{{ project.created_date|str_to_datetime }}</td>
                             <td>{{ project.is_public }}</td>
                             <td style="text-align: center">
-                                {% if project.membership.is_project_creator %}
-                                    Creator,
-                                {% endif %}
-                                {% if project.membership.is_project_owner %}
-                                    Owner,
-                                {% endif %}
-                                {% if project.membership.is_project_member %}
-                                    Member
-                                {% endif %}
                                 {% if not project.membership.is_project_creator and not project.membership.is_project_owner and not project.membership.is_project_member %}
-                                    <button class="btn btn-success mr-2 disabled" id="project_join_request"
-                                            type="submit">
-                                        Request to Join
-                                    </button>
+                                    {% if project.is_public %}
+                                        {% if project.project_id|pending_join_project_request:user.id %}
+                                            <em>Join requested</em>
+                                            <em class="text-success" style="font-size: medium">
+                                                ({{ project.project_id|pending_join_project_request:user.id }})
+                                            </em>
+                                        {% else %}
+                                            <form method="POST" class="post-form">
+                                                {% csrf_token %}
+                                                <button type="submit" class="message-btn btn btn-success"
+                                                        style="align-content: center"
+                                                        name="request_join_project" value="{{ project.project_id }}"
+                                                >
+                                                    <em class="fa fa-fw fa-person-circle-plus"></em> join
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        ---
+                                    {% endif %}
+                                {% else %}
+                                    {% if project.membership.is_project_creator %}
+                                        Creator,
+                                    {% endif %}
+                                    {% if project.membership.is_project_owner %}
+                                        Owner,
+                                    {% endif %}
+                                    {% if project.membership.is_project_member %}
+                                        Member
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>

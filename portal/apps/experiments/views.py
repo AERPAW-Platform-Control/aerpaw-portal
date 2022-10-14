@@ -13,6 +13,9 @@ from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditFo
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
+from portal.apps.user_requests.api.viewsets import UserRequestViewSet
+from portal.apps.user_requests.models import AerpawUserRequest
+from portal.apps.user_requests.user_requests import approve_experiment_join_request, deny_experiment_join_request
 from portal.server.download_utils import download_sftp_experiment_file
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 
@@ -21,18 +24,31 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 @login_required
 def experiment_list(request):
     message = None
-    # TODO: request to join experiment
     try:
         # check for query parameters
         current_page = 1
         search_term = None
         data_dict = {}
-        if request.GET.get('search'):
-            data_dict['search'] = request.GET.get('search')
-            search_term = request.GET.get('search')
-        if request.GET.get('page'):
-            data_dict['page'] = request.GET.get('page')
-            current_page = int(request.GET.get('page'))
+        if request.method == 'POST':
+            if request.POST.get('request_join_experiment'):
+                e = ExperimentViewSet(request=request)
+                exp = e.retrieve(request=request, pk=request.POST.get('request_join_experiment')).data
+                ur_api_request = Request(request=HttpRequest())
+                ur = UserRequestViewSet(reqquest=ur_api_request)
+                ur_api_request.user = request.user
+                ur_api_request.method = 'POST'
+                ur_api_request.data.update(
+                    {'request_type': AerpawUserRequest.RequestType.EXPERIMENT.value,
+                     'request_type_id': request.POST.get('request_join_experiment'),
+                     'request_note': '[{0}] - experiment join request'.format(exp.get('name'))})
+                resp = ur.create(request=ur_api_request)
+        elif request.method == 'GET':
+            if request.GET.get('search'):
+                data_dict['search'] = request.GET.get('search')
+                search_term = request.GET.get('search')
+            if request.GET.get('page'):
+                data_dict['page'] = request.GET.get('page')
+                current_page = int(request.GET.get('page'))
         request.query_params = QueryDict('', mutable=True)
         request.query_params.update(data_dict)
         e = ExperimentViewSet(request=request)
@@ -95,17 +111,36 @@ def experiment_list(request):
 def experiment_detail(request, experiment_id):
     e = ExperimentViewSet(request=request)
     message = None
-
-    if request.method == 'POST':
-        try:
-            evaluate_dashboard_action(request)
-        except Exception as exc:
-            message = exc
-
     try:
         experiment = e.retrieve(request=request, pk=experiment_id).data
         if request.method == "POST":
-            if request.POST.get('file_id'):
+            try:
+                evaluate_dashboard_action(request)
+            except Exception as exc:
+                message = exc
+            if request.POST.get('approve_request_id'):
+                if approve_experiment_join_request(request_id=int(request.POST.get('approve_request_id'))):
+                    # TODO: placeholder for member check or other login
+                    ur_api_request = Request(request=HttpRequest())
+                    ur = UserRequestViewSet(request=ur_api_request)
+                    ur_api_request.user = request.user
+                    ur_api_request.method = 'PUT'
+                    ur_api_request.data.update(
+                        {'is_approved': True,
+                         'response_note': request.POST.get('response_note', None)})
+                    resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
+            elif request.POST.get('deny_request_id'):
+                if deny_experiment_join_request(request_id=int(request.POST.get('deny_request_id'))):
+                    # TODO: placeholder for member check or other login
+                    ur_api_request = Request(request=HttpRequest())
+                    ur = UserRequestViewSet(request=ur_api_request)
+                    ur_api_request.user = request.user
+                    ur_api_request.method = 'PUT'
+                    ur_api_request.data.update(
+                        {'is_approved': False,
+                         'response_note': request.POST.get('response_note', None)})
+                    resp = ur.update(request=ur_api_request, pk=request.POST.get('deny_request_id'))
+            elif request.POST.get('file_id'):
                 try:
                     response = download_sftp_experiment_file(
                         int(request.user.id), int(experiment_id), int(request.POST.get('file_id'))
@@ -114,7 +149,7 @@ def experiment_detail(request, experiment_id):
                 except Exception as exc:
                     print(exc)
                     message = exc
-            if request.POST.get('retire_experiment') == "true":
+            elif request.POST.get('retire_experiment') == "true":
                 request.data = QueryDict('', mutable=True)
                 request.data.update({'is_retired': 'true'})
                 e = ExperimentViewSet(request=request)
@@ -134,10 +169,26 @@ def experiment_detail(request, experiment_id):
         except Exception as exc:
             resources = []
             message = exc
+        # get join requests
+        if experiment.get('membership').get('is_experiment_creator') or \
+                experiment.get('membership').get('is_experiment_member'):
+            ur_api_request = Request(request=HttpRequest())
+            ur_api_request.user = request.user
+            ur_api_request.query_params.update({'experiment_id': experiment_id})
+            ur_api_request.method = 'GET'
+            ur = UserRequestViewSet(request=ur_api_request)
+            user_requests = ur.list(request=ur_api_request)
+            if user_requests.data:
+                user_requests = dict(user_requests.data)
+            else:
+                user_requests = {}
+        else:
+            user_requests = {}
     except Exception as exc:
         message = exc
         experiment = None
         resources = []
+        user_requests = {}
     dashboard_buttons = get_dashboard_buttons(request, experiment_id=experiment_id)
     try:
         session_obj = ExperimentSession.objects.filter(
@@ -160,6 +211,7 @@ def experiment_detail(request, experiment_id):
                       'resources': resources,
                       'buttons': dashboard_buttons,
                       'session': session,
+                      'user_requests': user_requests,
                       'message': message,
                       'debug': DEBUG
                   })

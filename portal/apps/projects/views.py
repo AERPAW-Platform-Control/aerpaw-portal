@@ -9,6 +9,9 @@ from rest_framework.request import Request
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.apps.projects.forms import ProjectCreateForm, ProjectMembershipForm
 from portal.apps.projects.models import AerpawProject
+from portal.apps.user_requests.api.viewsets import UserRequestViewSet
+from portal.apps.user_requests.models import AerpawUserRequest
+from portal.apps.user_requests.user_requests import approve_project_join_request, deny_project_join_request
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 
@@ -16,18 +19,31 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 @login_required
 def project_list(request):
     message = None
-    # TODO: request to join project
     try:
         # check for query parameters
         current_page = 1
         search_term = None
         data_dict = {}
-        if request.GET.get('search'):
-            data_dict['search'] = request.GET.get('search')
-            search_term = request.GET.get('search')
-        if request.GET.get('page'):
-            data_dict['page'] = request.GET.get('page')
-            current_page = int(request.GET.get('page'))
+        if request.method == 'POST':
+            if request.POST.get('request_join_project'):
+                p = ProjectViewSet(request=request)
+                proj = p.retrieve(request=request, pk=request.POST.get('request_join_project')).data
+                ur_api_request = Request(request=HttpRequest())
+                ur = UserRequestViewSet(reqquest=ur_api_request)
+                ur_api_request.user = request.user
+                ur_api_request.method = 'POST'
+                ur_api_request.data.update(
+                    {'request_type': AerpawUserRequest.RequestType.PROJECT.value,
+                     'request_type_id': request.POST.get('request_join_project'),
+                     'request_note': '[{0}] - project join request'.format(proj.get('name'))})
+                resp = ur.create(request=ur_api_request)
+        elif request.method == 'GET':
+            if request.GET.get('search'):
+                data_dict['search'] = request.GET.get('search')
+                search_term = request.GET.get('search')
+            if request.GET.get('page'):
+                data_dict['page'] = request.GET.get('page')
+                current_page = int(request.GET.get('page'))
         request.query_params = QueryDict('', mutable=True)
         request.query_params.update(data_dict)
         p = ProjectViewSet(request=request)
@@ -61,10 +77,12 @@ def project_list(request):
             max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
             if max_range > count:
                 max_range = count
+        else:
+            projects = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
         message = exc
-        projects = None
+        projects = {}
         item_range = None
         next_page = None
         prev_page = None
@@ -92,25 +110,64 @@ def project_detail(request, project_id):
     message = None
     try:
         if request.method == "POST":
-            if request.POST.get('delete-project') == "true":
+            if request.POST.get('approve_request_id'):
+                if approve_project_join_request(request_id=int(request.POST.get('approve_request_id'))):
+                    # TODO: placeholder for member / owner check or other login
+                    ur_api_request = Request(request=HttpRequest())
+                    ur = UserRequestViewSet(request=ur_api_request)
+                    ur_api_request.user = request.user
+                    ur_api_request.method = 'PUT'
+                    ur_api_request.data.update(
+                        {'is_approved': True,
+                         'response_note': request.POST.get('response_note', None)})
+                    resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
+            elif request.POST.get('deny_request_id'):
+                if deny_project_join_request(request_id=int(request.POST.get('deny_request_id'))):
+                    # TODO: placeholder for member / owner check or other login
+                    ur_api_request = Request(request=HttpRequest())
+                    ur = UserRequestViewSet(request=ur_api_request)
+                    ur_api_request.user = request.user
+                    ur_api_request.method = 'PUT'
+                    ur_api_request.data.update(
+                        {'is_approved': False,
+                         'response_note': request.POST.get('response_note', None)})
+                    resp = ur.update(request=ur_api_request, pk=request.POST.get('deny_request_id'))
+            elif request.POST.get('delete-project') == "true":
                 project = p.destroy(request=request, pk=project_id).data
                 return redirect('project_list')
         project = p.retrieve(request=request, pk=project_id).data
+        # get experiments
         if project.get('membership').get('is_project_creator') or project.get('membership').get('is_project_owner') or \
                 project.get('membership').get('is_project_member') or request.user.is_operator():
             experiments = p.experiments(request=request, pk=project_id).data
         else:
             experiments = None
+        # get join requests
+        if project.get('membership').get('is_project_creator') or project.get('membership').get('is_project_owner'):
+            ur_api_request = Request(request=HttpRequest())
+            ur_api_request.user = request.user
+            ur_api_request.query_params.update({'project_id': project_id})
+            ur_api_request.method = 'GET'
+            ur = UserRequestViewSet(request=ur_api_request)
+            user_requests = ur.list(request=ur_api_request)
+            if user_requests.data:
+                user_requests = dict(user_requests.data)
+            else:
+                user_requests = {}
+        else:
+            user_requests = {}
     except Exception as exc:
         message = exc
         project = None
         experiments = None
+        user_requests = None
     return render(request,
                   'project_detail.html',
                   {
                       'user': request.user,
                       'project': project,
                       'experiments': experiments,
+                      'user_requests': user_requests,
                       'message': message,
                       'debug': DEBUG
                   })

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static users_tags projects_tags %}
+{% load static users_tags projects_tags user_request_tags %}
 
 {% block title %}
     Experiments
@@ -54,20 +54,36 @@
                             <td>{{ experiment.experiment_creator|id_to_username }}</td>
                             <td>{{ experiment.created_date|str_to_datetime }}</td>
                             <td style="text-align: center">
-                                {% if experiment.membership.is_experiment_creator %}
-                                    Creator,
-                                {% endif %}
-                                {% if experiment.membership.is_experiment_member %}
-                                    Member
-                                {% endif %}
                                 {% if not experiment.membership.is_experiment_creator and not experiment.membership.is_experiment_member %}
                                     {% if experiment.is_retired %}
                                         <em class="text-danger">IS RETIRED</em>
+                                    {% elif experiment.experiment_id|is_experiment_project_member:user.id %}
+                                        {% if experiment.experiment_id|pending_join_experiment_request:user.id %}
+                                            <em>Join requested</em>
+                                            <em class="text-success" style="font-size: medium">
+                                                ({{ experiment.experiment_id|pending_join_experiment_request:user.id }})
+                                            </em>
+                                        {% else %}
+                                            <form method="POST" class="post-form">
+                                                {% csrf_token %}
+                                                <button type="submit" class="message-btn btn btn-success"
+                                                        style="align-content: center"
+                                                        name="request_join_experiment"
+                                                        value="{{ experiment.experiment_id }}"
+                                                >
+                                                    <em class="fa fa-fw fa-person-circle-plus"></em> join
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     {% else %}
-                                        <button class="btn btn-success mr-2 disabled" id="experiment_join_request"
-                                                type="submit">
-                                            Request to Join
-                                        </button>
+                                        ---
+                                    {% endif %}
+                                {% else %}
+                                    {% if experiment.membership.is_experiment_creator %}
+                                        Creator,
+                                    {% endif %}
+                                    {% if experiment.membership.is_experiment_member %}
+                                        Member
                                     {% endif %}
                                 {% endif %}
                             </td>

@@ -1,8 +1,8 @@
 from portal.apps.experiments.api.experiment_utils import active_development_to_saving_development, \
     active_emulation_to_saved, active_sandbox_to_saving_sandbox, active_testbed_to_saved, same_to_same, \
-    saving_development_to_saved, saving_development_to_active_development, saving_sandbox_to_saved, \
-    saving_sandbox_to_active_sandbox, saved_to_wait_development_deploy, saved_to_wait_emulation_schedule, \
-    saved_to_wait_sandbox_deploy, saved_to_wait_testbed_schedule, wait_development_deploy_to_active_development, \
+    saved_to_wait_development_deploy, saved_to_wait_emulation_schedule, saved_to_wait_sandbox_deploy, \
+    saved_to_wait_testbed_schedule, saving_development_to_active_development, saving_development_to_saved, \
+    saving_sandbox_to_active_sandbox, saving_sandbox_to_saved, wait_development_deploy_to_active_development, \
     wait_development_deploy_to_saved, wait_emulation_deploy_to_active_emulation, wait_emulation_deploy_to_saved, \
     wait_emulation_schedule_to_saved, wait_emulation_schedule_to_wait_emulation_deploy, \
     wait_sandbox_deploy_to_active_sandbox, wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, \

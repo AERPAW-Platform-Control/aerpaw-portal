@@ -21,6 +21,11 @@
                     <em class="text-primary" style="font-size: medium">
                         (status: {{ experiment.experiment_state }})
                     </em>
+                    {% if user_requests %}
+                        <em class="text-danger" style="font-size: medium">
+                            (join requests: {{ user_requests.count }})
+                        </em>
+                    {% endif %}
                 </h2>
                 {% if experiment.is_deleted %}
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
@@ -394,6 +399,68 @@
                 {% endif %}
                 </tbody>
             </table>
+            {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
+                <h3>
+                    Join Requests
+                    <em class="text-primary" style="font-size: medium">
+                        {% if user_requests %}
+                            ({{ user_requests.count }})
+                        {% else %}
+                            (0)
+                        {% endif %}
+                    </em>
+                </h3>
+                {% if user_requests %}
+                    <span class="text-danger">
+                    Manually add as "Member" if you intend to approve the join reqeust
+                    (The approve/deny buttons are for messaging purposes only)
+                </span>
+                    <table class="table table-striped table-bordered my-4">
+                        <tbody>
+                        <tr>
+                            <th>User</th>
+                            <th>Request Note</th>
+                            <th>Request Date</th>
+                            <th>Response</th>
+                            {% for ur in user_requests.results %}
+                                <tr>
+                                    <td>
+                                        {{ ur.requested_by|id_to_display_name }}<br>
+                                        <em class="small btn-secondary">({{ ur.requested_by|id_to_username }})</em>
+                                    </td>
+                                    <td>
+                                        {{ ur.request_note }}
+                                    </td>
+                                    <td>
+                                        {{ ur.requested_date|str_to_datetime }}
+                                    </td>
+                                    <td style="width: 40%">
+                                        <div>
+                                            <form action="#" method="post">
+                                                {% csrf_token %}
+                                                <input type="text" name="response_note" size="30"
+                                                       placeholder="optional...">
+                                                <button type="submit" class="message-btn btn btn-danger"
+                                                        style="float: right; margin-left: 10px; font-size: small; padding: 0"
+                                                        name="deny_request_id" value="{{ ur.request_id }}"
+                                                >
+                                                    <em class="fa fa-fw fa-xmark-circle"></em> deny
+                                                </button>
+                                                <button type="submit" class="message-btn btn btn-success"
+                                                        style="float: right; margin-left: 10px; font-size: small; padding: 0"
+                                                        name="approve_request_id" value="{{ ur.request_id }}"
+                                                >
+                                                    <em class="fa fa-fw fa-check-circle"></em> approve
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            {% endif %}
             <table style="width: 100%">
                 <tbody>
                 <tr style="font-size: small">
@@ -424,6 +491,7 @@
             <pre><strong>experiment</strong>:<br>{{ experiment|pprint }}</pre>
             <pre><strong>resources</strong>:<br>{{ resources|pprint }}</pre>
             <pre><strong>session</strong>:<br>{{ session|pprint }}</pre>
+            <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
             <br>
         {% endif %}
     {% else %}

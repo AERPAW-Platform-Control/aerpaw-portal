@@ -7,28 +7,6 @@ from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 from portal.apps.profiles.models import AerpawUserProfile
 
 
-# from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-
-
-#
-#
-# def get_tokens_for_user(user) -> None:
-#     profile = AerpawUserProfile.objects.get(pk=user.profile_id)
-#     refresh = RefreshToken.for_user(user)
-#     profile.refresh_token = str(refresh)
-#     profile.access_token = str(refresh.access_token)
-#     profile.modified_by = user.email
-#     profile.save()
-#
-#
-# def refresh_access_token_for_user(user) -> None:
-#     profile = AerpawUserProfile.objects.get(pk=user.profile_id)
-#     access = AccessToken.for_user(user)
-#     profile.access_token = str(access)
-#     profile.save()
-#     print(access)
-
-
 def generate_username(email):
     # Using Python 3 and Django 1.11+, usernames can contain alphanumeric
     # (ascii and unicode), _, @, +, . and - characters. So we normalize

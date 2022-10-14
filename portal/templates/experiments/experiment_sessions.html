@@ -93,14 +93,16 @@
                                 <em class="fa fa-fw fa-angles-left"></em> Page {{ prev_page }}
                             </a>
                         {% else %}
-                            <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ prev_page }}" class="unlink">
+                            <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ prev_page }}"
+                               class="unlink">
                                 <em class="fa fa-fw fa-angles-left"></em> Page {{ prev_page }}
                             </a>
                         {% endif %}
                     </button>
                 {% else %}
                     <button class="btn btn-secondary mr-2 disabled">
-                        <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ prev_page }}" class="unlink">
+                        <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ prev_page }}"
+                           class="unlink">
                             <em class="fa fa-fw fa-angles-left"></em> n/a
                         </a>
                     </button>
@@ -115,7 +117,8 @@
                                     Page {{ next_page }} <em class="fa fa-fw fa-angles-right"></em>
                                 </a>
                             {% else %}
-                                <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ next_page }}" class="unlink">
+                                <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ next_page }}"
+                                   class="unlink">
                                     Page {{ next_page }} <em class="fa fa-fw fa-angles-right"></em>
                                 </a>
                             {% endif %}
@@ -123,7 +126,8 @@
                     </form>
                 {% else %}
                     <button class="btn btn-secondary mr-2 disabled">
-                        <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ next_page }}" class="unlink">
+                        <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}?page={{ next_page }}"
+                           class="unlink">
                             n/a <em class="fa fa-fw fa-angles-right"></em>
                         </a>
                     </button>

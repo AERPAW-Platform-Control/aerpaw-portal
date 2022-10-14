@@ -27,6 +27,7 @@ from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceView
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
 from portal.apps.projects.api.viewsets import ProjectViewSet, UserProjectViewSet
 from portal.apps.resources.api.viewsets import ResourceViewSet
+from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.users.api.viewsets import UserViewSet
 
 # Routers provide an easy way of automatically determining the URL conf.
@@ -39,6 +40,7 @@ router.register(r'experiment-files', ExperimentFileViewSet, basename='experiment
 router.register(r'experiments', ExperimentViewSet, basename='experiments')
 router.register(r'p-canonical-experiment-number', CanonicalNumberViewSet, basename='canonical-experiment-number')
 router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'requests', UserRequestViewSet, basename='requests')
 router.register(r'resources', ResourceViewSet, basename='resources')
 router.register(r'sessions', ExperimentSessionViewSet, basename='sessions')
 router.register(r'user-experiment', UserExperimentViewSet, basename='user-experiment')
@@ -63,4 +65,5 @@ urlpatterns = [
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app
     path('resources/', include('portal.apps.resources.urls')),  # resources app
+    path('requests/', include('portal.apps.user_requests.urls')),  # user_requests app
 ]
