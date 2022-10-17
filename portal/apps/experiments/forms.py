@@ -134,6 +134,12 @@ class ExperimentResourceTargetModifyForm(forms.ModelForm):
         self.fields['node_vehicle'].choices = CanonicalExperimentResource.NodeVehicle.choices
         self.fields['node_vehicle'].selected = cer.node_vehicle
 
+    node_display_name = forms.CharField(
+        widget=forms.TextInput(attrs={'size': 60}),
+        required=False,
+        label='Name',
+    )
+
     node_uhd = forms.ChoiceField(
         choices=(),
         required=False,
@@ -148,7 +154,7 @@ class ExperimentResourceTargetModifyForm(forms.ModelForm):
 
     class Meta:
         model = CanonicalExperimentResource
-        fields = ['node_uhd', 'node_vehicle']
+        fields = ['node_display_name', 'node_uhd', 'node_vehicle']
 
 
 class ExperimentFilesForm(forms.ModelForm):

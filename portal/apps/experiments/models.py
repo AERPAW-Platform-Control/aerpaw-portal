@@ -191,6 +191,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     - experiment_node_number
     - id (from Basemodel)
     - modified (from BaseTimestampModel)
+    - node_display_name
     - node_type
     - node_uhd
     - node_vehicle
@@ -218,6 +219,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
         on_delete=models.PROTECT
     )
     experiment_node_number = models.IntegerField(default=1)
+    node_display_name = models.CharField(max_length=255, blank=True, null=True)
     node_type = models.CharField(
         max_length=255,
         choices=NodeType.choices,

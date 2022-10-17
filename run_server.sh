@@ -3,15 +3,19 @@
 PARAMS=""
 while (("$#")); do
     case "$1" in
+    -m | --make-migrations)
+        MAKE_MIGRATIONS=1
+        shift
+        ;;
     -l | --load-fixtures)
         LOAD_FIXTURES=1
         shift
         ;;
-    -m | --mode)
+    -r | --run-mode)
         if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
-            MODE=$2
+            RUN_MODE=$2
             shift 2
-            case "$MODE" in
+            case "$RUN_MODE" in
                 local-dev | local-ssl | docker)
                     ;;
                 *)
@@ -37,9 +41,9 @@ done
 # set positional arguments in their proper place
 eval set -- "$PARAMS"
 
-# load fixtures
-if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
-    echo "### LOAD_FIXTURES = True ###"
+# make app migrations
+if [[ "${MAKE_MIGRATIONS}" -eq 1 ]]; then
+    echo "### MAKE_MIGRATIONS = True ###"
     APPS_LIST=(
         "mixins"
         "users"
@@ -52,7 +56,14 @@ if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
         "credentials"
         "user_requests"
     )
+else
+    echo "### MAKE_MIGRATIONS = False ###"
+    APPS_LIST=()
+fi
 
+# load fixtures
+if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
+    echo "### LOAD_FIXTURES = True ###"
     FIXTURES_LIST=(
         "aerpaw_roles"
         "resources"
@@ -68,7 +79,6 @@ if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
     )
 else
     echo "### LOAD_FIXTURES = False ###"
-    APPS_LIST=()
     FIXTURES_LIST=()
 fi
 
@@ -89,21 +99,21 @@ done
 python manage.py collectstatic --noinput
 
 # run mode
-case "${MODE}" in
+case "${RUN_MODE}" in
     local-dev)
         echo "local-dev"
         python manage.py runserver 0.0.0.0:8000
         ;;
     local-ssl)
         echo "local-ssl"
-        uwsgi --uid ${UWSGI_UID:-1000} --gid ${UWSGI_GID:-1000} --virtualenv ./venv --ini aerpaw-portal.ini
+        uwsgi --uid "${UWSGI_UID:-1000}" --gid "${UWSGI_GID:-1000}" --virtualenv ./venv --ini aerpaw-portal.ini
         ;;
     docker)
         echo "docker"
-        uwsgi --uid ${UWSGI_UID:-1000} --gid ${UWSGI_GID:-1000} --virtualenv ./.venv --ini aerpaw-portal.ini
+        uwsgi --uid "${UWSGI_UID:-1000}" --gid "${UWSGI_GID:-1000}" --virtualenv ./.venv --ini aerpaw-portal.ini
         ;;
     *)
-        echo "ModeRequired: -m | --mode <local-dev | local-ssl | docker>"
+        echo "ModeRequired: -r | --run-mode <local-dev | local-ssl | docker>"
         exit 1
         ;;
 esac

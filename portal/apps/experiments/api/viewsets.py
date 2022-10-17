@@ -411,6 +411,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                     canonical_experiment_resource = CanonicalExperimentResource()
                                     canonical_experiment_resource.experiment = experiment
                                     canonical_experiment_resource.resource = resource
+                                    canonical_experiment_resource.node_display_name = resource.name
                                     canonical_experiment_resource.node_uhd = CanonicalExperimentResource.NodeUhd.ONE_THREE_THREE
                                     if resource.resource_type == AerpawResource.ResourceType.AFRN:
                                         canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.AFRN
@@ -1058,17 +1059,17 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             queryset = CanonicalExperimentResource.objects.filter(
                 experiment__id=experiment_id,
                 resource__id=resource_id
-            ).order_by('created').distinct()
+            ).order_by('node_display_name').distinct()
         elif experiment_id:
             queryset = CanonicalExperimentResource.objects.filter(
                 experiment__id=experiment_id
-            ).order_by('created').distinct()
+            ).order_by('node_display_name').distinct()
         elif resource_id:
             queryset = CanonicalExperimentResource.objects.filter(
                 resource__id=resource_id
-            ).order_by('created').distinct()
+            ).order_by('node_display_name').distinct()
         else:
-            queryset = CanonicalExperimentResource.objects.filter().order_by('-created').distinct()
+            queryset = CanonicalExperimentResource.objects.filter().order_by('node_display_name').distinct()
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -1104,15 +1105,20 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             response_data = []
             for u in serializer.data:
                 du = dict(u)
+                if du.get('node_type') == CanonicalExperimentResource.NodeType.APRN.value:
+                    resource_id = None
+                else:
+                    resource_id = du.get('resource_id')
                 response_data.append(
                     {
                         'canonical_experiment_resource_id': du.get('canonical_experiment_resource_id'),
                         'experiment_id': du.get('experiment_id'),
                         'experiment_node_number': du.get('experiment_node_number'),
+                        'node_display_name': du.get('node_display_name'),
                         'node_type': du.get('node_type'),
                         'node_uhd': du.get('node_uhd'),
                         'node_vehicle': du.get('node_vehicle'),
-                        'resource_id': du.get('resource_id')
+                        'resource_id': resource_id
                     }
                 )
             if page:
@@ -1170,6 +1176,7 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                 'canonical_experiment_resource_id': du.get('canonical_experiment_resource_id'),
                 'experiment_id': du.get('experiment_id'),
                 'experiment_node_number': du.get('experiment_node_number'),
+                'node_display_name': du.get('node_display_name'),
                 'node_type': du.get('node_type'),
                 'node_uhd': du.get('node_uhd'),
                 'node_vehicle': du.get('node_vehicle'),
@@ -1186,6 +1193,7 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
         PUT: update an existing canonical-experiment-resource
         - experiment_id (fk)      - int
         - experiment_node_number  - int
+        - node_display_name       - string
         - node_type               - string
         - node_uhd                - string
         - node_vehicle            - string
@@ -1201,6 +1209,10 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                     detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(
                         kwargs.get('pk')))
             modified = False
+            # check node_display_name
+            if request.data.get('node_display_name', None):
+                cer.node_display_name = request.data.get('node_display_name')
+                modified = True
             # check node_uhd
             if request.data.get('node_uhd', None):
                 if request.data.get('node_uhd') not in [c[0] for c in CanonicalExperimentResource.NodeUhd.choices]:

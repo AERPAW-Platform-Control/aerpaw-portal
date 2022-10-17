@@ -72,7 +72,7 @@ class AerpawResource(BaseModel, AuditModelMixin, models.Model):
         verbose_name = 'AERPAW Resource'
 
     def __str__(self):
-        return self.name
+        return self.name + ' (' + self.resource_type + ')'
 
     def is_canonical(self):
         return self.resource_class == self.ResourceClass.CANONICAL

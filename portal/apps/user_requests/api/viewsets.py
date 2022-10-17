@@ -134,11 +134,11 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         detail="PermissionDenied: unable to GET /requests list?role_user_id=...")
             if user_id:
                 # user_id must exist as valid user
-                user = get_object_or_404(AerpawUser, pk=role_user_id)
+                user = get_object_or_404(AerpawUser, pk=user_id)
                 # user must be site admin or be the user themselves
                 if not request.user.is_site_admin() and user.id != request.user.id:
                     raise PermissionDenied(
-                        detail="PermissionDenied: unable to GET /requests list?role_user_id=...")
+                        detail="PermissionDenied: unable to GET /requests list?user_id=...")
             # fetch response
             page = self.paginate_queryset(self.get_queryset())
             if page:

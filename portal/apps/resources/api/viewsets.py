@@ -254,26 +254,32 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
         Permission:
         - user is_operator
         """
+        hostname = request.data.get('franklin')
+        if isinstance(hostname, str):
+            print('String')
+            print(len(hostname))
+        else:
+            print('Not string')
         resource = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         if not resource.is_deleted and request.user.is_operator():
             modified = False
             # check for description
-            if request.data.get('description', None):
+            if isinstance(request.data.get('description'), str):
                 if len(request.data.get('description')) < RESOURCE_MIN_DESC_LEN:
                     raise ValidationError(
                         detail="description:  must be at least {0} chars long".format(RESOURCE_MIN_DESC_LEN))
                 resource.description = request.data.get('description')
                 modified = True
             # check for hostname
-            if request.data.get('hostname', None):
-                if len(request.data.get('hostname')) < RESOURCE_MIN_HOSTNAME_LEN:
+            if isinstance(request.data.get('hostname'), str):
+                if 0 < len(request.data.get('hostname')) < RESOURCE_MIN_HOSTNAME_LEN:
                     raise ValidationError(
                         detail="hostname:  must be at least {0} chars long".format(RESOURCE_MIN_HOSTNAME_LEN))
-                resource.hostname = request.data.get('hostname')
+                resource.hostname = request.data.get('hostname', None)
                 modified = True
             # check for ip_address
-            if request.data.get('ip_address', None):
-                resource.ip_address = request.data.get('ip_address')
+            if isinstance(request.data.get('ip_address'), str):
+                resource.ip_address = request.data.get('ip_address', None)
                 modified = True
             # check for is_active
             if str(request.data.get('is_active')).casefold() in ['true', 'false']:
@@ -281,22 +287,22 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 resource.is_active = is_active
                 modified = True
             # check for location
-            if request.data.get('location', None):
-                if len(request.data.get('location')) < RESOURCE_MIN_LOCATION_LEN:
+            if isinstance(request.data.get('location'), str):
+                if 0 < len(request.data.get('location')) < RESOURCE_MIN_LOCATION_LEN:
                     raise ValidationError(
                         detail="location:  must be at least {0} chars long".format(RESOURCE_MIN_LOCATION_LEN))
-                resource.location = request.data.get('location')
+                resource.location = request.data.get('location', None)
                 modified = True
             # check for name
-            if request.data.get('name', None):
+            if isinstance(request.data.get('name'), str):
                 if len(request.data.get('name')) < RESOURCE_MIN_NAME_LEN:
                     raise ValidationError(
                         detail="name:  must be at least {0} chars long".format(RESOURCE_MIN_NAME_LEN))
                 resource.name = request.data.get('name')
                 modified = True
             # check for ops_notes
-            if request.data.get('ops_notes', None):
-                resource.ops_notes = request.data.get('ops_notes')
+            if isinstance(request.data.get('ops_notes'), str):
+                resource.ops_notes = request.data.get('ops_notes', None)
                 modified = True
             # validate resource_class
             if request.data.get('resource_class', None):

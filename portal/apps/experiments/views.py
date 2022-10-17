@@ -34,7 +34,7 @@ def experiment_list(request):
                 e = ExperimentViewSet(request=request)
                 exp = e.retrieve(request=request, pk=request.POST.get('request_join_experiment')).data
                 ur_api_request = Request(request=HttpRequest())
-                ur = UserRequestViewSet(reqquest=ur_api_request)
+                ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
                 ur_api_request.method = 'POST'
                 ur_api_request.data.update(
@@ -166,6 +166,7 @@ def experiment_detail(request, experiment_id):
                 res = r.list(request=request)
                 if res.data:
                     resources.append(res.data.get('results')[0])
+            resources.sort(key=lambda x: x.get('node_display_name'))
         except Exception as exc:
             resources = []
             message = exc
@@ -444,6 +445,8 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
         if form.is_valid():
             try:
                 api_request = Request(request=HttpRequest())
+                if request.POST.get('node_display_name'):
+                    api_request.data.update({'node_display_name': request.POST.get('node_display_name')})
                 if request.POST.get('node_uhd'):
                     api_request.data.update({'node_uhd': request.POST.get('node_uhd')})
                 if request.POST.get('node_vehicle'):
@@ -458,6 +461,7 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
     else:
         initial_dict = {
             'name': cer.resource.name,
+            'node_display_name': cer.node_display_name,
             'node_type': cer.node_type,
             'node_uhd': cer.node_uhd,
             'node_vehicle': cer.node_vehicle
@@ -560,6 +564,8 @@ def experiment_sessions(request, experiment_id):
             max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
             if max_range > count:
                 max_range = count
+        else:
+            sessions = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
         message = exc

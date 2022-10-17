@@ -114,5 +114,5 @@ class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CanonicalExperimentResource
-        fields = ['canonical_experiment_resource_id', 'experiment_id', 'experiment_node_number', 'node_type',
-                  'node_uhd', 'node_vehicle', 'resource_id']
+        fields = ['canonical_experiment_resource_id', 'experiment_id', 'experiment_node_number', 'node_display_name',
+                  'node_type', 'node_uhd', 'node_vehicle', 'resource_id']

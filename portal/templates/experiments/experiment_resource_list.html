@@ -23,7 +23,9 @@
                            class="unlink">Update</a>
                     </button>
                     <button class="btn btn-secondary mr-2" value="cancel">
-                        <a href="{% url 'experiment_detail' experiment_id=experiment_id %}" class="unlink">Back</a>
+                        <a href="{% url 'experiment_detail' experiment_id=experiment_id %}" class="unlink">
+                            Back to Experiment
+                        </a>
                     </button>
                 </div>
             </div>
@@ -35,12 +37,16 @@
                     <th>Node Type</th>
                     <th>Node UHD</th>
                     <th>Node Vehicle</th>
-
                     {% for resource in resources.results %}
                         <tr>
                             <td>
-                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
-                                    {{ resource.resource_id|id_to_resource_name }}</a>
+                                {% if resource.resource_id %}
+                                    <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                        {{ resource.node_display_name }}
+                                    </a>
+                                {% else %}
+                                    {{ resource.node_display_name }}
+                                {% endif %}
                             </td>
                             <td>{{ resource.experiment_node_number }}</td>
                             <td>{{ resource.node_type }}</td>

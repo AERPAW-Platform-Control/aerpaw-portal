@@ -32,7 +32,6 @@ def profile(request):
                 u_api_request.data.update(
                     {'display_name': request.POST.get('display_name')})
                 resp = u.update(request=u_api_request, pk=user.id)
-                print(resp)
             elif request.POST.get('generate_tokens'):
                 u_api_request = Request(request=HttpRequest())
                 u = UserViewSet(request=u_api_request)
@@ -40,7 +39,6 @@ def profile(request):
                 u_api_request.method = 'GET'
                 u_api_request.query_params.update({'generate': 'true'})
                 resp = u.tokens(request=u_api_request, pk=user.id)
-                print(resp)
             elif request.POST.get('refresh_access_token'):
                 u_api_request = Request(request=HttpRequest())
                 u = UserViewSet(request=u_api_request)
@@ -48,7 +46,6 @@ def profile(request):
                 u_api_request.method = 'GET'
                 u_api_request.query_params.update({'refresh': 'true'})
                 resp = u.tokens(request=u_api_request, pk=user.id)
-                print(resp)
             elif request.POST.get('download_credential'):
                 try:
                     response = download_db_credential_public_key(
@@ -71,7 +68,7 @@ def profile(request):
                     message = exc
             elif request.POST.get('request_role_experimenter'):
                 ur_api_request = Request(request=HttpRequest())
-                ur = UserRequestViewSet(reqquest=ur_api_request)
+                ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
                 ur_api_request.method = 'POST'
                 ur_api_request.data.update(
@@ -79,10 +76,9 @@ def profile(request):
                      'request_type_id': request.user.id,
                      'request_note': '[{0}] - role request'.format(AerpawRolesEnum.EXPERIMENTER.value)})
                 resp = ur.create(request=ur_api_request)
-                print(resp)
             elif request.POST.get('request_role_pi'):
                 ur_api_request = Request(request=HttpRequest())
-                ur = UserRequestViewSet(reqquest=ur_api_request)
+                ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
                 ur_api_request.method = 'POST'
                 ur_api_request.data.update(
@@ -90,13 +86,22 @@ def profile(request):
                      'request_type_id': request.user.id,
                      'request_note': '[{0}] - role request'.format(AerpawRolesEnum.PI.value)})
                 resp = ur.create(request=ur_api_request)
-                print(resp)
         except Exception as exc:
             message = exc
+    # user data
     api_request = Request(request=HttpRequest())
-    u = UserViewSet(request=api_request)
     api_request.user = request.user
     api_request.method = 'GET'
+    u = UserViewSet(request=api_request)
+    # requests data
+    ur_api_request = Request(request=HttpRequest())
+    ur_api_request.user = request.user
+    ur_api_request.method = 'GET'
+    ur_api_request.query_params.update(
+        {'user_id': user.id})
+    ur = UserRequestViewSet(request=ur_api_request)
+
+    user_requests = dict(ur.list(request=ur_api_request).data)
     user_credentials = u.credentials(request=request, pk=request.user.id).data
     user_data = u.retrieve(request=request, pk=request.user.id).data
     user_tokens = u.tokens(request=api_request, pk=request.user.id).data
@@ -107,6 +112,7 @@ def profile(request):
                       'user_data': user_data,
                       'user_tokens': user_tokens,
                       'user_credentials': user_credentials,
+                      'user_requests': user_requests,
                       'message': message,
                       'debug': DEBUG
                   })

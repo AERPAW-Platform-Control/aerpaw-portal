@@ -29,7 +29,7 @@ def project_list(request):
                 p = ProjectViewSet(request=request)
                 proj = p.retrieve(request=request, pk=request.POST.get('request_join_project')).data
                 ur_api_request = Request(request=HttpRequest())
-                ur = UserRequestViewSet(reqquest=ur_api_request)
+                ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
                 ur_api_request.method = 'POST'
                 ur_api_request.data.update(

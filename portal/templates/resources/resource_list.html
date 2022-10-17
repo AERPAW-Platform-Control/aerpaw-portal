@@ -32,11 +32,11 @@
                 <tbody>
                 <tr>
                     <th>Name</th>
+                    <th>Type</th>
                     <th>Description</th>
                     <th>Location</th>
                     <th>Class</th>
                     <th>Mode</th>
-                    <th>Type</th>
                     <th>Active</th>
 
                     {% for resource in resources.results %}
@@ -46,11 +46,11 @@
                                     {{ resource.name }}
                                 </a>
                             </td>
+                            <td>{{ resource.resource_type }}</td>
                             <td>{{ resource.description|truncatechars:40 }}</td>
                             <td>{{ resource.location }}</td>
                             <td>{{ resource.resource_class }}</td>
                             <td>{{ resource.resource_mode }}</td>
-                            <td>{{ resource.resource_type }}</td>
                             <td>{{ resource.is_active }}</td>
                         </tr>
                     {% endfor %}
