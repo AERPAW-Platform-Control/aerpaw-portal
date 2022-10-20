@@ -74,9 +74,11 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
         #     experiment.id)
     else:
         # PRODUCTION:
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
+        if exit_development:
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_saveexit_ve_exp.py {0} save-and-exit".format(experiment.id)
+        else:
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_saveexit_ve_exp.py {0} save".format(experiment.id)
+
 
     ssh_thread = threading.Thread(target=saving_development, args=(request, experiment, command, exit_development))
     ssh_thread.start()
@@ -894,24 +896,34 @@ def same_to_same(request, experiment: AerpawExperiment):
 
 
 def saving_development(request, experiment: AerpawExperiment, command: str, exit_development: bool):
-    # TODO: placeholder for save_development
-    # ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    # response, exit_code = ssh_call.send_command(command, verbose=True)
-    response = '{"msg": "SaveDevelopment: saving development data", "urn": "/test"}'
+    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    response, exit_code = ssh_call.send_command(command, verbose=True)
     exit_code = 0
     if MOCK_OPS:
-        # add sleep when using mock to simulate remote procession delay
+        # add sleep when using mock to simulate remote processing delay
         time.sleep(5)
         print('response: ' + response)
         print('exit code: ' + str(exit_code))
 
     # next state transition
-    if exit_development:
-        # saving_development --> saved
-        saving_development_to_saved(request=request, experiment=experiment)
+    if exit_code == 0:
+        if exit_development:
+            # apcf_saveexit_ve_exp.py save-and-exit - success / failure
+            # - saving_development --> saved
+            saving_development_to_saved(request=request, experiment=experiment)
+        else:
+            # apcf_saveexit_ve_exp.py save - success
+            # - saving_development --> active_development
+            saving_development_to_active_development(request=request, experiment=experiment)
     else:
-        # saving_development --> active_development
-        saving_development_to_active_development(request=request, experiment=experiment)
+        # - saving_development --> saved
+        saving_development_to_saved(request=request, experiment=experiment)
+        if exit_development:
+            raise NotFound(
+                detail="SaveError: something occurred during the save for /experiments/{0}/state".format(experiment.id))
+        else:
+            raise NotFound(
+                detail="SaveError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
 
 
 def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_sandbox: bool):
@@ -921,7 +933,7 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
     response = '{"msg": "SaveSandbox: saving sandbox data", "urn": "/test"}'
     exit_code = 0
     if MOCK_OPS:
-        # add sleep when using mock to simulate remote procession delay
+        # add sleep when using mock to simulate remote processing delay
         time.sleep(5)
         print('response: ' + response)
         print('exit code: ' + str(exit_code))
@@ -939,7 +951,7 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str)
     ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
     response, exit_code = ssh_call.send_command(command, verbose=True)
     if MOCK_OPS:
-        # add sleep when using mock to simulate remote procession delay
+        # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + response)
         print('exit code: ' + str(exit_code))
@@ -964,7 +976,7 @@ def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str):
     response = '{"msg": "WaitSandboxDeploy: deploying sandbox", "urn": "/test"}'
     exit_code = 0
     if MOCK_OPS:
-        # add sleep when using mock to simulate remote procession delay
+        # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + response)
         print('exit code: ' + str(exit_code))
