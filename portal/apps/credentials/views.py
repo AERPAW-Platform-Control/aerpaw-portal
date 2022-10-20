@@ -96,15 +96,3 @@ def credential_add(request):
                       'form': form,
                       'message': message
                   })
-
-
-def credential_detail():
-    pass
-
-
-def credential_edit():
-    pass
-
-
-def credential_list():
-    pass

@@ -21,27 +21,27 @@
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                 {% endif %}
                 {% if user.is_operator and not resource.is_deleted %}
-                    <div>
+                    <div class="d-flex flex-row align-items-right">
+                        <button class="btn btn-success mr-2" style="margin-left: 10px">
+                            <a href="{% url 'resource_edit' resource_id=resource.resource_id %}"
+                               class="unlink">Edit</a>
+                        </button>
                         <form action="{% url 'resource_detail' resource_id=resource.resource_id %}" method="POST">
                             {% csrf_token %}
-
-                            <button class="btn btn-success mr-2">
-                                <a href="{% url 'resource_edit' resource_id=resource.resource_id %}"
-                                   class="unlink">Edit</a>
-                            </button>
-                            <input type="hidden" name="delete-resource" value="true">
-                            <button class="btn btn-danger mr-2" type="submit">
-                                <a onclick="return confirm('Are you sure you want to delete this resource?')">Delete</a>
-                            </button>
-                            <button class="btn btn-secondary mr-2">
-                                <a href="{% url 'resource_list' %}"
-                                   class="unlink">Back to List</a>
+                            <button class="btn btn-danger mr-2" type="submit"
+                                    name="delete-resource" value="true" style="margin-left: 10px">
+                                <a onclick="return confirm('Are you sure you want to delete this resource?')">
+                                    Delete
+                                </a>
                             </button>
                         </form>
+                        <button class="btn btn-secondary mr-2" style="margin-left: 10px">
+                            <a href="{% url 'resource_list' %}"
+                               class="unlink">Back to List</a>
+                        </button>
                     </div>
                 {% endif %}
             </div>
-
             <table class="table table-striped table-bordered my-4">
                 <tbody>
                 <tr>
@@ -52,22 +52,26 @@
                     <td style="width: 25%">Description</td>
                     <td style="width: 75%"><strong>{{ resource.description }}</strong></td>
                 </tr>
-                <tr>
-                    <td style="width: 25%">Hostname</td>
-                    <td style="width: 75%"><strong>{{ resource.hostname }}</strong></td>
-                </tr>
-                <tr>
-                    <td style="width: 25%">IP Address</td>
-                    <td style="width: 75%"><strong>{{ resource.ip_address }}</strong></td>
-                </tr>
+                {% if user.is_operator or user.is_site_admin %}
+                    <tr>
+                        <td style="width: 25%">Hostname</td>
+                        <td style="width: 75%"><strong>{{ resource.hostname }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%">IP Address</td>
+                        <td style="width: 75%"><strong>{{ resource.ip_address }}</strong></td>
+                    </tr>
+                {% endif %}
                 <tr>
                     <td style="width: 25%">Location</td>
                     <td style="width: 75%"><strong>{{ resource.location }}</strong></td>
                 </tr>
-                <tr>
-                    <td style="width: 25%">Operator notes</td>
-                    <td style="width: 75%"><strong>{{ resource.ops_notes }}</strong></td>
-                </tr>
+                {% if user.is_operator or user.is_site_admin %}
+                    <tr>
+                        <td style="width: 25%">Operator notes</td>
+                        <td style="width: 75%"><strong>{{ resource.ops_notes }}</strong></td>
+                    </tr>
+                {% endif %}
                 <tr>
                     <td style="width: 25%">Resource class</td>
                     <td style="width: 75%"><strong>{{ resource.resource_class }}</strong></td>
@@ -105,7 +109,8 @@
         </div>
         {% if debug %}
             <hr>
-            <pre>{{ resource|pprint }}</pre>
+            <pre><strong>resource</strong>:<br>{{ resource|pprint }}</pre>
+            <br>
         {% endif %}
     {% else %}
         <p>You are not allowed to view this resource or are not logged in</p>

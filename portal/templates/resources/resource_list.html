@@ -103,7 +103,8 @@
         </div>
         {% if debug %}
             <hr>
-            <pre>{{ resources|pprint }}</pre>
+            <pre><strong>resources</strong>:<br>{{ resources|pprint }}</pre>
+            <br>
         {% endif %}
     {% else %}
         <p>You are not logged in</p>

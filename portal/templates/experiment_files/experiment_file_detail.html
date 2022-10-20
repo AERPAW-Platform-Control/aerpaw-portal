@@ -23,18 +23,22 @@
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                 {% endif %}
                 {% if user.is_operator %}
-                    <div>
+                    <div class="d-flex flex-row align-items-right">
+                        <button class="btn btn-success mr-2" style="margin-left: 10px">
+                            <a href="{% url 'experiment_file_edit' file_id=experiment_file.file_id %}"
+                               class="unlink">Edit</a>
+                        </button>
                         <form action="{% url 'experiment_file_detail' file_id=experiment_file.file_id %}" method="POST">
                             {% csrf_token %}
-                            <button class="btn btn-success mr-2">
-                                <a href="{% url 'experiment_file_edit' file_id=experiment_file.file_id %}"
-                                   class="unlink">Edit</a>
-                            </button>
-                            <input type="hidden" name="delete-file" value="true">
-                            <button class="btn btn-danger mr-2" type="submit">
+                            <button class="btn btn-danger mr-2" type="submit" style="margin-left: 10px"
+                                    name="delete-file" value="true">
                                 <a onclick="return confirm('Are you sure you want to delete this file reference?')">Delete</a>
                             </button>
                         </form>
+                        <button class="btn btn-secondary mr-2" style="margin-left: 10px">
+                            <a href="{% url 'experiment_file_list' %}"
+                               class="unlink">Back to List</a>
+                        </button>
                     </div>
                 {% endif %}
             </div>
@@ -86,7 +90,8 @@
         </div>
         {% if debug %}
             <hr>
-            <pre>{{ experiment_file|pprint }}</pre>
+            <pre><strong>experiment_file</strong>:<br>{{ experiment_file|pprint }}</pre>
+            <br>
         {% endif %}
     {% else %}
         <p>You are not allowed to view this resource or are not logged in</p>

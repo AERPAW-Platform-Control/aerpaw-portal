@@ -211,23 +211,39 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
         if request.user.is_active:
             serializer = ResourceSerializerDetail(resource)
             du = dict(serializer.data)
-            response_data = {
-                'created_date': str(du.get('created_date')) if du.get('created_date') else None,
-                'description': du.get('description'),
-                'hostname': du.get('hostname'),
-                'ip_address': du.get('ip_address'),
-                'is_active': du.get('is_active'),
-                'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
-                'location': du.get('location'),
-                'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
-                'name': du.get('name'),
-                'ops_notes': du.get('ops_notes'),
-                'resource_class': du.get('resource_class'),
-                'resource_creator': AerpawUser.objects.get(username=du.get('resource_creator')).id,
-                'resource_id': du.get('resource_id'),
-                'resource_mode': du.get('resource_mode'),
-                'resource_type': du.get('resource_type')
-            }
+            if request.user.is_operator() or request.user.is_site_admin():
+                response_data = {
+                    'created_date': str(du.get('created_date')) if du.get('created_date') else None,
+                    'description': du.get('description'),
+                    'hostname': du.get('hostname'),
+                    'ip_address': du.get('ip_address'),
+                    'is_active': du.get('is_active'),
+                    'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
+                    'location': du.get('location'),
+                    'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
+                    'name': du.get('name'),
+                    'ops_notes': du.get('ops_notes'),
+                    'resource_class': du.get('resource_class'),
+                    'resource_creator': AerpawUser.objects.get(username=du.get('resource_creator')).id,
+                    'resource_id': du.get('resource_id'),
+                    'resource_mode': du.get('resource_mode'),
+                    'resource_type': du.get('resource_type')
+                }
+            else:
+                response_data = {
+                    'created_date': str(du.get('created_date')) if du.get('created_date') else None,
+                    'description': du.get('description'),
+                    'is_active': du.get('is_active'),
+                    'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
+                    'location': du.get('location'),
+                    'modified_date': str(du.get('modified_date')) if du.get('modified_date') else None,
+                    'name': du.get('name'),
+                    'resource_class': du.get('resource_class'),
+                    'resource_creator': AerpawUser.objects.get(username=du.get('resource_creator')).id,
+                    'resource_id': du.get('resource_id'),
+                    'resource_mode': du.get('resource_mode'),
+                    'resource_type': du.get('resource_type')
+                }
             if resource.is_deleted:
                 response_data['is_deleted'] = du.get('is_deleted')
             return Response(response_data)

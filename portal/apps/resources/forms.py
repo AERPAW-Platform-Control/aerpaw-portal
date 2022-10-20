@@ -29,8 +29,8 @@ class ResourceCreateForm(forms.ModelForm):
     )
 
     location = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 1, 'cols': 20}),
-        required=False,
+        widget=forms.Textarea(attrs={'rows': 6, 'cols': 60}),
+        required=True,
         label='Location',
     )
 
@@ -49,6 +49,7 @@ class ResourceCreateForm(forms.ModelForm):
 
     resource_mode = forms.ChoiceField(
         choices=AerpawResource.ResourceMode.choices,
+        initial=AerpawResource.ResourceMode.TESTBED,
         widget=forms.Select(),
         required=True,
         label='Mode',

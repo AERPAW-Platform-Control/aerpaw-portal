@@ -51,7 +51,7 @@
                             <td>{{ project.is_public }}</td>
                             <td style="text-align: center">
                                 {% if not project.membership.is_project_creator and not project.membership.is_project_owner and not project.membership.is_project_member %}
-                                    {% if project.is_public %}
+                                    {% if project.is_public  and user.is_experimenter %}
                                         {% if project.project_id|pending_join_project_request:user.id %}
                                             <em>Join requested</em>
                                             <em class="text-success" style="font-size: medium">
@@ -134,7 +134,8 @@
         </div>
         {% if debug %}
             <hr>
-            <pre>{{ projects|pprint }}</pre>
+            <pre><strong>projects:</strong><br>{{ projects|pprint }}</pre>
+            <br>
         {% endif %}
     {% else %}
         <p>You are not logged in</p>

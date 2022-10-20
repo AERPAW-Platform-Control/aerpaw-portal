@@ -61,12 +61,22 @@
                                             </em>
                                         {% else %}
                                             <span class="text-danger">No Roles Found</span>
-                                            <button type="submit" class="message-btn btn btn-success"
+                                            <button type="submit" class="message-btn btn btn-secondary"
                                                     style="float: right; margin-left: 10px"
                                                     name="request_role_experimenter" value="{{ user_data.user_id }}"
                                             >
-                                                <em class="fa fa-fw fa-person-circle-plus"></em> request Experimenter
-                                                role
+                                                <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
+                                                    <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                    request Experimenter role
+                                                </a>
+                                            </button>
+                                            <button class="btn btn-primary mr-2"
+                                                    style="float: right; margin-left: 10px">
+                                                <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-web-portal/2-5-acceptable-use-policy-aup"
+                                                   target="_blank" class="unlink">
+                                                    <em class="fa fa-fw fa-book-open-reader"></em> review the AERPAW AUP
+                                                    first
+                                                </a>
                                             </button>
                                         {% endif %}
                                     </td>
@@ -86,11 +96,22 @@
                                                     ({{ user.id|pending_pi_request }})
                                                 </em>
                                             {% else %}
-                                                <button type="submit" class="message-btn btn btn-success"
+                                                <button type="submit" class="message-btn btn btn-secondary"
                                                         style="float: right; margin-left: 10px"
                                                         name="request_role_pi" value="{{ user_data.user_id }}"
                                                 >
-                                                    <em class="fa fa-fw fa-person-circle-plus"></em> request PI role
+                                                    <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
+                                                        <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                        request PI role
+                                                    </a>
+                                                </button>
+                                                <button class="btn btn-primary mr-2"
+                                                        style="float: right; margin-left: 10px">
+                                                    <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-web-portal/2-5-acceptable-use-policy-aup"
+                                                       target="_blank" class="unlink">
+                                                        <em class="fa fa-fw fa-book-open-reader"></em> review the AERPAW
+                                                        AUP first
+                                                    </a>
                                                 </button>
                                             {% endif %}
                                         </td>
@@ -329,6 +350,7 @@
             <pre><strong>tokens:</strong><br>{{ user_tokens|pprint }}</pre>
             <pre><strong>credentials:</strong><br>{{ user_credentials|pprint }}</pre>
             <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
+            <br>
         {% endif %}
     {% else %}
         <p>You are not logged in</p>

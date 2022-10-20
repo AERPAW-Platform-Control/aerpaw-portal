@@ -31,27 +31,27 @@
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                 {% endif %}
                 {% if not experiment.is_deleted or experiment.is_retired %}
-                    <div>
+                    <div class="d-flex flex-row align-items-right">
+                        {% if not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
+                            <button class="btn btn-success mr-2" style="margin-left: 10px">
+                                <a href="{% url 'experiment_edit' experiment_id=experiment.experiment_id %}"
+                                   class="unlink">Edit</a>
+                            </button>
+                        {% endif %}
                         <form action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
                               method="POST">
                             {% csrf_token %}
-                            {% if not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
-                                <button class="btn btn-success mr-2">
-                                    <a href="{% url 'experiment_edit' experiment_id=experiment.experiment_id %}"
-                                       class="unlink">Edit</a>
-                                </button>
-                            {% endif %}
                             {% if experiment.membership.is_experiment_creator and not experiment.is_retired %}
-                                <input type="hidden" name="retire_experiment" value="true">
-                                <button class="btn btn-danger mr-2" type="submit">
+                                <button class="btn btn-danger mr-2" type="submit" style="margin-left: 10px"
+                                        name="retire_experiment" value="true">
                                     <a onclick="return confirm('Are you sure you want to retire this experiment?')">Retire</a>
                                 </button>
                             {% endif %}
-                            <button class="btn btn-secondary mr-2">
-                                <a href="{% url 'project_detail' project_id=experiment.project_id %}"
-                                   class="unlink">Back to Project</a>
-                            </button>
                         </form>
+                        <button class="btn btn-secondary mr-2" style="margin-left: 10px">
+                            <a href="{% url 'project_detail' project_id=experiment.project_id %}"
+                               class="unlink">Back to Project</a>
+                        </button>
                     </div>
                 {% endif %}
             </div>
@@ -105,7 +105,8 @@
                 </div>
                 {% if not experiment.resources_locked %}
                     <div class="text-danger" style="font-size: large">
-                    Targeted resource modification will be locked following the first attempt to "Initiate Development"
+                        Targeted resource modification will be locked following the first attempt to "Initiate
+                        Development"
                     </div>
                 {% endif %}
                 <table class="table table-striped table-bordered my-4">

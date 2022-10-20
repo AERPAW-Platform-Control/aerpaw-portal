@@ -48,7 +48,7 @@ class AerpawResource(BaseModel, AuditModelMixin, models.Model):
     ip_address = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
-    location = models.CharField(max_length=255, blank=True, null=True)
+    location = models.TextField(blank=True, null=True)
     name = models.CharField(max_length=255, blank=False, null=False)
     ops_notes = models.TextField(blank=True, null=True)
     resource_class = models.CharField(

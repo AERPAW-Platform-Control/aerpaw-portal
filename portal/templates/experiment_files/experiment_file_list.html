@@ -99,7 +99,8 @@
         </div>
         {% if debug %}
             <hr>
-            <pre>{{ experiment_files|pprint }}</pre>
+            <pre><strong>experiment_files</strong>:<br>{{ experiment_files|pprint }}</pre>
+            <br>
         {% endif %}
     {% else %}
         <p>You are not logged in</p>
