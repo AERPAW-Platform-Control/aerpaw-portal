@@ -5,6 +5,7 @@ from django.contrib.auth.models import update_last_login
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from portal.apps.profiles.models import AerpawUserProfile
+from portal.apps.user_messages.user_messages import generate_new_user_welcome_message
 
 
 def generate_username(email):
@@ -30,6 +31,10 @@ class MyOIDCAB(OIDCAuthenticationBackend):
         )
         user.uuid = str(uuid4())
         user.save()
+        try:
+            generate_new_user_welcome_message(request=self.request, user=user)
+        except Exception as exc:
+            print(exc)
 
         return user
 

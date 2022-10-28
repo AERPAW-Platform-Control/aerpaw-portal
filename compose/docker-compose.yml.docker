@@ -59,6 +59,7 @@ services:
       - UWSGI_UID=${UWSGI_UID}
       - UWSGI_GID=${UWSGI_GID}
       - LOAD_FIXTURES=${LOAD_FIXTURES:-0}
+      - MAKE_MIGRATIONS=${MAKE_MIGRATIONS:-0}
     restart: unless-stopped
 
 networks:

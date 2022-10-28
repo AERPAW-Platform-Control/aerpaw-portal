@@ -2,9 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.request import Request
+from rest_framework.request import QueryDict, Request
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
+from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.users.api.viewsets import UserViewSet
@@ -93,18 +94,22 @@ def profile(request):
     api_request.user = request.user
     api_request.method = 'GET'
     u = UserViewSet(request=api_request)
-    # requests data
-    ur_api_request = Request(request=HttpRequest())
-    ur_api_request.user = request.user
-    ur_api_request.method = 'GET'
-    ur_api_request.query_params.update(
-        {'user_id': user.id})
-    ur = UserRequestViewSet(request=ur_api_request)
-
-    user_requests = dict(ur.list(request=ur_api_request).data)
     user_credentials = u.credentials(request=request, pk=request.user.id).data
     user_data = u.retrieve(request=request, pk=request.user.id).data
     user_tokens = u.tokens(request=api_request, pk=request.user.id).data
+
+    # modify query_params to get requests and messages data
+    request.query_params = QueryDict('', mutable=True)
+    request.query_params.update({'user_id': user.id, 'show_read': False, 'show_deleted': False})
+
+    # user requests data
+    ur = UserRequestViewSet(request=request)
+    user_requests = dict(ur.list(request=request).data)
+
+    # user messages data
+    um = UserMessageViewSet(request=request)
+    user_messages = dict(um.list(request=request).data)
+
     return render(request,
                   'profile.html',
                   {
@@ -112,7 +117,21 @@ def profile(request):
                       'user_data': user_data,
                       'user_tokens': user_tokens,
                       'user_credentials': user_credentials,
+                      'user_messages': user_messages,
                       'user_requests': user_requests,
                       'message': message,
                       'debug': DEBUG
+                  })
+
+
+def session_expired(request):
+    """
+    :param request:
+    :return:
+    """
+    print('session_expired')
+    return render(request,
+                  'login.html',
+                  {
+                      'session_expired': True
                   })

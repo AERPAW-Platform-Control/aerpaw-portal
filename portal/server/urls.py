@@ -25,8 +25,10 @@ from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
+from portal.apps.profiles.views import session_expired
 from portal.apps.projects.api.viewsets import ProjectViewSet, UserProjectViewSet
 from portal.apps.resources.api.viewsets import ResourceViewSet
+from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.users.api.viewsets import UserViewSet
 
@@ -38,6 +40,7 @@ router.register(r'canonical-experiment-resource', CanonicalExperimentResourceVie
 router.register(r'credentials', CredentialViewSet, basename='credentials')
 router.register(r'experiment-files', ExperimentFileViewSet, basename='experiment-files')
 router.register(r'experiments', ExperimentViewSet, basename='experiments')
+router.register(r'messages', UserMessageViewSet, basename='messages')
 router.register(r'p-canonical-experiment-number', CanonicalNumberViewSet, basename='canonical-experiment-number')
 router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'requests', UserRequestViewSet, basename='requests')
@@ -51,6 +54,7 @@ router.register(r'users', UserViewSet, basename='users')
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('accounts/login/', session_expired, name='session_expired'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -62,6 +66,7 @@ urlpatterns = [
     path('credentials/', include('portal.apps.credentials.urls')),  # credentials app
     path('operators/experiment-files/', include('portal.apps.experiment_files.urls')),  # experiment_files app
     path('experiments/', include('portal.apps.experiments.urls')),  # experiments app
+    path('messages/', include('portal.apps.user_messages.urls')),  # user_messages app
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app
     path('resources/', include('portal.apps.resources.urls')),  # resources app

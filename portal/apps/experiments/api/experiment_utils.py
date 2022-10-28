@@ -75,10 +75,11 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     else:
         # PRODUCTION:
         if exit_development:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_saveexit_ve_exp.py {0} save-and-exit".format(experiment.id)
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_saveexit_ve_exp.py {0} save-and-exit".format(
+                experiment.id)
         else:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_saveexit_ve_exp.py {0} save".format(experiment.id)
-
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_saveexit_ve_exp.py {0} save".format(
+                experiment.id)
 
     ssh_thread = threading.Thread(target=saving_development, args=(request, experiment, command, exit_development))
     ssh_thread.start()
@@ -923,7 +924,8 @@ def saving_development(request, experiment: AerpawExperiment, command: str, exit
                 detail="SaveError: something occurred during the save for /experiments/{0}/state".format(experiment.id))
         else:
             raise NotFound(
-                detail="SaveError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
+                detail="SaveError: unable to deploy active_development for /experiments/{0}/state".format(
+                    experiment.id))
 
 
 def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_sandbox: bool):

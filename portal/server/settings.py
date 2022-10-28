@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
+# Session expiration settings
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 14400
+
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.getenv('DJANGO_DEBUG').casefold() == 'true':
     DEBUG = True
@@ -61,11 +65,13 @@ INSTALLED_APPS = [
     'portal.apps.experiments',  # experiments
     'portal.apps.operations',  # operations
     'portal.apps.credentials',  # credentials
+    'portal.apps.user_messages',  # user messages
     'portal.apps.user_requests',  # user requests
 ]
 
 # Add 'mozilla_django_oidc' authentication backend
 AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # used for admin created by
     # 'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     'portal.apps.users.oidc_users.MyOIDCAB',
 )
@@ -145,6 +151,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'templates/projects'),
             os.path.join(BASE_DIR, 'templates/resources'),
             os.path.join(BASE_DIR, 'templates/rest_framework'),
+            os.path.join(BASE_DIR, 'templates/user_messages'),
             os.path.join(BASE_DIR, 'templates/user_requests'),
         ],
         'APP_DIRS': True,
@@ -248,6 +255,19 @@ SESSION_COOKIE_SAMESITE = None
 OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = int(os.getenv('OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS'))
 
 OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
+
+# AERPAW Email for development (use only 1 email backend at a time)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# AERPAW Email for production (use only 1 email backend at a time)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = os.getenv('EMAIL_HOST')
+# EMAIL_PORT = os.getenv('EMAIL_PORT')
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# EMAIL_ADMIN_USER = os.getenv('EMAIL_ADMIN_USER')
+# EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False
 
 # Default Django logging is WARNINGS+ to console
 # so visible via docker-compose logs django

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static users_tags %}
+
+{% block title %}
+    Resources
+{% endblock %}
+
+{% block content %}
+    {% if message %}
+        <div class="text-danger" style="font-size: large">{{ message }}</div>
+    {% endif %}
+    {% if user.is_authenticated and user_message %}
+        <div class="container w-85">
+            <div class="d-flex flex-row align-items-center justify-content-between">
+                <h2>{{ user_message.message_subject }}</h2>
+                <button class="btn btn-secondary mr-2" style="margin-left: 10px">
+                    <a href="{% url 'user_message_list' %}"
+                       class="unlink">Back to List</a>
+                </button>
+            </div>
+            <table class="table table-striped table-bordered my-4">
+                <tbody>
+                <tr>
+                    <td style="width: 25%">Subject:</td>
+                    <td style="width: 75%"><strong>{{ user_message.message_subject }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="width: 25%">Body:</td>
+                    <td style="width: 75%"><strong>
+                        <pre>{{ user_message.message_body }}</pre>
+                    </strong></td>
+                </tr>
+                <tr>
+                    <td style="width: 25%">Sent By:</td>
+                    <td style="width: 75%"><strong>{{ user_message.sent_by|id_to_display_name }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="width: 25%">Received By:</td>
+                    <td style="width: 75%">
+                        {% for r in user_message.received_by %}
+                            <strong>{{ r|id_to_display_name }}</strong><br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%">Read Date</td>
+                    <td style="width: 75%"><strong>{{ user_message.read_date|str_to_datetime }}</strong></td>
+                </tr>
+                </tbody>
+            </table>
+            <table style="width: 100%">
+                <tbody>
+                <tr style="font-size: small">
+                    <td style="width: 50%">
+                        <strong>created date</strong>: {{ user_message.sent_date|str_to_datetime }}
+                    </td>
+                    <td style="width: 50%">
+                        <strong>last modified date</strong>: {{ user_message.modified_date|str_to_datetime }}
+                    </td>
+                </tr>
+                <tr style="font-size: small">
+                    <td style="width: 50%">
+                        <strong>created by</strong>: {{ user_message.sent_by|id_to_username }}
+                    </td>
+                    <td style="width: 50%">
+                        <strong>last modified by</strong>: {{ user_message.last_modified_by|id_to_username }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        {% if debug %}
+            <hr>
+            <pre><strong>user_message</strong>:<br>{{ user_message|pprint }}</pre>
+            <br>
+        {% endif %}
+    {% else %}
+        <p>You are not allowed to view this resource or are not logged in</p>
+        <a href="{% url 'login' %}">
+            <button class="message-btn btn btn-success">Login</button>
+        </a>
+    {% endif %}
+{% endblock %}

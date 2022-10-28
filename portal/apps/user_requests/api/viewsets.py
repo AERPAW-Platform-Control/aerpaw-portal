@@ -13,6 +13,7 @@ from rest_framework.viewsets import GenericViewSet
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.projects.models import AerpawProject
 from portal.apps.resources.api.serializers import ResourceSerializerDetail
+from portal.apps.user_messages.user_messages import generate_user_messages_from_user_request
 from portal.apps.user_requests.api.serializers import UserRequestSerializerDetail, UserRequestSerializerList
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.users.models import AerpawRolesEnum, AerpawUser
@@ -257,6 +258,8 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 for r in received_by:
                     user_request.received_by.add(r)
                 user_request.save()
+                generate_user_messages_from_user_request(request=request,
+                                                         user_request=self.retrieve(request, pk=user_request.id).data)
                 return self.retrieve(request, pk=user_request.id)
         else:
             raise PermissionDenied(
@@ -334,7 +337,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
             completed = False
             # check for is_approved
             if str(request.data.get('is_approved')).casefold() in ['true', 'false']:
-                is_approved = str(request.data.get('is_approved')).casefold() == 'true'
+                is_approved = True if str(request.data.get('is_approved')).casefold() == 'true' else False
                 user_request.is_approved = is_approved
                 completed = True
             if completed:
@@ -344,6 +347,8 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 user_request.response_date = datetime.now(timezone.utc)
                 user_request.response_note = request.data.get('response_note')
                 user_request.save()
+                generate_user_messages_from_user_request(request=request,
+                                                         user_request=self.retrieve(request, pk=user_request.id).data)
             return self.retrieve(request, pk=user_request.id)
         else:
             raise PermissionDenied(

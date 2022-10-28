@@ -54,6 +54,7 @@ if [[ "${MAKE_MIGRATIONS}" -eq 1 ]]; then
         "experiments"
         "operations"
         "credentials"
+        "user_messages"
         "user_requests"
     )
 else

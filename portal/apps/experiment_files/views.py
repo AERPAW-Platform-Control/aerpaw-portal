@@ -59,11 +59,12 @@ def experiment_file_list(request):
             max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
             if max_range > count:
                 max_range = count
-
+        else:
+            experiment_files = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
         message = exc
-        experiment_files = None
+        experiment_files = {}
         item_range = None
         next_page = None
         prev_page = None
