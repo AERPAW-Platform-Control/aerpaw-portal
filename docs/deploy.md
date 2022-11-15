@@ -49,7 +49,7 @@ docker compose up -d
 
 ### Run the server application locally
 
-The first time the server is run you will want to make database migration files and load existing database fixures
+The first time the server is run you will want to make database migration files and load existing database fixtures
 
 
 ```console
@@ -94,23 +94,34 @@ docker compose pull
 docker compose up -d
 ```
 
-verify that the database is running
+verify that the database and nginx are running
 
 ```console
 $ docker compose ps
 NAME                COMMAND                  SERVICE             STATUS              PORTS
 portal-database     "docker-entrypoint.s…"   database            running             0.0.0.0:5432->5432/tcp, :::5432->5432/tcp
+portal-nginx        "/docker-entrypoint.…"   nginx               running             0.0.0.0:8080->80/tcp, :::8080->80/tcp, 0.0.0.0:8443->443/tcp, :::8443->443/tcp
 ```
 
 ### Run the server application locally
 
-The first time the server is run you will want to make database migration files and load existing database fixures
+The first time the server is run you will want to make database migration files and load existing database fixtures
 
 
 ```console
-./run_server.sh --run-mode local-dev --load-fixtures --make-migrations
+UWSGI_UID=$(id -u) UWSGI_GID=$(id -g) ./run_server.sh --run-mode local-ssl --load-fixtures --make-migrations
 ```
 
+At this point you should have a running portal at: [https://127.0.0.1:8443/]() or you can access it from [http://127.0.0.1:8080/]() which will automatically redirect to the HTTPS page due to Nginx
 
+The first time you run the local-ssl script you will see a warning regarding an untrusted SSL certificate, this is expected due to it being self-signed
+
+<img src="./imgs/portal-local-ssl-warning.png" width="600" />
+
+Accept the risks and proceed to the portal main page
+
+<img src="./imgs/portal-local-ssl.png" width="600" />
+
+The newly deployed portal will not have any Users, Resources, etc. 
 
 ## 3. <a name="in-docker"></a>Production - all in Docker
