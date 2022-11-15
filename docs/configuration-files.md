@@ -2,7 +2,9 @@
 
 ## file: `docker-compose.yml`
 
-Default file is based on Local Development - HTTP mode
+Default file is based on Local Development - HTTP mode, other versions are found in the `/compose` directory
+
+- make a copy of this file as `docker-compose.yml` before editing
 
 ```yaml
 # compose/docker-compose.yml.local-dev
@@ -36,7 +38,9 @@ networks:
 
 ## file: `.env`
 
-A template named `template.env` is provided as basis for your `.env` file
+A template environment file named `template.env` is provided as the basis for your `.env` file
+
+- make a copy of this file as `.env` before editing
 
 ```env
 # docker-compose environment file
@@ -55,16 +59,16 @@ export AERPAW_OPS_MOCK=true
 export AERPAW_OPS_HOST='xxxxxxxxxx'
 export AERPAW_OPS_PORT=22
 export AERPAW_OPS_USER='xxxxxxxxxx'
-export AERPAW_OPS_KEY_FILE='./ssh/xxxxxxxxxx'
+export AERPAW_OPS_KEY_FILE='./ssh/demo_id_rsa'
 export AERPAW_OPS_PORTAL_PASSWORD='xxxxxxxxxx'
 
 # AERPAW Email settings - gmail as example
 export EMAIL_HOST=smtp.gmail.com
 export EMAIL_PORT=587
 export EMAIL_USE_TLS=True
-export EMAIL_HOST_USER='xxxxxxxxxx'
+export EMAIL_HOST_USER='demo_admin@gmail.com'
 export EMAIL_HOST_PASSWORD='xxxxxxxxxx'
-export EMAIL_ADMIN_USER='xxxxxxxxxx'
+export EMAIL_ADMIN_USER='demo_admin@gmail.com'
 
 # Django settings
 export PYTHONPATH=./:./venv:./.venv
@@ -124,6 +128,8 @@ export UWSGI_UID=1000
 ## file: `nginx/default.conf`
 
 Default based on Local Development - with SSL mode
+
+- edit this file in place
 
 ```env
 # the upstream component nginx needs to connect to
