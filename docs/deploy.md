@@ -11,9 +11,9 @@ You must update your local configuration files prior to using Deploy (see [Confi
 
 The portal can be run in three different modes depending on your use case
 
-1. [Local Development - HTTP](#local-dev)
-2. [Local Development - with SSL](#local-ssl)
-3. [Production - all in Docker](#in-docker)
+1. [Local Development - HTTP](#local-dev) (`local-dev`)
+2. [Local Development - with SSL](#local-ssl) (`local-ssl`)
+* 3. [Production - all in Docker](#in-docker) (`docker`)
 
 ## 1. <a name="local-dev"></a>Local Development - HTTP
 

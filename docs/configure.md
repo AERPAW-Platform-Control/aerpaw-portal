@@ -4,9 +4,9 @@
 
 The portal can be run in three different modes depending on your use case
 
-1. [Local Development - HTTP](#local-dev)
-2. [Local Development - with SSL](#local-ssl)
-3. [Production - all in Docker](#in-docker)
+1. [Local Development - HTTP](#local-dev) (`local-dev`)
+2. [Local Development - with SSL](#local-ssl) (`local-ssl`)
+3. [Production - all in Docker](#in-docker) (`docker`)
 
 ## 1. <a name="local-dev"></a>Local Development - HTTP
 
@@ -58,6 +58,8 @@ export HOST_DB_DATA=./db_data
 export POSTGRES_PASSWORD=xxxxxxxxxx                             # <-- user defined
 ...
 ```
+
+Continue onto [Deploy](./deploy.md)
 
 ## 2. <a name="local-ssl"></a>Local Development - with SSL
 
@@ -111,6 +113,8 @@ export POSTGRES_PASSWORD=xxxxxxxxxx                             # <-- user defin
 ...
 ```
 
+Continue onto [Deploy](./deploy.md)
+
 ## 3. <a name="in-docker"></a>Production - all in Docker
 
 Overview:
@@ -118,3 +122,6 @@ Overview:
 - Portal - Django runs in docker on port 8000 (docker)
 - Database - Postgres runs in docker on port 5432 (docker)
 - Webserver - Nginx runs in docker on ports 8080, 8443 (host/docker)
+
+
+Continue onto [Deploy](./deploy.md)
