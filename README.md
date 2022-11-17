@@ -2,7 +2,7 @@
 
 **WORK IN PROGRESS**
 
-Phase-2 refactoring of [original AERPAW Portal](https://github.com/AERPAW-Platform-Control/portal) aimed at addressing feedback from Phase-1.
+Phase-2 refactoring of [original AERPAW Portal](https://github.com/AERPAW-Platform-Control/portal) aimed at addressing feedback from Phase-1 and migrating services to be ReST API based.
 
 - Refactored ORM and data table design ([Django](https://docs.djangoproject.com/en/4.0/))
 - ReSTful API interface ([Django ReST Framework](https://www.django-rest-framework.org))

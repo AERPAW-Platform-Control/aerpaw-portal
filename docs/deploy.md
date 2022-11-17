@@ -13,7 +13,7 @@ The portal can be run in three different modes depending on your use case
 
 1. [Local Development - HTTP](#local-dev) (`local-dev`)
 2. [Local Development - with SSL](#local-ssl) (`local-ssl`)
-* 3. [Production - all in Docker](#in-docker) (`docker`)
+3. [Production - all in Docker](#in-docker) (`docker`)
 
 ## 1. <a name="local-dev"></a>Local Development - HTTP
 
@@ -51,6 +51,10 @@ docker compose up -d
 
 The first time the server is run you will want to make database migration files and load existing database fixtures
 
+- `--run-mode local-dev` - runs the local Django development server
+- `--make-migrations` - generates the migration files that link the Django models to the Postgres database
+- `--load-fixures` - will load any fixture files found in the `portal/apps/users/fixtures` directory (only `aerpaw_roles.json` is present by default)
+
 
 ```console
 ./run_server.sh --run-mode local-dev --load-fixtures --make-migrations
@@ -61,6 +65,8 @@ At this point you should have a running portal at: [http://127.0.0.1:8000/]()
 <img src="./imgs/portal-local-dev.png" width="600" />
 
 The newly deployed portal will not have any Users, Resources, etc. 
+
+If this the first time you've deployed the portal see [First Run](./first-run.md)
 
 ## 2. <a name="local-ssl"></a>Local Development - with SSL
 
@@ -107,6 +113,9 @@ portal-nginx        "/docker-entrypoint.…"   nginx               running      
 
 The first time the server is run you will want to make database migration files and load existing database fixtures
 
+- `--run-mode local-ssl` - runs Django locally using uWSGI as the server
+- `--make-migrations` - generates the migration files that link the Django models to the Postgres database
+- `--load-fixures` - will load any fixture files found in the `portal/apps/users/fixtures` directory (only `aerpaw_roles.json` is present by default)
 
 ```console
 UWSGI_UID=$(id -u) UWSGI_GID=$(id -g) ./run_server.sh --run-mode local-ssl --load-fixtures --make-migrations
@@ -124,4 +133,9 @@ Accept the risks and proceed to the portal main page
 
 The newly deployed portal will not have any Users, Resources, etc. 
 
+If this the first time you've deployed the portal see [First Run](./first-run.md)
+
 ## 3. <a name="in-docker"></a>Production - all in Docker
+
+
+If this the first time you've deployed the portal see [First Run](./first-run.md)
