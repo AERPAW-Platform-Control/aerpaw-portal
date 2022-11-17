@@ -49,3 +49,5 @@ Navigating back to the main portal page will now show the full navigation bar fo
 
 <img src="./imgs/portal-admin-user-navbar.png" width="600" />
 
+Back to [README](../README.md)
+
