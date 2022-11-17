@@ -45,8 +45,6 @@ The portal can be run in three different modes depending on your use case
 
 ### Old
 
-- [Installation](./INSTALL.md)
-- [Usage](./USAGE.md)
 - [Example code in Python](./examples/README.md)
 - [API brief overview](./API_ENDPOINTS.md)
 - [Documentation](./docs/README.md)
