@@ -43,8 +43,11 @@ The portal can be run in three different modes depending on your use case
 - [First Run](./docs/first-run.md) - setting up the first administrative user
 - [Database Backup and Restore](./docs/db-backup-restore.md) - how to backup and restore the database using fixtures
 
-### Old
+### Administrators/Operators
+
+- [Production Overview](./docs/production-overview.md)
+
+### Developers
 
 - [Example code in Python](./examples/README.md)
 - [API brief overview](./API_ENDPOINTS.md)
-- [Documentation](./docs/README.md)

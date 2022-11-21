@@ -467,8 +467,8 @@ File: `current_canonical_number.json`
 - This file should be created as empty prior to the first run with all access permissions
 
 ```console
-touch portal/apps/operations/current_canonical_number.json
-chmod 777 portal/apps/operations/current_canonical_number.json
+touch portal/apps/operations/current-canonical-number.json
+chmod 777 portal/apps/operations/current-canonical-number.json
 ```
 
 
