@@ -60,15 +60,16 @@ export AERPAW_OPS_HOST='xxxxxxxxxx'                             # <-- FQDN or IP
 export AERPAW_OPS_PORT=22
 export AERPAW_OPS_USER='xxxxxxxxxx'                             # <-- AERPAW Ops service username
 export AERPAW_OPS_KEY_FILE='./ssh/demo_id_rsa'                  # <-- AERPAW Ops service private key
+export AERPAW_OPS_PORTAL_USERNAME='demo_admin@gmail.com'        # <-- username used by fn: create_aerpaw_admin_user
 export AERPAW_OPS_PORTAL_PASSWORD='xxxxxxxxxx'                  # <-- password used by fn: create_aerpaw_admin_user
 
 # AERPAW Email settings - gmail as example
 export EMAIL_HOST=smtp.gmail.com
 export EMAIL_PORT=587
 export EMAIL_USE_TLS=True
-export EMAIL_HOST_USER='demo_admin@gmail.com'                   # <-- Email username
+export EMAIL_HOST_USER='demo_admin@gmail.com'                   # <-- Email username - can be different than AERPAW_OPS_PORTAL_USERNAME
 export EMAIL_HOST_PASSWORD='xxxxxxxxxx'                         # <-- Email password
-export EMAIL_ADMIN_USER='demo_admin@gmail.com'                  # <-- AERPAW Ops service email and username used by fn: create_aerpaw_admin_user
+export EMAIL_ADMIN_USER='demo_admin@gmail.com'                  # <-- Email username - can be different than AERPAW_OPS_PORTAL_USERNAME
 
 # Django settings
 export PYTHONPATH=./:./venv:./.venv
