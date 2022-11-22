@@ -2,14 +2,13 @@ import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from django.core.mail import BadHeaderError, send_mail
-from django.http import HttpResponse
+from django.core.mail import send_mail
 
 from portal.apps.user_messages.models import AerpawUserMessage
 from portal.apps.users.models import AerpawUser
 
 
-def send_portal_mail_from_message(request, *args, **kwargs):
+def send_portal_mail_from_message(request, *args, **kwargs) -> bool:
     """
     Derive mail parameters from UserMessages **kwargs
     - message_body     - string
@@ -25,11 +24,13 @@ def send_portal_mail_from_message(request, *args, **kwargs):
         from_email = os.getenv('EMAIL_HOST_USER')
         recipient_list = [u.email for u in AerpawUser.objects.filter(id__in=kwargs.get('received_by')).all()]
         send_mail(subject, message, from_email, recipient_list)
-    except BadHeaderError:
-        return HttpResponse('Invalid header found.')
+        return True
+    except Exception as exc:
+        print(exc)
+        return False
 
 
-def user_message_create(request, *args, **kwargs):
+def user_message_create(request, *args, **kwargs) -> bool:
     """
     UserMessages **kwargs
     - message_body     - string

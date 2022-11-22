@@ -3,6 +3,11 @@
 # environment file
 .env
 
+# demo_id_rsa files
+ssh/
+!ssh/demo_id_rsa
+!ssh/demo_id_rsa.pub
+
 # canonical_number JSON
 portal/apps/operations/current-canonical-number.json
 

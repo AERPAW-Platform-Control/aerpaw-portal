@@ -19,7 +19,7 @@ while (("$#")); do
                 local-dev | local-ssl | docker)
                     ;;
                 *)
-                    echo "InvalidMode: -m | --mode <local-dev | local-ssl | docker>"
+                    echo "InvalidRunMode: -r | --run-mode <local-dev | local-ssl | docker>"
                     exit 1
                     ;;
             esac
@@ -40,6 +40,16 @@ while (("$#")); do
 done
 # set positional arguments in their proper place
 eval set -- "$PARAMS"
+
+# ensure a valid run-mode was set
+case "$RUN_MODE" in
+    local-dev | local-ssl | docker)
+        ;;
+    *)
+        echo "InvalidRunMode: -r | --run-mode <local-dev | local-ssl | docker>"
+        exit 1
+        ;;
+esac
 
 # make app migrations
 if [[ "${MAKE_MIGRATIONS}" -eq 1 ]]; then

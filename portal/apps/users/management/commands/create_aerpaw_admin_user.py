@@ -14,7 +14,7 @@ def create_aerpaw_admin_user():
         'sub': 'http://cilogon.org/serverA/users/00000000',  <-- mock value required by create_user
         'given_name': 'AERPAW',                              <-- modify from admin panel
         'family_name': 'Admin',                              <-- modify from admin panel
-        'email': 'aerpaw@gmail.com',                         <-- EMAIL_HOST_USER environment variable
+        'email': 'aerpaw@gmail.com',                         <-- AERPAW_OPS_PORTAL_USERNAME environment variable
     }
     """
     try:
@@ -23,7 +23,7 @@ def create_aerpaw_admin_user():
             'sub': 'http://cilogon.org/serverA/users/00000000',
             'given_name': 'AERPAW',
             'family_name': 'Admin',
-            'email': os.getenv('EMAIL_HOST_USER'),
+            'email': os.getenv('AERPAW_OPS_PORTAL_USERNAME'),
         }
         create_superuser = MyOIDCAB()
         user = create_superuser.create_user(claims)
