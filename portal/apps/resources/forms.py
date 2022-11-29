@@ -30,7 +30,7 @@ class ResourceCreateForm(forms.ModelForm):
 
     location = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 6, 'cols': 60}),
-        required=True,
+        required=False,
         label='Location',
     )
 

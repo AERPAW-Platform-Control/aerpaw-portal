@@ -17,6 +17,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     - created (from AuditModelMixin)
     - created_by (from AuditModelMixin)
     - description
+    - emulation_required - bool
     - experiment_files - array of fk to ExperimentFile
     - experiment_flags
     - experiment_membership
@@ -77,6 +78,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
     )
     is_canonical = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
+    is_emulation_required = models.BooleanField(default=True)
     is_retired = models.BooleanField(default=False)
     name = models.CharField(max_length=255, blank=False, null=False)
     project = models.ForeignKey(

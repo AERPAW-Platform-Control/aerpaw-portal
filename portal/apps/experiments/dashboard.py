@@ -3,7 +3,7 @@ from rest_framework.request import Request
 
 from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
-from portal.apps.experiments.models import AerpawExperiment
+from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
 from portal.apps.users.models import AerpawUser
 
 
@@ -32,8 +32,16 @@ def check_submit_to_emulation():
 
 
 def check_submit_to_testbed(experiment: AerpawExperiment):
+    """
+    Experiment has completed at least one development cycle
+    """
     # TODO: define checks for submit to testbed
-    if experiment.experiment_flags == '101':
+    session_obj = ExperimentSession.objects.filter(
+        experiment_id=experiment.id,
+        session_type=ExperimentSession.SessionType.DEVELOPMENT.value,
+        end_date_time__isnull=False
+    ).order_by('-created').first()
+    if session_obj:
         return True
     else:
         return False

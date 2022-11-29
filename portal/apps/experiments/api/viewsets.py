@@ -209,6 +209,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         - experiment_members     - array of user-experiment
         - experiment_state       - string
         - is_canonical           - boolean
+        - is_emulation_required  - boolean
         - is_retired             - boolean
         - name                   - string
         - project_id             - int
@@ -267,6 +268,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 'experiment_members': experiment_membership,
                 'experiment_state': du.get('experiment_state'),
                 'is_canonical': du.get('is_canonical'),
+                'is_emulation_required': du.get('is_emulation_required'),
                 'is_retired': du.get('is_retired'),
                 'last_modified_by': AerpawUser.objects.get(username=du.get('last_modified_by')).id,
                 'membership': {

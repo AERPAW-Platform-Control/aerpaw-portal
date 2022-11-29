@@ -1,12 +1,14 @@
 from portal.apps.experiments.api.experiment_utils import active_development_to_saving_development, \
-    active_emulation_to_saved, active_sandbox_to_saving_sandbox, active_testbed_to_saved, same_to_same, \
-    saved_to_wait_development_deploy, saved_to_wait_emulation_schedule, saved_to_wait_sandbox_deploy, \
-    saved_to_wait_testbed_schedule, saving_development_to_active_development, saving_development_to_saved, \
-    saving_sandbox_to_active_sandbox, saving_sandbox_to_saved, wait_development_deploy_to_active_development, \
-    wait_development_deploy_to_saved, wait_emulation_deploy_to_active_emulation, wait_emulation_deploy_to_saved, \
-    wait_emulation_schedule_to_saved, wait_emulation_schedule_to_wait_emulation_deploy, \
-    wait_sandbox_deploy_to_active_sandbox, wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, \
-    wait_testbed_deploy_to_saved, wait_testbed_schedule_to_saved, wait_testbed_schedule_to_wait_testbed_deploy
+    active_emulation_to_saved, active_emulation_to_wait_testbed_deploy, active_sandbox_to_saving_sandbox, \
+    active_testbed_to_saved, same_to_same, saved_to_wait_development_deploy, saved_to_wait_emulation_schedule, \
+    saved_to_wait_sandbox_deploy, saved_to_wait_testbed_schedule, saving_development_to_active_development, \
+    saving_development_to_saved, saving_sandbox_to_active_sandbox, saving_sandbox_to_saved, \
+    wait_development_deploy_to_active_development, wait_development_deploy_to_saved, \
+    wait_emulation_deploy_to_active_emulation, wait_emulation_deploy_to_saved, wait_emulation_schedule_to_saved, \
+    wait_emulation_schedule_to_wait_emulation_deploy, wait_sandbox_deploy_to_active_sandbox, \
+    wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, wait_testbed_deploy_to_saved, \
+    wait_testbed_schedule_to_saved, wait_testbed_schedule_to_wait_emulation_schedule, \
+    wait_testbed_schedule_to_wait_testbed_deploy
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.users.models import AerpawUser
 
@@ -35,6 +37,7 @@ _VALID_EXPERIMENTER_TRANSITION = [
 _VALID_OPERATOR_TRANSITION = [
     ('active_development', 'saving_development'),
     ('active_emulation', 'saved'),
+    ('active_emulation', 'wait_testbed_deploy'),
     ('active_sandbox', 'saving_sandbox'),
     ('active_testbed', 'saved'),
     ('saving_development', 'saved'),
@@ -51,8 +54,9 @@ _VALID_OPERATOR_TRANSITION = [
     ('wait_sandbox_deploy', 'saved'),
     ('wait_testbed_deploy', 'active_testbed'),
     ('wait_testbed_deploy', 'saved'),
-    ('wait_testbed_schedule', 'wait_testbed_deploy'),
-    ('wait_testbed_schedule', 'saved')
+    ('wait_testbed_schedule', 'saved'),
+    ('wait_testbed_schedule', 'wait_emulation_schedule'),
+    ('wait_testbed_schedule', 'wait_testbed_deploy')
 ]
 
 
@@ -75,7 +79,8 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     """
     Transition experiment state with actions
     - ACTIVE_DEVELOPMENT --> SAVING_DEVELOPMENT - save development session
-    - ACTIVE_EMULATION --> SAVED - emulation complete - Flags 100 or 101
+    - ACTIVE_EMULATION --> SAVED - emulation complete - Flags 100 or 101 - is_emulation_required was False
+    - ACTIVE_EMULATION --> WAIT_TESTBED_DEPLOY - is_emulation_required is True and passed_emulation is True
     - ACTIVE_SANDBOX --> SAVING_SANDBOX - save sandbox session
     - ACTIVE_TESTBED --> SAVED - execution complete - Flags 010
     - SAVING_DEVELOPMENT --> SAVED - move to saved state - Flags 000
@@ -96,8 +101,9 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     - WAIT_SANDBOX_DEPLOY --> SAVED - cancel pending sandbox session
     - WAIT_TESTBED_DEPLOY --> ACTIVE_TESTBED - scheduled deployment of testbed complete
     - WAIT_TESTBED_DEPLOY --> SAVED - cancel
-    - WAIT_TESTBED_SCHEDULE --> WAIT_TESTBED_DEPLOY - schedule
     - WAIT_TESTBED_SCHEDULE --> SAVED - cancel pending testbed session
+    - WAIT_TESTBED_SCHEDULE --> WAIT_EMULATION_SCHEDULE - (E&&P)||T is False
+    - WAIT_TESTBED_SCHEDULE --> WAIT_TESTBED_DEPLOY - (E&&P)||T is True
     - SAME_STATE --> SAME_STATE - non-transition option for ???
     """
     transition = (experiment.state(), next_state)
@@ -125,6 +131,9 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     # Flags 100 or 101
     elif transition == ('active_emulation', 'saved'):
         active_emulation_to_saved(request=request, experiment=experiment)
+    # ACTIVE_EMULATION --> WAIT_TESTBED_DEPLOY - is_emulation_required was True
+    elif transition == ('active_emulation', 'wait_testbed_deploy'):
+        active_emulation_to_wait_testbed_deploy(request=request, experiment=experiment)
     # ACTIVE_TESTBED --> SAVED - execution complete
     # Flags 010
     elif transition == ('active_testbed', 'saved'):
@@ -174,7 +183,10 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     # WAIT_TESTBED_SCHEDULE --> WAIT_TESTBED_DEPLOY - schedule
     elif transition == ('wait_testbed_schedule', 'wait_testbed_deploy'):
         wait_testbed_schedule_to_wait_testbed_deploy(request=request, experiment=experiment)
-    # WAIT_TESTBED_SCHEDULE --> SAVED - cancel pending testbed session
+    # WAIT_TESTBED_SCHEDULE --> WAIT_EMULATION_SCHEDULE - (E&&P)||T is False
+    elif transition == ('wait_testbed_schedule', 'wait_emulation_schedule'):
+        wait_testbed_schedule_to_wait_emulation_schedule(request=request, experiment=experiment)
+    # WAIT_TESTBED_SCHEDULE --> WAIT_TESTBED_DEPLOY - (E&&P)||T is True
     elif transition == ('wait_testbed_schedule', 'saved'):
         wait_testbed_schedule_to_saved(request=request, experiment=experiment)
     # Placeholder for same state update options

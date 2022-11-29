@@ -348,6 +348,76 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
     experiment.save()
 
 
+def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperiment):
+    """
+    ACTIVE_EMULATION --> WAIT_TESTBED_DEPLOY
+    - emulation complete
+    - Flags 100 or 101
+
+    @param: emulation_passed
+
+    Session: update EMULATION --> end_date_time, ended_by, is_active=False
+             create TESTBED --> created, created_by
+
+    Permissions:
+    - operator
+    """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
+    # get active session and stop
+    session = ExperimentSession.objects.filter(
+        experiment_id=experiment.id,
+        session_type=ExperimentSession.SessionType.EMULATION,
+        is_active=True
+    ).first()
+    if not session:
+        raise NotFound(
+            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+    stop_experiment_session(session=session, user=request.user)
+
+    # UPDATE STATE: wait_testbed_deploy
+    try:
+        emulation_passed = request.data.get('emulation_passed', False)
+    except Exception as exc:
+        print(exc)
+        emulation_passed = False
+    if emulation_passed:
+        # continue to wait_testbed_deploy
+        experiment.experiment_flags = '101'
+        experiment.is_emulation_required = False
+        experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY
+        experiment.save()
+        # ACTION ITEMS:
+        # create new TESTBED session
+        create_experiment_session(
+            session_type=ExperimentSession.SessionType.TESTBED,
+            experiment=experiment,
+            user=request.user
+        )
+        # PORTAL CF: wait_testbed_deploy
+        # TODO: Portal to manage next_state transition - normally this would be an Operator call
+        # aerpaw ops: ap-cf-submit-to-tbed.py
+        if MOCK_OPS:
+            # MOCK OPS: always pass
+            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+                experiment.id)
+            # MOCK OPS: always fail
+            # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(experiment.id)
+        else:
+            # PRODUCTION:
+            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
+
+        # ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command))
+        # ssh_thread.start()
+    else:
+        # send back to saved
+        experiment.experiment_flags = '100'
+        experiment.is_emulation_required = True
+        experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
+        experiment.save()
+
+
 def active_testbed_to_saved(request, experiment: AerpawExperiment):
     """
     ACTIVE_TESTBED --> SAVED
@@ -516,35 +586,38 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     - experimenter
     """
     # PREFLIGHT CHECK:
-
-    # ACTION ITEMS:
-    # create new TESTBED session
-    create_experiment_session(
-        session_type=ExperimentSession.SessionType.TESTBED,
-        experiment=experiment,
-        user=request.user
-    )
-
-    # UPDATE STATE: wait_testbed_schedule
-    experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
-    experiment.save()
-
-    # PORTAL CF: wait_testbed_deploy
-    # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # aerpaw ops: ap-cf-submit-to-tbed.py
-    if MOCK_OPS:
-        # MOCK OPS: always pass
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-        # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-        #     experiment.id)
+    # Check if emulation is required first
+    if is_emulation_required(experiment=experiment):
+        wait_testbed_schedule_to_wait_emulation_schedule(request=request, experiment=experiment)
     else:
-        # PRODUCTION:
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
+        # ACTION ITEMS:
+        # create new TESTBED session
+        create_experiment_session(
+            session_type=ExperimentSession.SessionType.TESTBED,
+            experiment=experiment,
+            user=request.user
+        )
 
-    # ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command))
-    # ssh_thread.start()
+        # UPDATE STATE: wait_testbed_schedule
+        experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
+        experiment.save()
+
+        # PORTAL CF: wait_testbed_schedule
+        # TODO: Portal to manage next_state transition - normally this would be an Operator call
+        # aerpaw ops: ap-cf-submit-to-tbed.py
+        if MOCK_OPS:
+            # MOCK OPS: always pass
+            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+                experiment.id)
+            # MOCK OPS: always fail
+            # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
+            #     experiment.id)
+        else:
+            # PRODUCTION:
+            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
+
+        ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command))
+        ssh_thread.start()
 
 
 def wait_development_deploy_to_active_development(request, experiment: AerpawExperiment):
@@ -669,6 +742,7 @@ def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
     cancel_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
+    experiment.is_emulation_required = False
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -719,6 +793,7 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
     cancel_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
+    experiment.is_emulation_required = False
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
@@ -898,6 +973,31 @@ def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
     experiment.save()
 
 
+def wait_testbed_schedule_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
+    """
+    WAIT_TESTBED_SCHEDULE --> WAIT_EMULATION_SCHEDULE
+    - reroute to wait emulation schedule
+
+    Session: create EMULATION --> created, created_by
+
+    Permissions:
+    - operator
+    """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
+    # create new EMULATION session
+    create_experiment_session(
+        session_type=ExperimentSession.SessionType.EMULATION,
+        experiment=experiment,
+        user=request.user
+    )
+
+    # UPDATE STATE: wait_emulation_schedule
+    experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
+    experiment.save()
+
+
 def same_to_same(request, experiment: AerpawExperiment):
     """
     Placeholder for same state update options
@@ -1009,3 +1109,38 @@ def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str):
         wait_sandbox_deploy_to_saved(request=request, experiment=experiment)
         raise NotFound(
             detail="DeployError: unable to deploy active_sandbox for /experiments/{0}/state".format(experiment.id))
+
+
+def is_emulation_required(experiment: AerpawExperiment) -> bool:
+    if experiment.experiment_flags in ['101', '010']:
+        # wait_testbed_schedule
+        experiment.is_emulation_required = False
+    else:
+        # wait_emulation_schedule
+        experiment.is_emulation_required = True
+
+    experiment.save()
+    return experiment.is_emulation_required
+
+
+def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str) -> None:
+    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    response, exit_code = ssh_call.send_command(command, verbose=True)
+    if MOCK_OPS:
+        # add sleep when using mock to simulate remote processing delay
+        time.sleep(10)
+        print('response: ' + response)
+        print('exit code: ' + str(exit_code))
+
+    # TODO: determine if any transition should take place based on return value of script
+    # next state transition
+    if exit_code == 0:
+        # ap-cf-submit-to-tbed.py - success
+        # - do nothing
+        print(exit_code)
+    else:
+        # ap-cf-submit-to-tbed.py- failure
+        # - do nothing
+        print(exit_code)
+        raise NotFound(
+            detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
