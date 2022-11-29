@@ -37,6 +37,12 @@ The portal can be run in three different modes depending on your use case
 
 ## Table of Contents
 
+**Note**: The documentation herein was written based on a macOS local deployment and a CentOS Linux remote deployment
+
+- Windows based deployment is not covered and as such users should translate accordingly
+
+### Basic Usage
+
 - [Configure](./docs/configure.md) - configuration settings for each deployment mode
   - [Configuration Files](./docs/configuration-files.md) - overview of the configuration files used for deployment
 - [Deploy](./docs/deploy.md) - deployment steps for each mode
