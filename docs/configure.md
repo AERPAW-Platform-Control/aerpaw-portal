@@ -79,7 +79,7 @@ Overview:
 Copy the `.local-ssl` version to the main level of the repository as `docker-compose.yml`
 
 ```
-cp compose/docker-compose.yml.local-dev ./docker-compose.yml
+cp compose/docker-compose.yml.local-ssl ./docker-compose.yml
 ```
 
 ### file: `.env`
@@ -133,7 +133,7 @@ Overview:
 
 ### file: `docker-compose.yml`
 
-Copy the `.local-ssl` version to the main level of the repository as `docker-compose.yml`
+Copy the `.docker` version to the main level of the repository as `docker-compose.yml`
 
 ```
 cp compose/docker-compose.yml.docker ./docker-compose.yml
