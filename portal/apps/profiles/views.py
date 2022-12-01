@@ -12,6 +12,7 @@ from portal.apps.users.api.viewsets import UserViewSet
 from portal.apps.users.models import AerpawRolesEnum, AerpawUser
 from portal.server.download_utils import download_db_credential_public_key, download_db_user_tokens
 from portal.server.settings import DEBUG
+from portal.apps.profiles.api.viewsets import UserProfileViewSet
 
 
 @csrf_exempt
@@ -32,6 +33,30 @@ def profile(request):
                 u_api_request.method = 'PUT'
                 u_api_request.data.update(
                     {'display_name': request.POST.get('display_name')})
+                resp = u.update(request=u_api_request, pk=user.id)
+            elif request.POST.get('employer'):
+                u_api_request = Request(request=HttpRequest())
+                u = UserProfileViewSet(request=u_api_request)
+                u_api_request.user = request.user
+                u_api_request.method = 'PUT'
+                u_api_request.data.update(
+                    {'employer': request.POST.get('employer')})
+                resp = u.update(request=u_api_request, pk=user.id)
+            elif request.POST.get('position'):
+                u_api_request = Request(request=HttpRequest())
+                u = UserProfileViewSet(request=u_api_request)
+                u_api_request.user = request.user
+                u_api_request.method = 'PUT'
+                u_api_request.data.update(
+                    {'position': request.POST.get('position')})
+                resp = u.update(request=u_api_request, pk=user.id)
+            elif request.POST.get('research_field'):
+                u_api_request = Request(request=HttpRequest())
+                u = UserProfileViewSet(request=u_api_request)
+                u_api_request.user = request.user
+                u_api_request.method = 'PUT'
+                u_api_request.data.update(
+                    {'research_field': request.POST.get('research_field')})
                 resp = u.update(request=u_api_request, pk=user.id)
             elif request.POST.get('generate_tokens'):
                 u_api_request = Request(request=HttpRequest())
@@ -98,6 +123,10 @@ def profile(request):
     user_data = u.retrieve(request=request, pk=request.user.id).data
     user_tokens = u.tokens(request=api_request, pk=request.user.id).data
 
+    # user profile
+    up = UserProfileViewSet(request=api_request)
+    user_profile = up.retrieve(request=request, pk=request.user.id).data
+
     # modify query_params to get requests and messages data
     request.query_params = QueryDict('', mutable=True)
     request.query_params.update({'user_id': user.id, 'show_read': False, 'show_deleted': False})
@@ -115,6 +144,7 @@ def profile(request):
                   {
                       'user': user,
                       'user_data': user_data,
+                      'user_profile': user_profile,
                       'user_tokens': user_tokens,
                       'user_credentials': user_credentials,
                       'user_messages': user_messages,

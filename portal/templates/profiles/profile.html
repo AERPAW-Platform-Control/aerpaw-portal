@@ -44,6 +44,63 @@
                     <td><strong>{{ user_data.email }}</strong></td>
                 </tr>
                 <tr>
+                    <td style="width: 25%">Employer/Organization</td>
+                    <td style="width: 75%;">
+                        <form action="#" method="post">
+                            {% csrf_token %}
+                            {% if user_profile.employer %}
+                                <input type="text" name="employer" size="40" value="{{ user_profile.employer }}">
+                            {% else %}
+                                <input type="text" name="employer" size="40"
+                                       placeholder="required for experimenter role...">
+                            {% endif %}
+                            <button type="submit" class="message-btn btn btn-success"
+                                    style="float: right; margin-left: 10px"
+                            >
+                                <em class="fa fa-fw fa-pencil"></em> update
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%">Position/Title</td>
+                    <td style="width: 75%;">
+                        <form action="#" method="post">
+                            {% csrf_token %}
+                            {% if user_profile.position %}
+                                <input type="text" name="position" size="40" value="{{ user_profile.position }}">
+                            {% else %}
+                                <input type="text" name="position" size="40"
+                                       placeholder="required for experimenter role...">
+                            {% endif %}
+                            <button type="submit" class="message-btn btn btn-success"
+                                    style="float: right; margin-left: 10px"
+                            >
+                                <em class="fa fa-fw fa-pencil"></em> update
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%">Field of Research</td>
+                    <td style="width: 75%;">
+                        <form action="#" method="post">
+                            {% csrf_token %}
+                            {% if user_profile.research_field %}
+                                <input type="text" name="research_field" size="40"
+                                       value="{{ user_profile.research_field }}">
+                            {% else %}
+                                <input type="text" name="research_field" size="40" placeholder="optional...">
+                            {% endif %}
+                            <button type="submit" class="message-btn btn btn-success"
+                                    style="float: right; margin-left: 10px"
+                            >
+                                <em class="fa fa-fw fa-pencil"></em> update
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
                     <td>Roles</td>
                     <td>
                         <table class="table">
@@ -61,15 +118,28 @@
                                             </em>
                                         {% else %}
                                             <span class="text-danger">No Roles Found</span>
-                                            <button type="submit" class="message-btn btn btn-secondary"
-                                                    style="float: right; margin-left: 10px"
-                                                    name="request_role_experimenter" value="{{ user_data.user_id }}"
-                                            >
-                                                <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
-                                                    <em class="fa fa-fw fa-person-circle-plus"></em>
-                                                    request Experimenter role
-                                                </a>
-                                            </button>
+                                            {% if user_profile.employer and user_profile.position %}
+                                                <button type="submit" class="message-btn btn btn-success"
+                                                        style="float: right; margin-left: 10px"
+                                                        name="request_role_experimenter" value="{{ user_data.user_id }}"
+                                                >
+                                                    <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
+                                                        <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                        request Experimenter role
+                                                    </a>
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="message-btn btn btn-danger"
+                                                        style="float: right; margin-left: 10px"
+                                                        name="request_role_experimenter" value="{{ user_data.user_id }}"
+                                                        disabled
+                                                >
+                                                    <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
+                                                        <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                        n/a Experimenter role
+                                                    </a>
+                                                </button>
+                                            {% endif %}
                                             <button class="btn btn-primary mr-2"
                                                     style="float: right; margin-left: 10px">
                                                 <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-web-portal/2-5-acceptable-use-policy-aup"
@@ -96,15 +166,28 @@
                                                     ({{ user.id|pending_pi_request }})
                                                 </em>
                                             {% else %}
-                                                <button type="submit" class="message-btn btn btn-secondary"
-                                                        style="float: right; margin-left: 10px"
-                                                        name="request_role_pi" value="{{ user_data.user_id }}"
-                                                >
-                                                    <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
-                                                        <em class="fa fa-fw fa-person-circle-plus"></em>
-                                                        request PI role
-                                                    </a>
-                                                </button>
+                                                {% if user_profile.employer and user_profile.position %}
+                                                    <button type="submit" class="message-btn btn btn-success"
+                                                            style="float: right; margin-left: 10px"
+                                                            name="request_role_pi" value="{{ user_data.user_id }}"
+                                                    >
+                                                        <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
+                                                            <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                            request PI role
+                                                        </a>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="submit" class="message-btn btn btn-danger"
+                                                            style="float: right; margin-left: 10px"
+                                                            name="request_role_pi" value="{{ user_data.user_id }}"
+                                                            disabled
+                                                    >
+                                                        <a onclick="return confirm('By making this request you are verifying that you have read and accept all terms of the AERPAW Acceptable Use Policy')">
+                                                            <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                            n/a PI role
+                                                        </a>
+                                                    </button>
+                                                {% endif %}
                                                 <button class="btn btn-primary mr-2"
                                                         style="float: right; margin-left: 10px">
                                                     <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-web-portal/2-5-acceptable-use-policy-aup"
@@ -379,6 +462,7 @@
         {% if debug %}
             <hr>
             <pre><strong>user:</strong><br>{{ user_data|pprint }}</pre>
+            <pre><strong>user_profile:</strong><br>{{ user_profile|pprint }}</pre>
             <pre><strong>tokens:</strong><br>{{ user_tokens|pprint }}</pre>
             <pre><strong>credentials:</strong><br>{{ user_credentials|pprint }}</pre>
             <pre><strong>user_messages:</strong><br>{{ user_messages|pprint }}</pre>

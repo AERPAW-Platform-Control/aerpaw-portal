@@ -14,6 +14,7 @@ from portal.apps.credentials.models import PublicCredentials
 from portal.apps.users.api.serializers import UserSerializerDetail, UserSerializerList, UserSerializerTokens
 from portal.apps.users.api.utils import get_tokens_for_user, refresh_access_token_for_user
 from portal.apps.users.models import AerpawUser
+from portal.apps.profiles.api.serializers import UserProfileSerializerDetail
 
 # constants
 USER_MIN_DISPLAY_NAME_LEN = 5
@@ -246,3 +247,28 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
         else:
             raise PermissionDenied(
                 detail="PermissionDenied: unable to GET /users/{0}/tokens".format(kwargs.get('pk')))
+
+    @action(detail=True, methods=['get'])
+    def profile(self, request, *args, **kwargs):
+        """
+        GET: tokens
+        - employer               - string
+        - position               - string
+        - research_field         - string
+
+        Permission:
+        - user is_active
+        """
+        user = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
+        if request.user.is_active:
+            serializer = UserProfileSerializerDetail(user.profile)
+            du = dict(serializer.data)
+            response_data = {
+                'employer': du.get('employer'),
+                'position': du.get('position'),
+                'research_field': du.get('research_field')
+            }
+            return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET /users/{0}/profile".format(kwargs.get('pk')))

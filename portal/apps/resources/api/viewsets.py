@@ -270,12 +270,6 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
         Permission:
         - user is_operator
         """
-        hostname = request.data.get('franklin')
-        if isinstance(hostname, str):
-            print('String')
-            print(len(hostname))
-        else:
-            print('Not string')
         resource = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         if not resource.is_deleted and request.user.is_operator():
             modified = False
