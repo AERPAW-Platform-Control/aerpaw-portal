@@ -20,8 +20,8 @@
                 {% if resource.is_deleted %}
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                 {% endif %}
-                {% if user.is_operator and not resource.is_deleted %}
-                    <div class="d-flex flex-row align-items-right">
+                <div class="d-flex flex-row align-items-right">
+                    {% if user.is_operator and not resource.is_deleted %}
                         <button class="btn btn-success mr-2" style="margin-left: 10px">
                             <a href="{% url 'resource_edit' resource_id=resource.resource_id %}"
                                class="unlink">Edit</a>
@@ -35,12 +35,12 @@
                                 </a>
                             </button>
                         </form>
-                        <button class="btn btn-secondary mr-2" style="margin-left: 10px">
-                            <a href="{% url 'resource_list' %}"
-                               class="unlink">Back to List</a>
-                        </button>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                    <button class="btn btn-secondary mr-2" style="margin-left: 10px">
+                        <a href="{% url 'resource_list' %}"
+                           class="unlink">Back to List</a>
+                    </button>
+                </div>
             </div>
             <table class="table table-striped table-bordered my-4">
                 <tbody>
