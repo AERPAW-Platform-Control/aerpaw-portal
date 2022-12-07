@@ -23,7 +23,7 @@ def download_sftp_experiment_file(user_id: int, experiment_id: int, file_id: int
         user = AerpawUser.objects.get(id=user_id)
         experiment = AerpawExperiment.objects.get(id=experiment_id)
         file = ExperimentFile.objects.get(id=file_id)
-        if not experiment.is_creator(user) or not experiment.is_member(user):
+        if not experiment.is_creator(user) and not experiment.is_member(user):
             raise HttpResponseForbidden
 
         dest_dir_path = _TMP_FILE_PATH + '/{0}'.format(str(user.uuid))
