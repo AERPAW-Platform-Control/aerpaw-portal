@@ -42,6 +42,7 @@
                         </td>
                         <td>
                             {{ ur.request_note }}
+                            {{ ur.requested_by|get_profile_from_user_id|linebreaks }}
                         </td>
                         <td>
                             {{ ur.requested_date|str_to_datetime }}

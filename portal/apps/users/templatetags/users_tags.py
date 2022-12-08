@@ -34,3 +34,15 @@ def str_to_datetime(datetime_str):
     except Exception as exc:
         print(exc)
         return datetime_str
+
+
+@register.filter
+def get_profile_from_user_id(user_id):
+    try:
+        user = AerpawUser.objects.get(pk=int(user_id))
+        return """- Employer: {0}
+- Position: {1}
+- Field: {2}""".format(user.profile.employer, user.profile.position, user.profile.research_field)
+    except Exception as exc:
+        print(exc)
+        return 'not found'
