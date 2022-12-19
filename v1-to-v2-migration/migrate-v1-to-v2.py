@@ -13,8 +13,8 @@ pk_v1   name                        pk_v2   name
 
 """
 
-import json
 import ast
+import json
 from datetime import datetime, timedelta, timezone
 from itertools import count
 from uuid import uuid4
@@ -196,11 +196,11 @@ def experiments():
     experiment_personnel = []
     for e_v1 in v1_experiments:
         if e_v1.get('model') == 'experiments.experiment':
-            # TODO: get v2 canonical number - operations()
+            # get v2 canonical number - operations()
             canonical_number = operations(v1_experiment=e_v1)
             # TODO: get resource ids and set canonical experiment resources
             e_v2_resources = get_v2_experiment_resources_from_v1(v1_experiment=e_v1)
-            print('Exp: ' + str(e_v1.get('pk')) + ', resources: ' + str(e_v2_resources))
+            print('Exp_ID: ' + str(e_v1.get('pk')) + ', resources: ' + str(e_v2_resources))
             e_v2 = {
                 'model': 'experiments.aerpawexperiment',
                 'pk': e_v1.get('pk'),
@@ -220,7 +220,7 @@ def experiments():
                     'is_retired': False,
                     'name': e_v1.get('fields').get('name'),
                     'project': e_v1.get('fields').get('project'),
-                    'resources_locked': True,
+                    'resources_locked': False,
                     'uuid': e_v1.get('fields').get('uuid'),
                     'experiment_files': [],
                     'resources': e_v2_resources
@@ -299,15 +299,15 @@ def operations(v1_experiment: dict):
     """
     canonical_number_pk = next(v2_canonical_number_pk)
     v2_canonical_number = {
-      'model': 'operations.canonicalnumber',
-      'pk': canonical_number_pk,
-      'fields': {
-        'created': v1_experiment.get('fields').get('created_date'),
-        'modified': v1_experiment.get('fields').get('modified_date'),
-        'canonical_number': v1_experiment.get('pk'),
-        'is_deleted': False,
-        'is_retired': False
-      }
+        'model': 'operations.canonicalnumber',
+        'pk': canonical_number_pk,
+        'fields': {
+            'created': v1_experiment.get('fields').get('created_date'),
+            'modified': v1_experiment.get('fields').get('modified_date'),
+            'canonical_number': v1_experiment.get('pk'),
+            'is_deleted': False,
+            'is_retired': False
+        }
     }
     v2_operations.append(v2_canonical_number)
     return canonical_number_pk
@@ -539,8 +539,6 @@ def resources():
       }
     }
     """
-    # with open(INPUT_DIR + '/resources.json', 'r') as f:
-    #     v1_resources = json.load(f)
     for r_v1 in v1_resources:
         created_by = get_v2_username_from_id(user_id=r_v1.get('fields').get('admin'))
         if not created_by:
@@ -569,7 +567,21 @@ def resources():
             }
         }
         v2_resources.append(r_v2)
-        # print(json.dumps(r_v2, indent=2))
+    # TODO: add two copies of the UAV resource to account for experiments with multiples
+    r_pk = count(max([r.get('pk') for r in v2_resources]) + 1)
+    for r in v2_resources:
+        if r.get('pk') == 4:
+            # add copy 1
+            copy_1 = r.copy()
+            copy_1['pk'] = next(r_pk)
+            v2_resources.append(copy_1)
+            # copy 2
+            copy_2 = r.copy()
+            copy_2['pk'] = next(r_pk)
+            v2_resources.append(copy_2)
+    for r in v2_resources:
+        print('Resource_ID: ' + str(r.get('pk')) + ', name: ' + r.get('fields').get('name') +
+              ' - ' + r.get('fields').get('resource_type') + ' - ' + r.get('fields').get('description'))
 
 
 def user_messages():
@@ -802,6 +814,12 @@ def get_v2_experiment_resources_from_v1(v1_experiment: dict) -> [dict]:
             node_vehicle = 'vehicle_ugv'
         else:
             node_vehicle = 'vehicle_none'
+        resource = get_v1_resource_id_by_node(node=node)
+        # TODO: adjust for multiple UAV entries
+        if resource in v2_resource_ids and resource == 4:
+            resource = 7
+        if resource in v2_resource_ids and resource == 7:
+            resource = 8
         v2_cer = {
             'model': 'experiments.canonicalexperimentresource',
             'pk': next(v2_cer_pk),
@@ -812,13 +830,13 @@ def get_v2_experiment_resources_from_v1(v1_experiment: dict) -> [dict]:
                 'experiment_node_number': node.get('idx'),
                 'node_display_name': node.get('name'),
                 'node_type': 'afrn' if node.get('hardware_type') == 'FixedNode' else 'aprn',
-                'node_uhd': node.get('uhd_ver'),
+                'node_uhd': '1.3.3' if node.get('uhd_ver') == '3.1.5' else '1.4.0',
                 'node_vehicle': node_vehicle,
-                'resource': get_v1_resource_id_by_node(node=node),
+                'resource': resource,
                 'uuid': str(uuid4())
             }
         }
-        v2_resource_ids.append(get_v1_resource_id_by_node(node=node))
+        v2_resource_ids.append(resource)
         v2_cers.append(v2_cer)
         # print(json.dumps(v2_cer, indent=2))
         # print(json.dumps(node, indent=2))
