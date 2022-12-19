@@ -24,6 +24,10 @@ portal/apps/users/fixtures/
 !portal/apps/users/fixtures/aerpaw_roles.json
 dumpdata/
 !dumpdata/.gitkeep
+v1-to-v2-migration/v1-data/dumpdata
+!v1-to-v2-migration/v1-data/dumpdata/.gitkeep
+v1-to-v2-migration/v2-data/fixtures
+!v1-to-v2-migration/v2-data/fixtures/.gitkeep
 
 ### macOS files
 .idea
