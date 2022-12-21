@@ -18,6 +18,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from itertools import count
 from uuid import uuid4
+from dateutil import parser
 
 # globals
 
@@ -74,12 +75,12 @@ def credentials(v2_user: dict, publickey: str):
         'model': 'credentials.publiccredentials',
         'pk': next(v2_credential_pk),
         'fields': {
-            'created': v2_user.get('fields').get('created'),
-            'modified': v2_user.get('fields').get('modified'),
+            'created': normalize_date_format(v2_user.get('fields').get('created')),
+            'modified': normalize_date_format(v2_user.get('fields').get('modified')),
             'created_by': v2_user.get('fields').get('username'),
             'modified_by': v2_user.get('fields').get('username'),
-            'expiry_date': str((datetime.now(timezone.utc) + timedelta(days=CREDENTIAL_EXPIRY_DAYS)).strftime(
-                '%Y-%m-%dT%H:%M:%S.000Z')),
+            'expiry_date': normalize_date_format(str((datetime.now(timezone.utc) + timedelta(days=CREDENTIAL_EXPIRY_DAYS)).strftime(
+                '%Y-%m-%dT%H:%M:%S.000Z'))),
             'is_deleted': True if str(v2_user.get('fields').get('created')).casefold() == 'true' else False,
             'name': v2_user.get('fields').get('username') + ' publickey',
             'owner': v2_user.get('pk'),
@@ -198,15 +199,15 @@ def experiments():
         if e_v1.get('model') == 'experiments.experiment':
             # get v2 canonical number - operations()
             canonical_number = operations(v1_experiment=e_v1)
-            # TODO: get resource ids and set canonical experiment resources
+            # get resource ids and set canonical experiment resources
             e_v2_resources = get_v2_experiment_resources_from_v1(v1_experiment=e_v1)
             print('Exp_ID: ' + str(e_v1.get('pk')) + ', resources: ' + str(e_v2_resources))
             e_v2 = {
                 'model': 'experiments.aerpawexperiment',
                 'pk': e_v1.get('pk'),
                 'fields': {
-                    'created': e_v1.get('fields').get('created_date'),
-                    'modified': e_v1.get('fields').get('modified_date'),
+                    'created': normalize_date_format(e_v1.get('fields').get('created_date')),
+                    'modified': normalize_date_format(e_v1.get('fields').get('modified_date')),
                     'created_by': get_v2_username_from_id(user_id=e_v1.get('fields').get('created_by')),
                     'modified_by': get_v2_username_from_id(user_id=e_v1.get('fields').get('modified_by')),
                     'canonical_number': canonical_number,
@@ -238,7 +239,7 @@ def experiments():
                     'fields': {
                         'experiment': e_v1.get('pk'),
                         'granted_by': e_v1.get('fields').get('created_by'),
-                        'granted_date': e_v1.get('fields').get('created_date'),
+                        'granted_date': normalize_date_format(e_v1.get('fields').get('created_date')),
                         'user': p
                     }
                 }
@@ -249,7 +250,7 @@ def experiments():
     for p in experiment_personnel:
         v2_experiments.append(p)
 
-    # TODO: append canonical experiment resources to bottom of experiments.json fixture
+    # append canonical experiment resources to bottom of experiments.json fixture
     for cer in v2_cers:
         v2_experiments.append(cer)
 
@@ -302,8 +303,8 @@ def operations(v1_experiment: dict):
         'model': 'operations.canonicalnumber',
         'pk': canonical_number_pk,
         'fields': {
-            'created': v1_experiment.get('fields').get('created_date'),
-            'modified': v1_experiment.get('fields').get('modified_date'),
+            'created': normalize_date_format(v1_experiment.get('fields').get('created_date')),
+            'modified': normalize_date_format(v1_experiment.get('fields').get('modified_date')),
             'canonical_number': v1_experiment.get('pk'),
             'is_deleted': False,
             'is_retired': False
@@ -343,8 +344,8 @@ def profiles(v2_user: dict):
         'model': 'profiles.aerpawuserprofile',
         'pk': v2_user.get('pk'),
         'fields': {
-            'created': v2_user.get('fields').get('created'),
-            'modified': v2_user.get('fields').get('modified'),
+            'created': normalize_date_format(v2_user.get('fields').get('created')),
+            'modified': normalize_date_format(v2_user.get('fields').get('modified')),
             'created_by': v2_user.get('fields').get('username'),
             'modified_by': v2_user.get('fields').get('username'),
             'access_token': None,
@@ -438,8 +439,8 @@ def projects():
                 'model': 'projects.aerpawproject',
                 'pk': p_v1.get('pk'),
                 'fields': {
-                    'created': p_v1.get('fields').get('created_date'),
-                    'modified': p_v1.get('fields').get('modified_date'),
+                    'created': normalize_date_format(p_v1.get('fields').get('created_date')),
+                    'modified': normalize_date_format(p_v1.get('fields').get('modified_date')),
                     'created_by': get_v2_username_from_id(user_id=p_v1.get('fields').get('created_by')),
                     'modified_by': get_v2_username_from_id(user_id=p_v1.get('fields').get('modified_by')),
                     'description': p_v1.get('fields').get('description'),
@@ -461,7 +462,7 @@ def projects():
                     'pk': next(v2_projects_personnel_pk),
                     'fields': {
                         'granted_by': p_v1.get('fields').get('created_by'),
-                        'granted_date': p_v1.get('fields').get('created_date'),
+                        'granted_date': normalize_date_format(p_v1.get('fields').get('created_date')),
                         'project': p_v1.get('pk'),
                         'project_role': 'project_owner',
                         'user': p
@@ -475,7 +476,7 @@ def projects():
                     'pk': next(v2_projects_personnel_pk),
                     'fields': {
                         'granted_by': p_v1.get('fields').get('created_by'),
-                        'granted_date': p_v1.get('fields').get('created_date'),
+                        'granted_date': normalize_date_format(p_v1.get('fields').get('created_date')),
                         'project': p_v1.get('pk'),
                         'project_role': 'project_member',
                         'user': p
@@ -548,8 +549,8 @@ def resources():
             'model': 'resources.aerpawresource',
             'pk': r_v1.get('pk'),
             'fields': {
-                'created': r_v1.get('fields').get('created_date'),
-                'modified': r_v1.get('fields').get('created_date'),
+                'created': normalize_date_format(r_v1.get('fields').get('created_date')),
+                'modified': normalize_date_format(r_v1.get('fields').get('created_date')),
                 'created_by': created_by,
                 'modified_by': created_by,
                 'description': r_v1.get('fields').get('description'),
@@ -567,7 +568,7 @@ def resources():
             }
         }
         v2_resources.append(r_v2)
-    # TODO: add two copies of the UAV resource to account for experiments with multiples
+    # add two copies of the UAV resource to account for experiments with multiples
     r_pk = count(max([r.get('pk') for r in v2_resources]) + 1)
     for r in v2_resources:
         if r.get('pk') == 4:
@@ -643,7 +644,7 @@ def users():
       "model": "accounts.aerpawuser",
       "pk": 1,
       "fields": {
-        "password": "pbkdf2_sha256$260000$lU8cm1SizGKt6masBjExxA$S2WfjpLdY9JRDBMnC+xDPZReWjqTY1FCAwP6rbaWbds=",
+        "password": "pbkdf2_sha256...AwP6rbaWbds=",
         "last_login": "2021-12-10T12:53:41.423Z",
         "is_superuser": true,
         "username": "admin",
@@ -658,7 +659,7 @@ def users():
         "oidc_claim_sub": "http://cilogon.org/serverA/users/51476771",
         "oidc_claim_iss": "https://cilogon.org",
         "oidc_claim_aud": "cilogon:/client_id/20e53848eb61b99a99a8efdd439ec2e1",
-        "oidc_claim_token_id": "https://cilogon.org/oauth2/idToken/2c0e60e2cb54bda6695647eb07440371/1631740728224",
+        "oidc_claim_token_id": "https://cilogon.org/oauth2/idToken/...",
         "oidc_claim_email": "aerpaw@gmail.com",
         "oidc_claim_given_name": "aerpaw",
         "oidc_claim_family_name": "ncsu",
@@ -707,7 +708,7 @@ def users():
                 'pk': u_v1.get('pk'),
                 'fields': {
                     'password': '',
-                    'last_login': u_v1.get('fields').get('last_login'),
+                    'last_login': normalize_date_format(u_v1.get('fields').get('last_login')),
                     'is_superuser': True if str(u_v1.get('fields').get('is_superuser')).casefold() == 'true' else False,
                     'username': u_v1.get('fields').get('username'),
                     'first_name': u_v1.get('fields').get('first_name'),
@@ -715,9 +716,9 @@ def users():
                     'email': u_v1.get('fields').get('email'),
                     'is_staff': True if str(u_v1.get('fields').get('is_staff')).casefold() == 'true' else False,
                     'is_active': True if str(u_v1.get('fields').get('is_active')).casefold() == 'true' else False,
-                    'date_joined': u_v1.get('fields').get('date_joined'),
-                    'created': u_v1.get('fields').get('date_joined'),
-                    'modified': str(datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')),
+                    'date_joined': normalize_date_format(u_v1.get('fields').get('date_joined')),
+                    'created': normalize_date_format(u_v1.get('fields').get('date_joined')),
+                    'modified': normalize_date_format(str(datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z'))),
                     'created_by': u_v1.get('fields').get('email'),
                     'modified_by': u_v1.get('fields').get('email'),
                     'display_name': u_v1.get('fields').get('display_name'),
@@ -815,7 +816,7 @@ def get_v2_experiment_resources_from_v1(v1_experiment: dict) -> [dict]:
         else:
             node_vehicle = 'vehicle_none'
         resource = get_v1_resource_id_by_node(node=node)
-        # TODO: adjust for multiple UAV entries
+        # adjust for multiple UAV entries
         if resource in v2_resource_ids and resource == 4:
             resource = 7
         if resource in v2_resource_ids and resource == 7:
@@ -824,8 +825,8 @@ def get_v2_experiment_resources_from_v1(v1_experiment: dict) -> [dict]:
             'model': 'experiments.canonicalexperimentresource',
             'pk': next(v2_cer_pk),
             'fields': {
-                'created': v1_experiment.get('fields').get('created_date'),
-                'modified': v1_experiment.get('fields').get('modified_date'),
+                'created': normalize_date_format(v1_experiment.get('fields').get('created_date')),
+                'modified': normalize_date_format(v1_experiment.get('fields').get('modified_date')),
                 'experiment': v1_experiment.get('pk'),
                 'experiment_node_number': node.get('idx'),
                 'node_display_name': node.get('name'),
@@ -841,6 +842,12 @@ def get_v2_experiment_resources_from_v1(v1_experiment: dict) -> [dict]:
         # print(json.dumps(v2_cer, indent=2))
         # print(json.dumps(node, indent=2))
     return v2_resource_ids
+
+
+def normalize_date_format(v1_date: str):
+    v2_date = parser.parse(v1_date) + timedelta(milliseconds=100)
+    # print(v2_date.strftime("%Y-%m-%dT%H:%M:%S.%f%z"))
+    return v2_date.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
 
 def output_fixture_files():

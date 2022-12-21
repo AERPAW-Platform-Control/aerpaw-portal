@@ -383,7 +383,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         - user is_experiment_member
         """
         experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
-        if experiment.is_creator(request.user) or experiment.is_member(request.user):
+        if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
             if str(request.method).casefold() in ['put', 'patch']:
                 if request.data.get('experiment_resources') or isinstance(request.data.get('experiment_resources'),
                                                                           list):
@@ -491,7 +491,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         - user is_experiment_member
         """
         experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
-        if experiment.is_creator(request.user) or experiment.is_member(request.user):
+        if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
             if str(request.method).casefold() in ['put', 'patch', 'post']:
                 if request.data.get('experiment_members') or isinstance(request.data.get('experiment_members'), list):
                     if experiment.is_retired:
@@ -1061,17 +1061,17 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             queryset = CanonicalExperimentResource.objects.filter(
                 experiment__id=experiment_id,
                 resource__id=resource_id
-            ).order_by('node_display_name').distinct()
+            ).order_by('experiment_node_number').distinct()
         elif experiment_id:
             queryset = CanonicalExperimentResource.objects.filter(
                 experiment__id=experiment_id
-            ).order_by('node_display_name').distinct()
+            ).order_by('experiment_node_number').distinct()
         elif resource_id:
             queryset = CanonicalExperimentResource.objects.filter(
                 resource__id=resource_id
-            ).order_by('node_display_name').distinct()
+            ).order_by('experiment_node_number').distinct()
         else:
-            queryset = CanonicalExperimentResource.objects.filter().order_by('node_display_name').distinct()
+            queryset = CanonicalExperimentResource.objects.filter().order_by('experiment_node_number').distinct()
         return queryset
 
     def list(self, request, *args, **kwargs):
