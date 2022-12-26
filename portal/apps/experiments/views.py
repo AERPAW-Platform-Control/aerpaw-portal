@@ -168,7 +168,7 @@ def experiment_detail(request, experiment_id):
                 res = r.list(request=request)
                 if res.data:
                     resources.append(res.data.get('results')[0])
-            resources.sort(key=lambda x: x.get('node_display_name'))
+            resources.sort(key=lambda x: x.get('experiment_node_number'))
         except Exception as exc:
             resources = []
             message = exc

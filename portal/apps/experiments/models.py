@@ -207,7 +207,8 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
 
     class NodeUhd(models.TextChoices):
         ONE_THREE_THREE = '1.3.3', _('1.3.3')
-        ONE_FOUR = '1.4', _('1.4')
+        ONE_FOUR_ZERO = '1.4.0', _('1.4.0')
+        ONE_FOUR_TWO = '1.4.2', _('1.4.2')
 
     class NodeVehicle(models.TextChoices):
         VEHICLE_UAV = 'vehicle_uav', _('Vehicle UAV')
@@ -230,7 +231,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     node_uhd = models.CharField(
         max_length=255,
         choices=NodeUhd.choices,
-        default=NodeUhd.ONE_THREE_THREE
+        default=NodeUhd.ONE_FOUR_TWO
     )
     node_vehicle = models.CharField(
         max_length=255,
