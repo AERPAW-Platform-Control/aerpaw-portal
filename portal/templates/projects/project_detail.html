@@ -222,7 +222,7 @@
                 </tbody>
             </table>
         </div>
-        {% if debug %}
+        {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
             <pre><strong>project:</strong><br>{{ project|pprint }}</pre>
             <pre><strong>experiments:</strong><br>{{ experiments|pprint }}</pre>

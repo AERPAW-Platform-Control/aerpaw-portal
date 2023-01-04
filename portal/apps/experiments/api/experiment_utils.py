@@ -65,23 +65,19 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     # PORTAL CF: saving_development
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-saveexit-ve-exp.py
-    if MOCK_OPS:
-        # MOCK OPS: always pass
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+    if exit_development:
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-saveexit-ve-exp.py {0} save-and-exit".format(
             experiment.id)
-        # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-        #     experiment.id)
     else:
-        # PRODUCTION:
-        if exit_development:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-saveexit-ve-exp.py {0} save-and-exit".format(
-                experiment.id)
-        else:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-saveexit-ve-exp.py {0} save".format(
-                experiment.id)
-
-    ssh_thread = threading.Thread(target=saving_development, args=(request, experiment, command, exit_development))
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-saveexit-ve-exp.py {0} save".format(
+            experiment.id)
+    if MOCK_OPS:
+        # DEVELOPMENT - always pass
+        mock = True
+    else:
+        # PRODUCTION
+        mock = False
+    ssh_thread = threading.Thread(target=saving_development, args=(request, experiment, command, exit_development, mock))
     ssh_thread.start()
 
 
@@ -124,22 +120,17 @@ def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
 
     # PORTAL CF: save_sandbox
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # TODO: aerpaw ops: <SCRIPT>
-    if MOCK_OPS:
-        # MOCK OPS: always pass
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-        # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-        #     experiment.id)
-    else:
-        # PRODUCTION:
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-
-    ssh_thread = threading.Thread(target=saving_sandbox, args=(request, experiment, command, exit_sandbox))
-    ssh_thread.start()
+    # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
+    # command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+    #     experiment.id)
+    # if MOCK_OPS:
+    #     # DEVELOPMENT - always pass
+    #     mock = True
+    # else:
+    #     # PRODUCTION
+    #     mock = False
+    # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
+    # ssh_thread.start()
 
 
 def saving_development_to_saved(request, experiment: AerpawExperiment):
@@ -206,21 +197,16 @@ def saving_development_to_active_development(request, experiment: AerpawExperime
 
     # PORTAL CF: wait_development_deploy
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # TODO: aerpaw ops: <SCRIPT>
+    # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
+    # command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+    #     experiment.id)
     # if MOCK_OPS:
-    #     # MOCK OPS: always pass
-    #     command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-    #         experiment.id)
-    #     # MOCK OPS: always fail
-    #     # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-    #     #     experiment.id)
+    #     # DEVELOPMENT - always pass
+    #     mock = True
     # else:
-    #     # PRODUCTION:
-    #     # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
-    #     command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-    #         experiment.id)
-    #
-    # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command))
+    #     # PRODUCTION
+    #     mock = False
+    # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
     # ssh_thread.start()
 
 
@@ -289,21 +275,16 @@ def saving_sandbox_to_active_sandbox(request, experiment: AerpawExperiment):
 
     # PORTAL CF: wait_sandbox_deploy
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # TODO: aerpaw ops: <SCRIPT>
+    # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
+    # command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+    #     experiment.id)
     # if MOCK_OPS:
-    #     # MOCK OPS: always pass
-    #     command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-    #         experiment.id)
-    #     # MOCK OPS: always fail
-    #     # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-    #     #     experiment.id)
+    #     # DEVELOPMENT - always pass
+    #     mock = True
     # else:
-    #     # PRODUCTION:
-    #     # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
-    #     command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-    #         experiment.id)
-    #
-    # ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command))
+    #     # PRODUCTION
+    #     mock = False
+    # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
     # ssh_thread.start()
 
 
@@ -395,21 +376,6 @@ def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperimen
             experiment=experiment,
             user=request.user
         )
-        # PORTAL CF: wait_testbed_deploy
-        # TODO: Portal to manage next_state transition - normally this would be an Operator call
-        # aerpaw ops: ap-cf-submit-to-tbed.py
-        if MOCK_OPS:
-            # MOCK OPS: always pass
-            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-                experiment.id)
-            # MOCK OPS: always fail
-            # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(experiment.id)
-        else:
-            # PRODUCTION:
-            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
-
-        # ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command))
-        # ssh_thread.start()
     else:
         # send back to saved
         experiment.experiment_flags = '100'
@@ -491,18 +457,14 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-deploy-ve-exp.py
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-deploy-ve-exp.py {0}".format(experiment.id)
     if MOCK_OPS:
-        # MOCK OPS: always pass
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-        # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-        #     experiment.id)
+        # DEVELOPMENT - always pass
+        mock = True
     else:
-        # PRODUCTION:
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-deploy-ve-exp.py {0}".format(experiment.id)
-
-    ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command))
+        # PRODUCTION
+        mock = False
+    ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
     ssh_thread.start()
 
 
@@ -532,22 +494,17 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF: wait_sandbox_deploy
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # TODO: aerpaw ops: <SCRIPT>
-    if MOCK_OPS:
-        # MOCK OPS: always pass
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-        # MOCK OPS: always fail
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-        #     experiment.id)
-    else:
-        # PRODUCTION:
-        # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/apcf_deploy_ve_exp.py {0}".format(experiment.id)
-        command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-            experiment.id)
-
-    ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command))
-    ssh_thread.start()
+    # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
+    # command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+    #     experiment.id)
+    # if MOCK_OPS:
+    #     # DEVELOPMENT - always pass
+    #     mock = True
+    # else:
+    #     # PRODUCTION
+    #     mock = False
+    # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
+    # ssh_thread.start()
 
 
 def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
@@ -605,18 +562,14 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
         # PORTAL CF: wait_testbed_schedule
         # TODO: Portal to manage next_state transition - normally this would be an Operator call
         # aerpaw ops: ap-cf-submit-to-tbed.py
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
         if MOCK_OPS:
-            # MOCK OPS: always pass
-            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
-                experiment.id)
-            # MOCK OPS: always fail
-            # command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_failure.py {0}".format(
-            #     experiment.id)
+            # DEVELOPMENT - always pass
+            mock = True
         else:
-            # PRODUCTION:
-            command = "/home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
-
-        ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command))
+            # PRODUCTION
+            mock = False
+        ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock))
         ssh_thread.start()
 
 
@@ -1007,15 +960,22 @@ def same_to_same(request, experiment: AerpawExperiment):
     - operator
     """
     # TODO: placeholder for same state update options
-    # PREFLIGHT CHECK:
-    # ACTION ITEMS:
-    # UPDATE STATE:
-    print(experiment.experiment_state)
+    # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
+    # command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/mock-tests/apcf_deploy_ve_exp_success.py {0}".format(
+    #     experiment.id)
+    # if MOCK_OPS:
+    #     # DEVELOPMENT - always pass
+    #     mock = True
+    # else:
+    #     # PRODUCTION
+    #     mock = False
+    # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
+    # ssh_thread.start()
 
 
-def saving_development(request, experiment: AerpawExperiment, command: str, exit_development: bool):
+def saving_development(request, experiment: AerpawExperiment, command: str, exit_development: bool, mock: bool):
     ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    response, exit_code = ssh_call.send_command(command, verbose=True)
+    response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     exit_code = 0
     if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
@@ -1045,10 +1005,10 @@ def saving_development(request, experiment: AerpawExperiment, command: str, exit
                     experiment.id))
 
 
-def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_sandbox: bool):
+def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_sandbox: bool, mock: bool):
     # TODO: placeholder for save_sandbox
     # ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    # response, exit_code = ssh_call.send_command(command, verbose=True)
+    # response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     response = '{"msg": "SaveSandbox: saving sandbox data", "urn": "/test"}'
     exit_code = 0
     if MOCK_OPS:
@@ -1066,9 +1026,9 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
         saving_sandbox_to_active_sandbox(request=request, experiment=experiment)
 
 
-def wait_development_deploy(request, experiment: AerpawExperiment, command: str) -> None:
+def wait_development_deploy(request, experiment: AerpawExperiment, command: str, mock: bool) -> None:
     ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    response, exit_code = ssh_call.send_command(command, verbose=True)
+    response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
@@ -1088,10 +1048,10 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str)
             detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
 
 
-def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str):
+def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str, mock: bool):
     # TODO: placeholder for wait_sandbox_deploy
     # ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    # response, exit_code = ssh_call.send_command(command, verbose=True)
+    # response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     response = '{"msg": "WaitSandboxDeploy: deploying sandbox", "urn": "/test"}'
     exit_code = 0
     if MOCK_OPS:
@@ -1123,9 +1083,9 @@ def is_emulation_required(experiment: AerpawExperiment) -> bool:
     return experiment.is_emulation_required
 
 
-def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str) -> None:
+def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, mock: bool) -> None:
     ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
-    response, exit_code = ssh_call.send_command(command, verbose=True)
+    response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)

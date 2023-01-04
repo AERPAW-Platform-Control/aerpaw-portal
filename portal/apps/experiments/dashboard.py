@@ -33,13 +33,17 @@ def check_submit_to_emulation():
 
 def check_submit_to_testbed(experiment: AerpawExperiment):
     """
-    Experiment has completed at least one development cycle
+    Experiment has completed at least one successful development cycle at any point in time
+    - TODO: consider checking for most recent development session being successful
     """
     # TODO: define checks for submit to testbed
     session_obj = ExperimentSession.objects.filter(
         experiment_id=experiment.id,
         session_type=ExperimentSession.SessionType.DEVELOPMENT.value,
-        end_date_time__isnull=False
+        start_date_time__isnull=False,
+        started_by__isnull=False,
+        end_date_time__isnull=False,
+        ended_by__isnull=False
     ).order_by('-created').first()
     if session_obj:
         return True
@@ -81,6 +85,11 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
     try:
         user = request.user
         experiment = AerpawExperiment.objects.get(id=experiment_id)
+
+        # ensure user is a member of the experiment, or the creator of the experiment
+        if not experiment.is_member(user=user) and not experiment.is_creator(user=user):
+            # user is not a member and not the creator - return all buttons set to False
+            return buttons
 
         # is_retired or is_deleted
         if experiment.is_retired or experiment.is_deleted:

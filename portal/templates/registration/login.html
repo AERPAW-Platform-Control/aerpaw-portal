@@ -15,6 +15,9 @@
                 identity:</b>
         </div>
         <br>
+        <strong style="color: red">FIRST TIME USERS:</strong> It is likely that you will need to
+        <strong>login twice</strong> when creating an account for the first time
+        <br><br>
         <div style="border: 5px outset #696; cursor:pointer; padding:3px; display:inline-block;"
              onclick="location.href='{% url 'oidc_authentication_init' %}'">
             <a href="{% url 'oidc_authentication_init' %}"
@@ -25,9 +28,7 @@
                     style="vertical-align:middle"/>&nbsp;AERPAW&nbsp;Login&nbsp;</a>
         </div>
         <br><br>
-        <strong>NOTE: If this is your first time signing in an account will automatically be created for you based on
-            the Identity
-            Provider you choose to authenticate with.
-        </strong>
+        <strong>NOTE:</strong> If this is your first time signing in an account will automatically be created for
+        you based on the Identity Provider you choose to authenticate with.
     {% endif %}
 {% endblock %}

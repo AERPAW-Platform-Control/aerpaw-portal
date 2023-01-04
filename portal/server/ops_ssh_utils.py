@@ -10,9 +10,11 @@ class AerpawSsh:
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.client.connect(hostname=hostname, username=username, pkey=self.key, banner_timeout=200)
 
-    def send_command(self, command, verbose: bool = False) -> (str, str):
+    def send_command(self, command, verbose: bool = False, mock: bool = False) -> (str, str):
         response = ''
         exit_code = 1
+        if mock:
+            return 'mock: {0}'.format(command), 0
         if self.client:
             try:
                 stdin, stdout, stderr = self.client.exec_command(command, get_pty=True)

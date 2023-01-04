@@ -75,7 +75,7 @@
                 </tr>
                 </tbody>
             </table>
-            {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_owner %}
+            {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_owner or user.is_operator %}
                 <div class="d-flex flex-row align-items-center justify-content-between">
                     <h4>
                         Dashboard
@@ -88,7 +88,7 @@
                             <em class="text-secondary" style="font-size: medium">(no active session)</em>
                         {% endif %}
                     </h4>
-                    {% if not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
+                    {%  if user.is_operator or not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
                         <div>
                             <button class="btn btn-primary mr-2">
                                 <a href="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
@@ -498,7 +498,7 @@
                 </tbody>
             </table>
         </div>
-        {% if debug %}
+        {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
             <pre><strong>experiment</strong>:<br>{{ experiment|pprint }}</pre>
             <pre><strong>resources</strong>:<br>{{ resources|pprint }}</pre>
