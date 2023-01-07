@@ -5,7 +5,10 @@ from uuid import uuid4
 from django.core.mail import send_mail
 
 from portal.apps.user_messages.models import AerpawUserMessage
-from portal.apps.users.models import AerpawUser
+from portal.apps.user_requests.models import AerpawUserRequest
+from portal.apps.users.models import AerpawRolesEnum, AerpawUser
+from portal.apps.projects.models import AerpawProject
+from portal.apps.experiments.models import AerpawExperiment
 
 
 def send_portal_mail_from_message(request, *args, **kwargs) -> bool:
@@ -93,6 +96,7 @@ def generate_user_messages_from_user_request(request, user_request: dict):
     message_owner_ids = received_by.copy()
     message_owner_ids.append(user_request.get('requested_by'))
     request_type = user_request.get('request_type')
+    user_display_name = AerpawUser.objects.filter(id=user_request.get('requested_by')).first().display_name
     if not user_request.get('response_date'):
         message_subject = 'REQUEST: ' + user_request.get('request_note')
     else:
@@ -115,7 +119,7 @@ response_note: {7}
 response_date: {8}
 """.format(
         request_type,
-        AerpawUser.objects.filter(id=user_request.get('requested_by')).first().display_name,
+        user_display_name,
         user_request.get('request_note'),
         datetime.strptime(user_request.get('requested_date'), "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%m/%d/%Y, %H:%M:%S"),
         [u.display_name for u in AerpawUser.objects.filter(id__in=received_by).all()],
@@ -135,11 +139,126 @@ response_date: {8}
             'received_by': received_by
         }
         user_message_create(request=request, **kwargs)
+    # emails
+    if request_type == AerpawUserRequest.RequestType.ROLE.value:
+        print('here')
+        # role
+        if not user_request.get('response_date'):
+            print('role request')
+            # role request
+            if user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.EXPERIMENTER.value):
+                # experimenter role
+                message_subject = '[AERPAW] Request for Experimenter role: {0}'.format(user_display_name)
+                message_body = """
+Hi {0},
+
+Your request to be granted the role of Experimenter has been forwarded to AERPAW Ops.
+You will receive another email when your request has been addressed.
+As noted in the AERPAW User Manual, this can take a variable amount of time, from minutes to hours.
+""".format(user_display_name)
+            elif user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.PI.value):
+                # pi role
+                message_subject = '[AERPAW] Request for PI role: {0}'.format(user_display_name)
+                message_body = """
+Hi {0},
+
+Your request to be granted the role of Principal Investigator has been forwarded to AERPAW Ops.
+You will receive another email when your request has been addressed.
+As noted in the AERPAW User Manual, this can take a variable amount of time, from minutes to hours.
+""".format(user_display_name)
+        else:
+            print('role response')
+            # role response
+            if user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.EXPERIMENTER.value):
+                # experimenter role
+                message_subject = '[AERPAW] re: Request for Experimenter role: {0}'.format(user_display_name)
+                message_body = """
+Hi {0},
+
+Your request to be granted the role of Experimenter has been {1}.
+
+Note: {2}
+""".format(user_display_name,
+                    'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+                    user_request.get('response_note'))
+            elif user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.PI.value):
+                # pi role
+                message_subject = '[AERPAW] re: Request for PI role: {0}'.format(user_display_name)
+                message_body = """
+Hi {0},
+
+Your request to be granted the role of Principal Investigator has been {1}.
+
+Note: {2}
+""".format(user_display_name,
+                    'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+                    user_request.get('response_note'))
+    elif request_type == AerpawUserRequest.RequestType.PROJECT.value:
+        # project
+        project_name = AerpawProject.objects.get(pk=user_request.get('request_type_id')).name
+        if not user_request.get('response_date'):
+            # project request
+            message_subject = '[AERPAW] Request to join Project: {0}'.format(project_name)
+            message_body = """
+Hi {0},
+
+Your request to join the Project: {1} has been forwarded to the owners of this project.
+You will receive an email confirmation once one of the Project Owners has approved/denied this request.
+""".format(user_display_name, project_name)
+        else:
+            # project response
+            message_subject = '[AERPAW] re: Request to join Project: {0}'.format(project_name)
+            message_body = """
+Hi {0},
+
+Your request to join the Project: {1} has been {2}.
+
+Note: {3}
+""".format(user_display_name,
+                project_name,
+                'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+                user_request.get('response_note'))
+    elif request_type == AerpawUserRequest.RequestType.EXPERIMENT.value:
+        # experiment
+        experiment_name = AerpawExperiment.objects.get(pk=user_request.get('request_type_id')).name
+        if not user_request.get('response_date'):
+            # experiment request
+            message_subject = '[AERPAW] Request to join Experiment: {0}'.format(experiment_name)
+            message_body = """
+Hi {0},
+
+Your request to join the Experiment: {1} has been forwarded to the owners of this project.
+You will receive an email confirmation once one of the Project Owners has approved/denied this request.
+""".format(user_display_name, experiment_name)
+        else:
+            # experiment response
+            message_subject = '[AERPAW] re: Request to join Experiment: {0}'.format(experiment_name)
+            message_body = """
+Hi {0},
+
+Your request to join the Experiment: {1} has been {2}.
+
+Note: {3}
+""".format(user_display_name,
+                experiment_name,
+                'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+                user_request.get('response_note'))
+    else:
+        message_owner_ids = []
+    for owner in message_owner_ids:
+        kwargs = {
+            'message_body': message_body,
+            'message_owner': request.user.id,
+            'message_subject': message_subject,
+            'received_by': [owner]
+        }
+        send_portal_mail_from_message(request=request, **kwargs)
 
 
 def generate_new_user_welcome_message(request, user: AerpawUser):
+    message_subject = '[AERPAW] Welcome {0} to the AERPAW portal!'.format(user.display_name)
     message_body = """
-Hello {0},
+Hi {0},
 
 Welcome to the AERPAW Portal
         
@@ -149,8 +268,10 @@ please refer to relevant instructions before attempting to use this Portal.
 - AERPAW Main Site: https://aerpaw.org/
 - AERPAW User Manual: https://sites.google.com/ncsu.edu/aerpaw-wiki/
 - AERPAW Acceptable Use Policy: https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-web-portal/2-5-acceptable-use-policy-aup
+
+Thank you for joining AERPAW,
+- AERPAW Ops
 """.format(user.display_name)
-    message_subject = '[AERPAW] Welcome {0} to the AERPAW portal!'.format(user.display_name)
     kwargs = {
         'message_body': message_body,
         'message_owner': user.id,
