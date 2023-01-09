@@ -21,34 +21,54 @@ def check_initiate_development(user: AerpawUser, experiment: AerpawExperiment):
     return True
 
 
-def check_submit_to_sandbox():
+def check_submit_to_sandbox(user: AerpawUser):
     # TODO: define checks for submit to sandbox
+    # user has one or more public keys
+    if not PublicCredentials.objects.filter(
+            owner=user,
+            is_deleted=False
+    ).exists():
+        return False
     return False
 
 
-def check_submit_to_emulation():
+def check_submit_to_emulation(user: AerpawUser):
     # TODO: define checks for submit to emulation
+    # user has one or more public keys
+    if not PublicCredentials.objects.filter(
+            owner=user,
+            is_deleted=False
+    ).exists():
+        return False
     return False
 
 
-def check_submit_to_testbed(experiment: AerpawExperiment):
+def check_submit_to_testbed(user: AerpawUser, experiment: AerpawExperiment):
     """
     Experiment has completed at least one successful development cycle at any point in time
     - TODO: consider checking for most recent development session being successful
     """
     # TODO: define checks for submit to testbed
-    session_obj = ExperimentSession.objects.filter(
+    # experiment has one or more resources
+    if not experiment.resources.exists():
+        return False
+    # user has one or more public keys
+    if not PublicCredentials.objects.filter(
+            owner=user,
+            is_deleted=False
+    ).exists():
+        return False
+    # experiment has completed at least one successful development cycle
+    if not ExperimentSession.objects.filter(
         experiment_id=experiment.id,
         session_type=ExperimentSession.SessionType.DEVELOPMENT.value,
         start_date_time__isnull=False,
         started_by__isnull=False,
         end_date_time__isnull=False,
         ended_by__isnull=False
-    ).order_by('-created').first()
-    if session_obj:
-        return True
-    else:
+    ).order_by('-created').exists():
         return False
+    return True
 
 
 def get_dashboard_buttons(request, experiment_id: int) -> dict:
@@ -114,11 +134,11 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
             # initiate development
             buttons['b_dev_init'] = check_initiate_development(user=user, experiment=experiment)
             # submit to sandbox
-            buttons['b_sandbox_submit'] = check_submit_to_sandbox()
+            buttons['b_sandbox_submit'] = check_submit_to_sandbox(user=user)
             # submit to emulation
-            buttons['b_emu_submit'] = check_submit_to_emulation()
+            buttons['b_emu_submit'] = check_submit_to_emulation(user=user)
             # submit to testbed
-            buttons['b_testbed_submit'] = check_submit_to_testbed(experiment=experiment)
+            buttons['b_testbed_submit'] = check_submit_to_testbed(user=user, experiment=experiment)
         # SAVING_DEVELOPMENT  - n/a
         elif experiment.experiment_state == AerpawExperiment.ExperimentState.SAVING_DEVELOPMENT:
             pass

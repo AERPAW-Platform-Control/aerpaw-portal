@@ -4,11 +4,11 @@ from uuid import uuid4
 
 from django.core.mail import send_mail
 
+from portal.apps.experiments.models import AerpawExperiment
+from portal.apps.projects.models import AerpawProject
 from portal.apps.user_messages.models import AerpawUserMessage
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.users.models import AerpawRolesEnum, AerpawUser
-from portal.apps.projects.models import AerpawProject
-from portal.apps.experiments.models import AerpawExperiment
 
 
 def send_portal_mail_from_message(request, *args, **kwargs) -> bool:
@@ -141,10 +141,8 @@ response_date: {8}
         user_message_create(request=request, **kwargs)
     # emails
     if request_type == AerpawUserRequest.RequestType.ROLE.value:
-        print('here')
         # role
         if not user_request.get('response_date'):
-            print('role request')
             # role request
             if user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.EXPERIMENTER.value):
                 # experimenter role
@@ -167,7 +165,6 @@ You will receive another email when your request has been addressed.
 As noted in the AERPAW User Manual, this can take a variable amount of time, from minutes to hours.
 """.format(user_display_name)
         else:
-            print('role response')
             # role response
             if user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.EXPERIMENTER.value):
                 # experimenter role
@@ -179,8 +176,8 @@ Your request to be granted the role of Experimenter has been {1}.
 
 Note: {2}
 """.format(user_display_name,
-                    'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
-                    user_request.get('response_note'))
+           'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+           user_request.get('response_note'))
             elif user_request.get('request_note') == '[{0}] - role request'.format(AerpawRolesEnum.PI.value):
                 # pi role
                 message_subject = '[AERPAW] re: Request for PI role: {0}'.format(user_display_name)
@@ -191,8 +188,8 @@ Your request to be granted the role of Principal Investigator has been {1}.
 
 Note: {2}
 """.format(user_display_name,
-                    'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
-                    user_request.get('response_note'))
+           'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+           user_request.get('response_note'))
     elif request_type == AerpawUserRequest.RequestType.PROJECT.value:
         # project
         project_name = AerpawProject.objects.get(pk=user_request.get('request_type_id')).name
@@ -215,9 +212,9 @@ Your request to join the Project: {1} has been {2}.
 
 Note: {3}
 """.format(user_display_name,
-                project_name,
-                'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
-                user_request.get('response_note'))
+           project_name,
+           'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+           user_request.get('response_note'))
     elif request_type == AerpawUserRequest.RequestType.EXPERIMENT.value:
         # experiment
         experiment_name = AerpawExperiment.objects.get(pk=user_request.get('request_type_id')).name
@@ -227,8 +224,8 @@ Note: {3}
             message_body = """
 Hi {0},
 
-Your request to join the Experiment: {1} has been forwarded to the owners of this project.
-You will receive an email confirmation once one of the Project Owners has approved/denied this request.
+Your request to join the Experiment: {1} has been forwarded to the members of this experiment.
+You will receive an email confirmation once one of the Experiment Members has approved/denied this request.
 """.format(user_display_name, experiment_name)
         else:
             # experiment response
@@ -240,9 +237,9 @@ Your request to join the Experiment: {1} has been {2}.
 
 Note: {3}
 """.format(user_display_name,
-                experiment_name,
-                'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
-                user_request.get('response_note'))
+           experiment_name,
+           'Approved' if str(user_request.get('is_approved')).casefold() in ['true'] else 'Denied',
+           user_request.get('response_note'))
     else:
         message_owner_ids = []
     for owner in message_owner_ids:
@@ -282,4 +279,168 @@ Thank you for joining AERPAW,
     # create portal message
     user_message_create(request=request, **kwargs)
     # send welcome email
+    send_portal_mail_from_message(request=request, **kwargs)
+
+
+def generate_user_messages_from_project_membership(request, project: AerpawProject, project_members: [int],
+                                                   membership_type: str, add: bool = False):
+    """
+    UserMessage - required components (per message)
+    - message_body     - string
+    - message_owner    - int:user_id
+    - message_subject  - string
+    - received_by      - array of int:user_id
+    """
+    project_owner_ids = [o.id for o in project.project_owners().all()]
+    project_owner_ids.append(AerpawUser.objects.get(username=project.created_by).id)
+    for member in project_members:
+        user_display_name = AerpawUser.objects.filter(id=member).first().display_name
+        if add:
+            message_subject = '[AERPAW] {0} added to Project: {1} as {2}'.format(user_display_name, project.name,
+                                                                                 membership_type)
+            message_body = """
+Hi {0},
+
+You have been added to Project: {1} as {2}
+""".format(user_display_name, project.name, membership_type)
+        else:
+            message_subject = '[AERPAW] {0} removed from Project: {1} as {2}'.format(user_display_name, project.name,
+                                                                                     membership_type)
+            message_body = """
+Hi {0},
+
+You have been removed from Project: {1} as {2}
+""".format(user_display_name, project.name, membership_type)
+        received_by_all = project_owner_ids.copy()
+        received_by_all.append(member)
+        received_by = set(received_by_all)
+        for r in received_by:
+            kwargs = {
+                'message_body': message_body,
+                'message_owner': r,
+                'message_subject': message_subject,
+                'received_by': received_by
+            }
+            user_message_create(request=request, **kwargs)
+        # send email
+        kwargs = {
+            'message_body': message_body,
+            'message_subject': message_subject,
+            'received_by': received_by
+        }
+        send_portal_mail_from_message(request=request, **kwargs)
+
+
+def generate_user_messages_from_experiment_membership(request, experiment: AerpawExperiment, experiment_members: [int],
+                                                      add: bool = False):
+    """
+    UserMessage - required components (per message)
+    - message_body     - string
+    - message_owner    - int:user_id
+    - message_subject  - string
+    - received_by      - array of int:user_id
+    """
+    experiment_member_ids = [m.id for m in experiment.experiment_members().all()]
+    experiment_member_ids.append(AerpawUser.objects.get(username=experiment.created_by).id)
+    for member in experiment_members:
+        user_display_name = AerpawUser.objects.filter(id=member).first().display_name
+        if add:
+            message_subject = '[AERPAW] {0} added to Experiment: {1} as Member'.format(user_display_name,
+                                                                                       experiment.name)
+            message_body = """
+Hi {0},
+
+You have been added to Experiment: {1} as Member
+""".format(user_display_name, experiment.name)
+        else:
+            message_subject = '[AERPAW] {0} removed from Experiment: {1} as Member'.format(user_display_name,
+                                                                                           experiment.name)
+            message_body = """
+Hi {0},
+
+You have been removed from Experiment: {1} as Member
+""".format(user_display_name, experiment.name)
+        received_by_all = experiment_member_ids.copy()
+        received_by_all.append(member)
+        received_by = set(received_by_all)
+        for r in received_by:
+            kwargs = {
+                'message_body': message_body,
+                'message_owner': r,
+                'message_subject': message_subject,
+                'received_by': received_by
+            }
+            user_message_create(request=request, **kwargs)
+        # send email
+        kwargs = {
+            'message_body': message_body,
+            'message_subject': message_subject,
+            'received_by': received_by
+        }
+        send_portal_mail_from_message(request=request, **kwargs)
+
+
+def generate_user_messages_for_development(request, experiment: AerpawExperiment):
+    """
+    UserMessage - required components (per message)
+    - message_body     - string
+    - message_owner    - int:user_id
+    - message_subject  - string
+    - received_by      - array of int:user_id
+    """
+    received_by_all = [m.id for m in experiment.experiment_members().all()]
+    received_by_all.append(AerpawUser.objects.get(username=experiment.created_by).id)
+    if experiment.state() == AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY.value:
+        # Initiate Development - button pressed by user
+        # - notify: experiment_members
+        message_subject = '[AERPAW] Request to initiate development for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your request to initiate a development session for the experiment: {0} has been forwarded to AERPAW Ops.
+When the Development Session is ready for you, you will receive another email with access info.
+As noted in the AERPAW User Manual, this can take a variable amount of time, from minutes to hours.
+""".format(experiment.name)
+    elif experiment.state() == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT.value:
+        # Development environment is ready for use
+        # - notify: experiment_members
+        message_subject = '[AERPAW] Development environment for Experiment: {0} is active'.format(experiment.name)
+        message_body = """
+Your development session for the experiment: {0} is ready for use.
+""".format(experiment.name)
+    elif experiment.state() == AerpawExperiment.ExperimentState.SAVING_DEVELOPMENT.value:
+        # Saving Development Environment
+        # - notify: experiment_members
+        message_subject = '[AERPAW] Saving development environment for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Saving experiment: {0}
+As noted in the AERPAW User Manual, this can take a variable amount of time, from minutes to hours.
+""".format(experiment.name)
+    elif experiment.state() == AerpawExperiment.ExperimentState.SAVED.value:
+        # Development session has ended and moved back to saved state
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Development session for Experiment: {0} has been ended'.format(experiment.name)
+        message_body = """
+Development session for Experiment: {0} has been ended and the experiment saved.
+""".format(experiment.name)
+    else:
+        message_subject = '[AERPAW] Invalid state for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Experiment: {0} is in an Invalid state
+""".format(experiment.name)
+    # send message
+    received_by = set(received_by_all)
+    for member in received_by:
+        kwargs = {
+            'message_body': message_body,
+            'message_owner': member,
+            'message_subject': message_subject,
+            'received_by': received_by
+        }
+        user_message_create(request=request, **kwargs)
+    # send email
+    kwargs = {
+        'message_body': message_body,
+        'message_subject': message_subject,
+        'received_by': received_by
+    }
     send_portal_mail_from_message(request=request, **kwargs)

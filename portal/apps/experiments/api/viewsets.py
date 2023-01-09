@@ -23,6 +23,7 @@ from portal.apps.operations.models import CanonicalNumber, get_current_canonical
 from portal.apps.projects.models import AerpawProject
 from portal.apps.resources.api.serializers import ResourceSerializerDetail
 from portal.apps.resources.models import AerpawResource
+from portal.apps.user_messages.user_messages import generate_user_messages_from_experiment_membership
 from portal.apps.users.models import AerpawUser
 
 # constants
@@ -518,10 +519,18 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                     membership.experiment = experiment
                                     membership.user = user
                                     membership.save()
+                        # add experiment members message
+                        generate_user_messages_from_experiment_membership(
+                            request=request, experiment=experiment, experiment_members=experiment_members_added,
+                            add=True)
                         for pk in experiment_members_removed:
                             membership = UserExperiment.objects.get(
                                 experiment__id=experiment.id, user__id=pk)
                             membership.delete()
+                        # remove experiment members message
+                        generate_user_messages_from_experiment_membership(
+                            request=request, experiment=experiment, experiment_members=experiment_members_removed,
+                            add=False)
             # End of PUT, PATCH section - All reqeust types return membership
             serializer = ExperimentSerializerDetail(experiment)
             du = dict(serializer.data)

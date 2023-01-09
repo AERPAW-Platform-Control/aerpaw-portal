@@ -18,6 +18,7 @@ from portal.apps.experiments.api.experiment_sessions import cancel_experiment_se
 from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
+from portal.apps.user_messages.user_messages import generate_user_messages_for_development
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
@@ -62,6 +63,9 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
         print(exc)
         exit_development = False
 
+    # MESSAGE / EMAIL: saving development
+    generate_user_messages_for_development(request=request, experiment=experiment)
+
     # PORTAL CF: saving_development
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-saveexit-ve-exp.py
@@ -77,7 +81,8 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     else:
         # PRODUCTION
         mock = False
-    ssh_thread = threading.Thread(target=saving_development, args=(request, experiment, command, exit_development, mock))
+    ssh_thread = threading.Thread(target=saving_development,
+                                  args=(request, experiment, command, exit_development, mock))
     ssh_thread.start()
 
 
@@ -164,6 +169,9 @@ def saving_development_to_saved(request, experiment: AerpawExperiment):
     experiment.experiment_flags = '000'
     experiment.save()
 
+    # MESSAGE / EMAIL: initiate development
+    generate_user_messages_for_development(request=request, experiment=experiment)
+
     # PORTAL CF:
 
 
@@ -194,6 +202,9 @@ def saving_development_to_active_development(request, experiment: AerpawExperime
     # UPDATE STATE: wait_development_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
     experiment.save()
+
+    # MESSAGE / EMAIL: initiate development
+    generate_user_messages_for_development(request=request, experiment=experiment)
 
     # PORTAL CF: wait_development_deploy
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
@@ -454,10 +465,14 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY
     experiment.save()
 
+    # MESSAGE / EMAIL: initiate development
+    generate_user_messages_for_development(request=request, experiment=experiment)
+
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-deploy-ve-exp.py
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-deploy-ve-exp.py {0}".format(experiment.id)
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-deploy-ve-exp.py {0}".format(
+        experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = True
@@ -562,7 +577,8 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
         # PORTAL CF: wait_testbed_schedule
         # TODO: Portal to manage next_state transition - normally this would be an Operator call
         # aerpaw ops: ap-cf-submit-to-tbed.py
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(experiment.id)
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(
+            experiment.id)
         if MOCK_OPS:
             # DEVELOPMENT - always pass
             mock = True
@@ -603,6 +619,9 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
     experiment.experiment_flags = '000'
     experiment.save()
+
+    # MESSAGE / EMAIL: initiate development
+    generate_user_messages_for_development(request=request, experiment=experiment)
 
 
 def wait_development_deploy_to_saved(request, experiment: AerpawExperiment):
