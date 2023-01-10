@@ -18,7 +18,7 @@ from portal.apps.experiments.api.experiment_sessions import cancel_experiment_se
 from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
-from portal.apps.user_messages.user_messages import generate_user_messages_for_development
+from portal.apps.user_messages.user_messages import generate_user_messages_for_development, generate_user_messages_for_testbed
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
@@ -169,7 +169,7 @@ def saving_development_to_saved(request, experiment: AerpawExperiment):
     experiment.experiment_flags = '000'
     experiment.save()
 
-    # MESSAGE / EMAIL: initiate development
+    # MESSAGE / EMAIL: saved development session and exit
     generate_user_messages_for_development(request=request, experiment=experiment)
 
     # PORTAL CF:
@@ -203,7 +203,7 @@ def saving_development_to_active_development(request, experiment: AerpawExperime
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
     experiment.save()
 
-    # MESSAGE / EMAIL: initiate development
+    # MESSAGE / EMAIL: resume active development
     generate_user_messages_for_development(request=request, experiment=experiment)
 
     # PORTAL CF: wait_development_deploy
@@ -387,6 +387,8 @@ def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperimen
             experiment=experiment,
             user=request.user
         )
+        # MESSAGE / EMAIL: wait testbed deploy
+        generate_user_messages_for_testbed(request=request, experiment=experiment)
     else:
         # send back to saved
         experiment.experiment_flags = '100'
@@ -574,6 +576,9 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
         experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
         experiment.save()
 
+        # MESSAGE / EMAIL: submit to testbed - emulation not required
+        generate_user_messages_for_testbed(request=request, experiment=experiment)
+
         # PORTAL CF: wait_testbed_schedule
         # TODO: Portal to manage next_state transition - normally this would be an Operator call
         # aerpaw ops: ap-cf-submit-to-tbed.py
@@ -620,7 +625,7 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
     experiment.experiment_flags = '000'
     experiment.save()
 
-    # MESSAGE / EMAIL: initiate development
+    # MESSAGE / EMAIL: active development session
     generate_user_messages_for_development(request=request, experiment=experiment)
 
 
@@ -968,6 +973,9 @@ def wait_testbed_schedule_to_wait_emulation_schedule(request, experiment: Aerpaw
     # UPDATE STATE: wait_emulation_schedule
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
     experiment.save()
+
+    # MESSAGE / EMAIL: submit to testbed - emulation required
+    generate_user_messages_for_testbed(request=request, experiment=experiment)
 
 
 def same_to_same(request, experiment: AerpawExperiment):

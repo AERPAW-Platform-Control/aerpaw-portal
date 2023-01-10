@@ -393,7 +393,7 @@ def generate_user_messages_for_development(request, experiment: AerpawExperiment
     if experiment.state() == AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY.value:
         # Initiate Development - button pressed by user
         # - notify: experiment_members
-        message_subject = '[AERPAW] Request to initiate development for Experiment: {0}'.format(experiment.name)
+        message_subject = '[AERPAW] Request to initiate development session for Experiment: {0}'.format(experiment.name)
         message_body = """
 Your request to initiate a development session for the experiment: {0} has been forwarded to AERPAW Ops.
 When the Development Session is ready for you, you will receive another email with access info.
@@ -402,7 +402,7 @@ As noted in the AERPAW User Manual, this can take a variable amount of time, fro
     elif experiment.state() == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT.value:
         # Development environment is ready for use
         # - notify: experiment_members
-        message_subject = '[AERPAW] Development environment for Experiment: {0} is active'.format(experiment.name)
+        message_subject = '[AERPAW] Development session for Experiment: {0} is active'.format(experiment.name)
         message_body = """
 Your development session for the experiment: {0} is ready for use.
 """.format(experiment.name)
@@ -422,6 +422,107 @@ As noted in the AERPAW User Manual, this can take a variable amount of time, fro
         message_body = """
 Development session for Experiment: {0} has been ended and the experiment saved.
 """.format(experiment.name)
+    else:
+        message_subject = '[AERPAW] Invalid state for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Experiment: {0} is in an Invalid state
+""".format(experiment.name)
+    # send message
+    received_by = set(received_by_all)
+    for member in received_by:
+        kwargs = {
+            'message_body': message_body,
+            'message_owner': member,
+            'message_subject': message_subject,
+            'received_by': received_by
+        }
+        user_message_create(request=request, **kwargs)
+    # send email
+    kwargs = {
+        'message_body': message_body,
+        'message_subject': message_subject,
+        'received_by': received_by
+    }
+    send_portal_mail_from_message(request=request, **kwargs)
+
+
+def generate_user_messages_for_sandbox(request, experiment: AerpawExperiment):
+    """
+    UserMessage - required components (per message)
+    - message_body     - string
+    - message_owner    - int:user_id
+    - message_subject  - string
+    - received_by      - array of int:user_id
+    """
+    pass
+
+
+def generate_user_messages_for_emulation(request, experiment: AerpawExperiment):
+    """
+    UserMessage - required components (per message)
+    - message_body     - string
+    - message_owner    - int:user_id
+    - message_subject  - string
+    - received_by      - array of int:user_id
+    """
+    pass
+
+
+def generate_user_messages_for_testbed(request, experiment: AerpawExperiment):
+    """
+    UserMessage - required components (per message)
+    - message_body     - string
+    - message_owner    - int:user_id
+    - message_subject  - string
+    - received_by      - array of int:user_id
+    """
+    received_by_all = [m.id for m in experiment.experiment_members().all()]
+    received_by_all.append(AerpawUser.objects.get(username=experiment.created_by).id)
+    if experiment.state() == AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE.value:
+        # Submit to Testbed - button pressed by user
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Request to submit to testbed for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your request to submit your experiment {0} for testbed execution has been forwarded to AERPAW Ops.
+Your experiment may require Emulation prior to opportunistic scheduling and subsequent execution on the Testbed.
+
+When the Testbed Execution is complete, you will receive another email. 
+As noted in the AERPAW User Manual, this can take a variable amount of time, typically several days.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+    elif experiment.state() == AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE.value:
+        # Submit to Testbed - button pressed by user
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Request to submit to testbed for Experiment: {0} (Emulation Required)'.format(experiment.name)
+        message_body = """
+Your request to submit your experiment {0} for testbed execution has been forwarded to AERPAW Ops.
+Your experiment requires Emulation prior to opportunistic scheduling and subsequent execution on the Testbed.
+
+When the Testbed Execution is complete, you will receive another email. 
+As noted in the AERPAW User Manual, this can take a variable amount of time, typically several days.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+    elif experiment.state() == AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY.value:
+        # Submit to Testbed - button pressed by user
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update for request to submit to testbed for Experiment: {0}'.format(
+            experiment.name)
+        message_body = """
+Your experiment {0} has been scheduled and is now awaiting execution on the Testbed.
+
+When the Testbed Execution is complete, you will receive another email. 
+As noted in the AERPAW User Manual, this can take a variable amount of time, typically several days.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
     else:
         message_subject = '[AERPAW] Invalid state for Experiment: {0}'.format(experiment.name)
         message_body = """
