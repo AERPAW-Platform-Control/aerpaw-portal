@@ -479,7 +479,7 @@ def generate_user_messages_for_testbed(request, experiment: AerpawExperiment):
     received_by_all = [m.id for m in experiment.experiment_members().all()]
     received_by_all.append(AerpawUser.objects.get(username=experiment.created_by).id)
     if experiment.state() == AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE.value:
-        # Submit to Testbed - button pressed by user
+        # Submit to Testbed - button pressed by user - no emulation required
         # - notify: experiment_members, operators
         received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
         message_subject = '[AERPAW] Request to submit to testbed for Experiment: {0}'.format(experiment.name)
@@ -494,10 +494,11 @@ Experiment ID: {1}
 Experiment UUID: {2}
 """.format(experiment.name, str(experiment.id), str(experiment.uuid))
     elif experiment.state() == AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE.value:
-        # Submit to Testbed - button pressed by user
+        # Submit to Testbed - button pressed by user - emulation required
         # - notify: experiment_members, operators
         received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
-        message_subject = '[AERPAW] Request to submit to testbed for Experiment: {0} (Emulation Required)'.format(experiment.name)
+        message_subject = '[AERPAW] Request to submit to testbed for Experiment: {0} (Emulation Required)'.format(
+            experiment.name)
         message_body = """
 Your request to submit your experiment {0} for testbed execution has been forwarded to AERPAW Ops.
 Your experiment requires Emulation prior to opportunistic scheduling and subsequent execution on the Testbed.
@@ -509,7 +510,7 @@ Experiment ID: {1}
 Experiment UUID: {2}
 """.format(experiment.name, str(experiment.id), str(experiment.uuid))
     elif experiment.state() == AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY.value:
-        # Submit to Testbed - button pressed by user
+        # Wait for Testbed deploy - session is scheduled and awaiting execution on testbed
         # - notify: experiment_members, operators
         received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
         message_subject = '[AERPAW] Update for request to submit to testbed for Experiment: {0}'.format(
@@ -519,6 +520,46 @@ Your experiment {0} has been scheduled and is now awaiting execution on the Test
 
 When the Testbed Execution is complete, you will receive another email. 
 As noted in the AERPAW User Manual, this can take a variable amount of time, typically several days.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+    elif experiment.state() == AerpawExperiment.ExperimentState.ACTIVE_TESTBED.value:
+        # Active in Testbed - session is being actively executed on the testbed
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update - Experiment: {0} is now active on the testbed'.format(
+            experiment.name)
+        message_body = """
+Your experiment {0} is presently being executed on the Testbed.
+
+When the Testbed Execution is complete, you will receive another email. 
+As noted in the AERPAW User Manual, this can take a variable amount of time.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+    elif experiment.state() == AerpawExperiment.ExperimentState.SAVED.value:
+        if experiment.experiment_flags == '010':
+            # Testbed execution completed - experiment has returned from testbed
+            # - notify: experiment_members, operators
+            received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+            message_subject = '[AERPAW] Update - Experiment: {0} has returned from testbed'.format(
+                experiment.name)
+            message_body = """
+Your experiment {0} has returned from testbed execution.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+        else:
+            # Testbed execution cancelled - Testbed session has been cancelled
+            # - notify: experiment_members, operators
+            received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+            message_subject = '[AERPAW] Update - Experiment: {0} has been cancelled'.format(
+                experiment.name)
+            message_body = """
+Testbed execution for experiment {0} has been cancelled.
 
 Experiment ID: {1}
 Experiment UUID: {2}

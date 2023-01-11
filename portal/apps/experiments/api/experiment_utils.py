@@ -16,9 +16,10 @@ from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
     start_experiment_session, stop_experiment_session
 from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
+from portal.apps.user_messages.user_messages import generate_user_messages_for_development, \
+    generate_user_messages_for_testbed
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
-from portal.apps.user_messages.user_messages import generate_user_messages_for_development, generate_user_messages_for_testbed
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
@@ -426,6 +427,9 @@ def active_testbed_to_saved(request, experiment: AerpawExperiment):
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.experiment_flags = '010'
     experiment.save()
+
+    # MESSAGE / EMAIL: active testbed to saved
+    generate_user_messages_for_testbed(request=request, experiment=experiment)
 
 
 def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
@@ -870,6 +874,9 @@ def wait_testbed_deploy_to_active_testbed(request, experiment: AerpawExperiment)
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_TESTBED
     experiment.save()
 
+    # MESSAGE / EMAIL: active testbed
+    generate_user_messages_for_testbed(request=request, experiment=experiment)
+
 
 def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
     """
@@ -897,7 +904,11 @@ def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
 
     # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
+    experiment.experiment_flags = '101'
     experiment.save()
+
+    # MESSAGE / EMAIL: cancel testbed
+    generate_user_messages_for_testbed(request=request, experiment=experiment)
 
 
 def wait_testbed_schedule_to_wait_testbed_deploy(request, experiment: AerpawExperiment):
@@ -918,6 +929,9 @@ def wait_testbed_schedule_to_wait_testbed_deploy(request, experiment: AerpawExpe
     # UPDATE STATE: wait_testbed_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY
     experiment.save()
+
+    # MESSAGE / EMAIL: testbed execution has been scheduled
+    generate_user_messages_for_testbed(request=request, experiment=experiment)
 
 
 def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
@@ -947,7 +961,12 @@ def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
 
     # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
+    if experiment.experiment_flags == '010':
+        experiment.experiment_flags = '101'
     experiment.save()
+
+    # MESSAGE / EMAIL: cancel testbed
+    generate_user_messages_for_testbed(request=request, experiment=experiment)
 
 
 def wait_testbed_schedule_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
