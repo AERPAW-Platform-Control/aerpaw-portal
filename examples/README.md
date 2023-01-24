@@ -6,6 +6,35 @@ Example code using Python [requests](https://requests.readthedocs.io/en/latest/)
 
 It is left to the user to ensure they have current versions of **python3** and **pip3** installed on their system.
 
+## API Endpoints
+
+The example code herein is meant to illustrate how to interact with the AERPAW portal API endpoints in a programmatic way.
+
+The documentation will be presented using a local deployment of the portal populated with sample data
+
+- local deployment: [https://127.0.0.1:8443/api/]()
+- sample data: snapshot taken from portal 
+
+### API endpoints as of version 1.0.0
+
+```json
+{
+    "canonical-experiment-resource": "https://127.0.0.1:8443/api/canonical-experiment-resource",
+    "credentials": "https://127.0.0.1:8443/api/credentials",
+    "experiment-files": "https://127.0.0.1:8443/api/experiment-files",
+    "experiments": "https://127.0.0.1:8443/api/experiments",
+    "messages": "https://127.0.0.1:8443/api/messages",
+    "p-canonical-experiment-number": "https://127.0.0.1:8443/api/p-canonical-experiment-number",
+    "projects": "https://127.0.0.1:8443/api/projects",
+    "requests": "https://127.0.0.1:8443/api/requests",
+    "resources": "https://127.0.0.1:8443/api/resources",
+    "sessions": "https://127.0.0.1:8443/api/sessions",
+    "user-experiment": "https://127.0.0.1:8443/api/user-experiment",
+    "user-project": "https://127.0.0.1:8443/api/user-project",
+    "users": "https://127.0.0.1:8443/api/users"
+}
+```
+
 ## Running the example code
 
 A script has been included for each API endpoint to demonstrate simple usage in Python. It may be easiest to set up a virtual environment to run each script. Example output is also included but may have redactions to not expose any potentially private information.
@@ -16,12 +45,12 @@ A script has been included for each API endpoint to demonstrate simple usage in 
 
 ```
 $ cd aerpaw-portal/examples/code
-$ virtualenv -p /usr/local/bin/python3.10 venv
+$ virtualenv -p /usr/local/bin/python3 venv
 $ source venv/bin/activate
 (venv)$ pip install -r requirements.txt
 ```
 
-**NOTE**: `/usr/local/bin/python3.10` is the full path to Python on my local machine, yours may be different... adjust accordingly
+**NOTE**: `/usr/local/bin/python3` is the full path to Python on my local machine, yours may be different... adjust accordingly
 
 ### Configuration
 
