@@ -13,7 +13,7 @@ The example code herein is meant to illustrate how to interact with the AERPAW p
 The documentation will be presented using a local deployment of the portal populated with sample data
 
 - local deployment: [https://127.0.0.1:8443/api/]()
-- sample data: snapshot taken from portal 
+- sample data: snapshot taken from portal in Jan 2023
 
 ### API endpoints as of version 1.0.0
 
@@ -34,8 +34,27 @@ The documentation will be presented using a local deployment of the portal popul
     "users": "https://127.0.0.1:8443/api/users"
 }
 ```
+---
 
-## Running the example code
+## Table of Contents
+
+- [canonical-experiment-resource](./canonical-experiment-resource.md)
+- [credentials](./credentials.md)
+- [experiment-files](./experiment-files.md)
+- [experiments](./experiments.md)
+- [messages](./messages.md)
+- [p-canonical-experiment-number](./p-canonical-experiment-number.md)
+- [projects](./projects.md)
+- [requests](./requests.md)
+- [resources](./resources.md)
+- [sessions](./sessions.md)
+- [user-experiment](./user-experiment.md)
+- [user-project](./user-project.md)
+- [users](./users.md)
+
+---
+
+## How to run the example code
 
 A script has been included for each API endpoint to demonstrate simple usage in Python. It may be easiest to set up a virtual environment to run each script. Example output is also included but may have redactions to not expose any potentially private information.
 
@@ -95,45 +114,7 @@ So a call to run the `projects.py` script would look like:
 ```console
 (venv)$ python -m projects
 ```
----
 
-## `canonical-experiment-resource`
 
-## `experiments`
 
-## `p-canonical-exeriment-number`
-
-## `projects`
-
-Script [`projects.py`](./code/projects.py) examples:
-    
-- `/projects`: paginated list with search (GET), create new project (POST)
-- `/projects/{int:pk}`: detail for single project (GET), update single project (PUT)
-- `/projects/{int:pk}/experiments`: list of project experiments (GET)
-- `/projects/{int:pk}/membership`: list of project membership (GET), edit project membership (PUT)
-
-Expected [example output](./output-projects.md)
-
-## `resources`
-
-## `sessions`
-
-## `user-exerperiment`
-
-## `user-project`
-
-## `users`
-
-Script [`users.py`](./code/users.py) examples:
-
-- `/users`: paginated list of users (GET)
-- `/users?search=string`: paginated list of users with search (GET)
-- `/users/{int:pk}`: retrieve single user (GET)
-- `/users/{int:pk}`: update single user `display_name` (PUT)
-- `/users/{int:pk}/credentials`: list of user credentials (GET)
-- `/users/{int:pk}/tokens`: retrieve user tokens (GET)
-- `/users/{int:pk}/tokens?refresh=true`: refresh user tokens (GET)
-- `/users/{int:pk}/tokens?generate=true`: generate user tokens (GET)
-
-Expected [example output](./output-users.md)
 
