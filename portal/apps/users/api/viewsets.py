@@ -11,10 +11,10 @@ from rest_framework.viewsets import GenericViewSet
 
 from portal.apps.credentials.api.serializers import CredentialSerializerDetail
 from portal.apps.credentials.models import PublicCredentials
+from portal.apps.profiles.api.serializers import UserProfileSerializerDetail
 from portal.apps.users.api.serializers import UserSerializerDetail, UserSerializerList, UserSerializerTokens
 from portal.apps.users.api.utils import get_tokens_for_user, refresh_access_token_for_user
 from portal.apps.users.models import AerpawUser
-from portal.apps.profiles.api.serializers import UserProfileSerializerDetail
 
 # constants
 USER_MIN_DISPLAY_NAME_LEN = 5

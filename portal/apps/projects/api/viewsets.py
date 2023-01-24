@@ -14,6 +14,7 @@ from portal.apps.experiments.api.serializers import ExperimentSerializerDetail
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.projects.api.serializers import ProjectSerializerDetail, ProjectSerializerList, UserProjectSerializer
 from portal.apps.projects.models import AerpawProject, UserProject
+from portal.apps.user_messages.user_messages import generate_user_messages_from_project_membership
 from portal.apps.users.models import AerpawUser
 
 # constants
@@ -398,10 +399,18 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                                     membership.project_role = UserProject.RoleType.PROJECT_MEMBER
                                     membership.user = user
                                     membership.save()
+                        # add project members message
+                        generate_user_messages_from_project_membership(
+                            request=request, project=project, project_members=project_members_added,
+                            add=True, membership_type='Member')
                         for pk in project_members_removed:
                             membership = UserProject.objects.get(
                                 project__id=project.id, user__id=pk, project_role=UserProject.RoleType.PROJECT_MEMBER)
                             membership.delete()
+                        # remove project members message
+                        generate_user_messages_from_project_membership(
+                            request=request, project=project, project_members=project_members_removed,
+                            add=False, membership_type='Member')
                 if request.data.get('project_owners') or isinstance(request.data.get('project_owners'), list):
                     project_owners = request.data.get('project_owners')
                     if isinstance(project_owners, list) and all([isinstance(item, int) for item in project_owners]):
@@ -422,10 +431,18 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                                     membership.project_role = UserProject.RoleType.PROJECT_OWNER
                                     membership.user = user
                                     membership.save()
+                        # add project owners message
+                        generate_user_messages_from_project_membership(
+                            request=request, project=project, project_members=project_owners_added,
+                            add=True, membership_type='Owner')
                         for pk in project_owners_removed:
                             membership = UserProject.objects.get(
                                 project__id=project.id, user__id=pk, project_role=UserProject.RoleType.PROJECT_OWNER)
                             membership.delete()
+                        # remove project owners message
+                        generate_user_messages_from_project_membership(
+                            request=request, project=project, project_members=project_owners_removed,
+                            add=False, membership_type='Owner')
             # End of PUT, PATCH section - All reqeust types return membership
             serializer = ProjectSerializerDetail(project)
             du = dict(serializer.data)

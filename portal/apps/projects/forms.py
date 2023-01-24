@@ -25,13 +25,13 @@ class ProjectCreateForm(forms.ModelForm):
 
 class ProjectMembershipForm(forms.ModelForm):
     project_members = forms.ModelMultipleChoiceField(
-        queryset=AerpawUser.objects.all().order_by('display_name'),
+        queryset=AerpawUser.objects.filter(groups__in=[1]).order_by('display_name'),
         widget=FilteredSelectMultiple('Members', is_stacked=False),
         required=False
     )
 
     project_owners = forms.ModelMultipleChoiceField(
-        queryset=AerpawUser.objects.all().order_by('display_name'),
+        queryset=AerpawUser.objects.filter(groups__in=[1]).order_by('display_name'),
         widget=FilteredSelectMultiple('Owners', is_stacked=False),
         required=False
     )

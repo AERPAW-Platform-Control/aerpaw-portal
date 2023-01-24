@@ -97,7 +97,7 @@
                 {% endif %}
             </div>
         </div>
-        {% if debug %}
+        {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
             <pre><strong>experiment_files</strong>:<br>{{ experiment_files|pprint }}</pre>
             <br>

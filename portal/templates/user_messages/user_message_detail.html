@@ -69,7 +69,7 @@
                 </tbody>
             </table>
         </div>
-        {% if debug %}
+        {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
             <pre><strong>user_message</strong>:<br>{{ user_message|pprint }}</pre>
             <br>

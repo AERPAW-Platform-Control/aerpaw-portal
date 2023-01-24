@@ -36,15 +36,19 @@
                             Operators
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'experiment_file_list' %}">
-                                Experiment Files
-                            </a></li>
                             <li>
-                                <hr class="dropdown-divider">
+                                <a class="dropdown-item" href="{% url 'experiment_file_list' %}">
+                                    Experiment Files
+                                </a>
                             </li>
-                            <li><a class="dropdown-item" href="{% url 'home' %}">
-                                Experiment Sessions
-                            </a></li>
+{#                            <li>#}
+{#                                <hr class="dropdown-divider">#}
+{#                            </li>#}
+{#                            <li>#}
+{#                                <a class="dropdown-item" href="{% url 'home' %}">#}
+{#                                    Experiment Sessions#}
+{#                                </a>#}
+{#                            </li>#}
                         </ul>
                     </li>
                 {% endif %}

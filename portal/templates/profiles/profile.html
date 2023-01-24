@@ -459,7 +459,7 @@
                 </table>
             </div>
         </div>
-        {% if debug %}
+        {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
             <pre><strong>user:</strong><br>{{ user_data|pprint }}</pre>
             <pre><strong>user_profile:</strong><br>{{ user_profile|pprint }}</pre>

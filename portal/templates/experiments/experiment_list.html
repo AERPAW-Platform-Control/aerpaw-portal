@@ -137,7 +137,7 @@
                 {% endif %}
             </div>
         </div>
-        {% if debug %}
+        {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
             <pre><strong>experiments:</strong><br>{{ experiments|pprint }}</pre>
             <br>

@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import QueryDict, Request
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
+from portal.apps.profiles.api.viewsets import UserProfileViewSet
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
@@ -12,7 +13,6 @@ from portal.apps.users.api.viewsets import UserViewSet
 from portal.apps.users.models import AerpawRolesEnum, AerpawUser
 from portal.server.download_utils import download_db_credential_public_key, download_db_user_tokens
 from portal.server.settings import DEBUG
-from portal.apps.profiles.api.viewsets import UserProfileViewSet
 
 
 @csrf_exempt
