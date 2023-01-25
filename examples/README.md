@@ -8,7 +8,8 @@ It is left to the user to ensure they have current versions of **python3** and *
 
 ## API Endpoints
 
-The example code herein is meant to illustrate how to interact with the AERPAW portal API endpoints in a programmatic way.
+The example code herein is meant to illustrate how to interact with the AERPAW portal API endpoints in a programmatic
+way.
 
 The documentation will be presented using a local deployment of the portal populated with sample data
 
@@ -34,6 +35,7 @@ The documentation will be presented using a local deployment of the portal popul
     "users": "https://127.0.0.1:8443/api/users"
 }
 ```
+
 ---
 
 ## Table of Contents
@@ -56,7 +58,9 @@ The documentation will be presented using a local deployment of the portal popul
 
 ## How to run the example code
 
-A script has been included for each API endpoint to demonstrate simple usage in Python. It may be easiest to set up a virtual environment to run each script. Example output is also included but may have redactions to not expose any potentially private information.
+A script has been included for each API endpoint to demonstrate simple usage in Python. It may be easiest to set up a
+virtual environment to run each script. Example output is also included but may have redactions to not expose any
+potentially private information.
 
 ### Virtual environment
 
@@ -69,11 +73,13 @@ $ source venv/bin/activate
 (venv)$ pip install -r requirements.txt
 ```
 
-**NOTE**: `/usr/local/bin/python3` is the full path to Python on my local machine, yours may be different... adjust accordingly
+**NOTE**: `/usr/local/bin/python3` is the full path to Python on my local machine, yours may be different... adjust
+accordingly
 
 ### Configuration
 
-Update the `config.py` file with appropriate values. Initial `access_token` and `refresh_token` values can be retrieved from the AERPAW Portal user profile page.
+Update the `config.py` file with appropriate values. Initial `access_token` and `refresh_token` values can be retrieved
+from the AERPAW Portal user profile page.
 
 ```python
 # User to provide appropriate values
@@ -84,7 +90,8 @@ REFRESH_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8PSBzKFWiYqKOxBHwi7LZ6T8
 
 ### Running the code
 
-With the virtual environment set the user should be able to run each script. It is important to verify that the example data used in each script is valid for your particular deployment.
+With the virtual environment set the user should be able to run each script. It is important to verify that the example
+data used in each script is valid for your particular deployment.
 
 Using `projects.py` as an example, verify that the sample data is valid
 
@@ -107,7 +114,8 @@ project_membership = {
 ...
 ```
 
-From the terminal where you've activated the virtual environment, issue the appropriate python call: `python -m SCRIPT_NAME`
+From the terminal where you've activated the virtual environment, issue the appropriate python
+call: `python -m SCRIPT_NAME`
 
 So a call to run the `projects.py` script would look like:
 
