@@ -1,150 +1,187 @@
-""" examples/code/users.py
+"""
+file: examples/code/projects.py
 
 Examples:
-    - /projects: paginated list with search, create new project
-    - /projects/{int:pk}: detail for single project, update single project
-    - /projects/{int:pk}/experiments: list of project experiments
-    - /projects/{int:pk}/membership: list of project membership, edit project membership
+- /projects: paginated list of projects (GET)
+- /projects: create a new project (POST)
+- /projects?search=string: paginated list of projects with search (GET)
+- /projects/{int:pk}: retrieve single project (GET)
+- /projects/{int:pk}: update single project (PUT)
+- /projects/{int:pk}/experiments: list of project experiments (GET)
+- /projects/{int:pk}/membership: list of project membership (GET)
+- /projects/{int:pk}/membership: edit project membership (PUT)
+- /projects/{int:pk}: soft delete a single project (DELETE)
 
 """
 import json
 
-from config import api_session as api, API_URL
+from config import api_session as api, API_URL, print_json_output
 
-# data below was populated knowing that Users exist for ID 1 and 3
-project_data = {
-    'name': 'example code project',
-    'description': 'example code project description',
-    'is_public': False
-}
-updated_project_data = {
-    'description': 'updated example code project description',
-    'is_public': True
-}
-project_membership = {
-    "project_members": [1, 3],
-    "project_owners": [1, 3]
-}
+# global resource id for examples
+project_id = 0
 
-"""
-GET /projects
 
-- all projects as paginated list
-- search for "stea" in name or email
-"""
-print('')
-print('*** /projects: paginated list with search***')
+def get_projects_list():
+    """
+    GET /projects
+    - paginated list of projects
+    """
+    api_call = API_URL + '/projects'
+    response = api.get(api_call)
+    print_json_output(
+        about='*** GET: {0} ***'.format(api_call),
+        payload=response
+    )
 
-# all projects
-API_CALL = API_URL + '/projects'
-response = api.get(API_CALL)
-python_object = json.loads(response.text)
-print('*** GET: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
 
-# search for "stea" in name
-API_CALL = API_URL + '/projects?search=stea'
-response = api.get(API_CALL)
-python_object = json.loads(response.text)
-print('*** GET: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
+def post_projects_create():
+    """
+    POST /resources
+    - create new resource
+    - data = {
+        "description": "string",
+        "is_public": boolean,
+        "name": "string"
+      }
+    """
+    api_call = API_URL + '/projects'
+    data = json.dumps(
+        {
+            'description': 'demo project for testing purposes',
+            'is_public': True,
+            'name': 'demo project'
+        }
+    )
+    response = api.post(api_call, data=data)
+    print_json_output(
+        about='*** POST: {0} ***'.format(api_call),
+        payload=response
+    )
+    # capture resource_id of newly created resource - use subsequent examples
+    global project_id
+    project_id = json.loads(response.text).get('project_id')
 
-"""
-GET /projects/{int:pk}
 
-- details for project with pk = 2
-"""
-print('')
-print('*** /projects/{int:pk}: detail for single project ***')
-API_CALL = API_URL + '/projects/2'
-response = api.get(API_CALL)
-python_object = json.loads(response.text)
-print('*** GET: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
+def get_projects_list_search():
+    """
+    GET /projects?search=string
+    - paginated list of projects with search for term "demo"
+    """
+    api_call = API_URL + '/projects?search=demo'
+    response = api.get(api_call)
+    print_json_output(
+        about='*** GET: {0} ***'.format(api_call),
+        payload=response
+    )
 
-"""
-GET /projects/{int:pk}/experiments
 
-- experiments for project with pk = 2
-"""
-print('')
-print('*** /projects/{int:pk}/experiments: list of project experiments ***')
-API_CALL = API_URL + '/projects/2/experiments'
-response = api.get(API_CALL)
-python_object = json.loads(response.text)
-print('*** GET: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
+def get_projects_detail():
+    """
+    GET /projects/{int:pk}
+    - details for project with pk = project_id
+    """
+    api_call = API_URL + '/projects/{0}'.format(project_id)
+    response = api.get(api_call)
+    print_json_output(
+        about='*** GET: {0} ***'.format(api_call),
+        payload=response
+    )
 
-"""
-GET /projects/{int:pk}/membership
 
-- membership for project with pk = 2
-"""
-print('')
-print('*** /projects/{int:pk}/membership: list of project membership, edit project membership ***')
-API_CALL = API_URL + '/projects/2/membership'
-response = api.get(API_CALL)
-python_object = json.loads(response.text)
-print('*** GET: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
+def put_projects_detail():
+    """
+    PUT /projects/{int:pk}
+    - update single project with pk = project_id
+    - data = {
+        "description": "string",
+        "is_public": boolean,
+        "name": "string"
+      }
+    """
+    api_call = API_URL + '/projects/{0}'.format(project_id)
+    data = json.dumps(
+        {
+            'description': 'demo project for testing purposes - updated',
+            'is_public': False,
+        }
+    )
+    response = api.put(api_call, data=data)
+    print_json_output(
+        about='*** PUT: {0} ***'.format(api_call),
+        payload=response
+    )
 
-"""
-*** NOTE ***
-Running code in the following sections will generate a new project and add project members to it
-"""
 
-"""
-POST /projects
+def get_projects_detail_experiments():
+    """
+    GET /projects/{int:pk}/experiments
+    - experiments for project with pk = project_id
+    """
+    api_call = API_URL + '/projects/{0}/experiments'.format(project_id)
+    response = api.get(api_call)
+    print_json_output(
+        about='*** GET: {0} ***'.format(api_call),
+        payload=response
+    )
 
-- create new project
-"""
-print('')
-print('*** /projects: create new project***')
-API_CALL = API_URL + '/projects'
-data = json.dumps(project_data)
-response = api.post(API_CALL, data=data)
-python_object = json.loads(response.text)
-print('*** POST: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
-project_id = python_object.get('project_id')
 
-"""
-PUT /projects/{int:pk}
+def get_projects_detail_membership():
+    """
+    GET /projects/{int:pk}/membership
+    - membership for project with pk = project_id
+    """
+    api_call = API_URL + '/projects/{0}/membership'.format(project_id)
+    response = api.get(api_call)
+    print_json_output(
+        about='*** GET: {0} ***'.format(api_call),
+        payload=response
+    )
 
-- update single project with pk = project_id
-"""
-print('')
-print('*** /projects/{int:pk}: update existing project ***')
-API_CALL = API_URL + '/projects/' + str(project_id)
-data = json.dumps(updated_project_data)
-response = api.put(API_CALL, data=data)
-python_object = json.loads(response.text)
-print('*** PUT: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
 
-"""
-PUT /projects/{int:pk}/membership
+def put_projects_detail_membership():
+    """
+    PUT /projects/{int:pk}/membership
+    - update project_members and project_owners for a single project with pk = project_id
+    - data = {
+        "project_members": [ int ],
+        "project_owners": [ int ]
+      }
+    """
+    api_call = API_URL + '/projects/' + str(project_id) + '/membership'
+    data = json.dumps(
+        {
+            'project_members': [12],
+            'project_owners': [11, 22]
+        }
+    )
+    response = api.put(api_call, data=data)
+    print_json_output(
+        about='*** PUT: {0} ***'.format(api_call),
+        payload=response
+    )
 
-- update project_members and project_owners for a single project with pk = project_id
-"""
-print('')
-print('*** /projects/{int:pk}/membership: update project membership ***')
-API_CALL = API_URL + '/projects/' + str(project_id) + '/membership'
-data = json.dumps(project_membership)
-response = api.put(API_CALL, data=data)
-python_object = json.loads(response.text)
-print('*** PUT: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
 
-"""
-GET /projects/{int:pk}
+def delete_projects_detail():
+    """
+    DELETE /projects/{int:pk}
+    - delete project with pk = project_id
+    """
+    api_call = API_URL + '/projects/{0}'.format(project_id)
+    response = api.delete(api_call)
+    print_json_output(
+        about='*** DELETE: {0} ***'.format(api_call),
+        payload=response
+    )
 
-- details for project with pk = project_id
-"""
-print('')
-print('*** /projects/{int:pk}: detail for single project ***')
-API_CALL = API_URL + '/projects/' + str(project_id)
-response = api.get(API_CALL)
-python_object = json.loads(response.text)
-print('*** GET: {0} ***'.format(API_CALL))
-print(json.dumps(python_object, indent=2))
+
+if __name__ == '__main__':
+    get_projects_list()
+    post_projects_create()
+    get_projects_list_search()
+    get_projects_detail()
+    put_projects_detail()
+    get_projects_detail_experiments()
+    get_projects_detail_membership()
+    put_projects_detail_membership()
+    get_projects_detail()
+    delete_projects_detail()

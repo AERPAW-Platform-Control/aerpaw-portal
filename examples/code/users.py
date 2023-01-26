@@ -27,7 +27,7 @@ def get_users_list():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -40,7 +40,7 @@ def get_users_list_search():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -53,7 +53,7 @@ def get_users_detail():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -70,7 +70,7 @@ def put_users_detail():
     response = api.put(api_call, data=data)
     print_json_output(
         about='*** PUT: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -83,7 +83,7 @@ def get_users_detail_credentials():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -97,7 +97,7 @@ def get_users_detail_profile():
     print(response.text)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -119,7 +119,7 @@ def put_users_detail_profile():
     response = api.put(api_call, data=data)
     print_json_output(
         about='*** TODO: PUT: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -132,7 +132,7 @@ def get_users_detail_tokens():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -145,7 +145,7 @@ def get_users_detail_tokens_refresh():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 
@@ -158,7 +158,7 @@ def get_users_detail_tokens_generate():
     response = api.get(api_call)
     print_json_output(
         about='*** GET: {0} ***'.format(api_call),
-        payload=json.loads(response.text)
+        payload=response
     )
 
 

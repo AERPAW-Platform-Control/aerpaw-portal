@@ -17,7 +17,7 @@ to be created via the API directly
 
 - GET: retrieve a single user by `user_id`
 - PUT: update a single user by `user_id`
-    - data option: `display_name` as string
+    - data optional: `display_name` as string
 
 **`/users/{int:pk}/credentials`**
 
@@ -27,9 +27,9 @@ to be created via the API directly
 
 - GET: retrieve profile for user by `user_id`
 - PUT: update a single user profile by `user_id`
-    - data option: `employer` as string
-    - data option: `position` as string
-    - data option: `research_field` as string
+    - data optional: `employer` as string
+    - data optional: `position` as string
+    - data optional: `research_field` as string
 
 **`/users/{int:pk}/tokens`**
 
