@@ -62,7 +62,7 @@ def post_resources_create():
             'ops_notes': 'this resource should be good to go',
             'resource_class': 'allow_canonical',
             'resource_mode': 'testbed',
-            'resource_type': 'afrn'
+            'resource_type': 'AFRN'
         }
     )
     response = api.post(api_call, data=data)
