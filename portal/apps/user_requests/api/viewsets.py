@@ -220,7 +220,10 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 if not (project.is_creator(user) or project.is_member(user) or project.is_owner(user)):
                     raise ValidationError(
                         detail="ValidationError: user does not have required project membership")
-                received_by = experiment.experiment_membership.all()
+                received_by = AerpawUser.objects.filter(
+                    Q(id__in=experiment.experiment_membership.all()) |
+                    Q(id=experiment.experiment_creator.id)
+                ).distinct()
             # validate project request
             elif request_type == AerpawUserRequest.RequestType.PROJECT:
                 project = get_object_or_404(AerpawProject.objects.all(), pk=request_type_id)

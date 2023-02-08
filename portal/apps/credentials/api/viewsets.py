@@ -113,7 +113,7 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 public_key_credential = new_key.get('public_key')
             else:
                 new_key = None
-            # create project
+            # create public credential
             pub_key = PublicCredentials()
             pub_key.expiry_date = datetime.now(timezone.utc) + timedelta(days=CREDENTIAL_EXPIRY_DAYS)
             pub_key.name = public_key_name

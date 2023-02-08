@@ -122,15 +122,31 @@ def experiment_detail(request, experiment_id):
                 message = exc
             if request.POST.get('approve_request_id'):
                 if approve_experiment_join_request(request_id=int(request.POST.get('approve_request_id'))):
-                    # TODO: placeholder for member check or other login
-                    ur_api_request = Request(request=HttpRequest())
-                    ur = UserRequestViewSet(request=ur_api_request)
-                    ur_api_request.user = request.user
-                    ur_api_request.method = 'PUT'
-                    ur_api_request.data.update(
-                        {'is_approved': True,
-                         'response_note': request.POST.get('response_note', None)})
-                    resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
+                    try:
+                        # add user to experiment as experiment_member
+                        e_obj = AerpawExperiment.objects.get(id=experiment_id)
+                        ur_obj = AerpawUserRequest.objects.get(id=request.POST.get('approve_request_id'))
+                        e_obj_members = [u.id for u in e_obj.experiment_members()]
+                        e_obj_members.append(ur_obj.requested_by.id)
+                        api_request = Request(request=HttpRequest())
+                        api_request.data.update(
+                            {'experiment_members': e_obj_members})
+                        api_request.user = request.user
+                        api_request.method = 'PUT'
+                        e = ExperimentViewSet(request=api_request)
+                        e_resp = e.membership(request=api_request, pk=experiment_id)
+                        # update user request to join experiment as approved
+                        ur_api_request = Request(request=HttpRequest())
+                        ur = UserRequestViewSet(request=ur_api_request)
+                        ur_api_request.user = request.user
+                        ur_api_request.method = 'PUT'
+                        ur_api_request.data.update(
+                            {'is_approved': True,
+                             'response_note': request.POST.get('response_note', None)})
+                        ur_resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
+                        return redirect('experiment_detail', experiment_id=experiment_id)
+                    except Exception as exc:
+                        message = exc
             elif request.POST.get('deny_request_id'):
                 if deny_experiment_join_request(request_id=int(request.POST.get('deny_request_id'))):
                     # TODO: placeholder for member check or other login
