@@ -75,7 +75,7 @@
                 </tr>
                 </tbody>
             </table>
-            {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_owner or user.is_operator %}
+            {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member or user.is_operator %}
                 <div class="d-flex flex-row align-items-center justify-content-between">
                     <h4>
                         Dashboard
