@@ -16,6 +16,25 @@ The documentation will be presented using a local deployment of the portal popul
 - local deployment: [https://127.0.0.1:8443/api/]()
 - sample data: snapshot taken from portal in Jan 2023
 
+---
+
+## Table of Contents (API)
+
+- [canonical-experiment-resource](./canonical-experiment-resource.md)
+- [credentials](./credentials.md)
+- [experiment-files](./experiment-files.md)
+- [experiments](./experiments.md)
+- [messages](./messages.md)
+- [p-canonical-experiment-number](./p-canonical-experiment-number.md)
+- [projects](./projects.md)
+- [requests](./requests.md)
+- [resources](./resources.md)
+- [sessions](./sessions.md)
+- [token/refresh](./token-refresh.md)
+- [user-experiment](./user-experiment.md)
+- [user-project](./user-project.md)
+- [users](./users.md)
+
 ### API endpoints as of version 1.0.0
 
 ```json
@@ -30,29 +49,12 @@ The documentation will be presented using a local deployment of the portal popul
     "requests": "https://127.0.0.1:8443/api/requests",
     "resources": "https://127.0.0.1:8443/api/resources",
     "sessions": "https://127.0.0.1:8443/api/sessions",
+    "token/refresh/": "https://127.0.0.1:8443/api/token/refresh/",
     "user-experiment": "https://127.0.0.1:8443/api/user-experiment",
     "user-project": "https://127.0.0.1:8443/api/user-project",
     "users": "https://127.0.0.1:8443/api/users"
 }
 ```
-
----
-
-## Table of Contents
-
-- [canonical-experiment-resource](./canonical-experiment-resource.md)
-- [credentials](./credentials.md)
-- [experiment-files](./experiment-files.md)
-- [experiments](./experiments.md)
-- [messages](./messages.md)
-- [p-canonical-experiment-number](./p-canonical-experiment-number.md)
-- [projects](./projects.md)
-- [requests](./requests.md)
-- [resources](./resources.md)
-- [sessions](./sessions.md)
-- [user-experiment](./user-experiment.md)
-- [user-project](./user-project.md)
-- [users](./users.md)
 
 ---
 
