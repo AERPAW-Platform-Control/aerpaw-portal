@@ -133,7 +133,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     detail="location:  must be at least {0} chars long".format(RESOURCE_MIN_LOCATION_LEN))
             # validate name
             name = request.data.get('name', None)
-            if name and len(name) < RESOURCE_MIN_NAME_LEN:
+            if not name or len(name) < RESOURCE_MIN_NAME_LEN:
                 raise ValidationError(
                     detail="name: must be at least {0} chars long".format(RESOURCE_MIN_NAME_LEN))
             # validate ops_notes

@@ -6,9 +6,63 @@ Example code using Python [requests](https://requests.readthedocs.io/en/latest/)
 
 It is left to the user to ensure they have current versions of **python3** and **pip3** installed on their system.
 
-## Running the example code
+## API Endpoints
 
-A script has been included for each API endpoint to demonstrate simple usage in Python. It may be easiest to set up a virtual environment to run each script. Example output is also included but may have redactions to not expose any potentially private information.
+The example code herein is meant to illustrate how to interact with the AERPAW portal API endpoints in a programmatic
+way.
+
+The documentation will be presented using a local deployment of the portal populated with sample data
+
+- local deployment: [https://127.0.0.1:8443/api/]()
+- sample data: snapshot taken from portal in Jan 2023
+
+---
+
+## Table of Contents (API)
+
+- [canonical-experiment-resource](./canonical-experiment-resource.md)
+- [credentials](./credentials.md)
+- [experiment-files](./experiment-files.md)
+- [experiments](./experiments.md)
+- [messages](./messages.md)
+- [p-canonical-experiment-number](./p-canonical-experiment-number.md)
+- [projects](./projects.md)
+- [requests](./requests.md)
+- [resources](./resources.md)
+- [sessions](./sessions.md)
+- [token/refresh](./token-refresh.md)
+- [user-experiment](./user-experiment.md)
+- [user-project](./user-project.md)
+- [users](./users.md)
+
+### API endpoints as of version 1.0.0
+
+```json
+{
+    "canonical-experiment-resource": "https://127.0.0.1:8443/api/canonical-experiment-resource",
+    "credentials": "https://127.0.0.1:8443/api/credentials",
+    "experiment-files": "https://127.0.0.1:8443/api/experiment-files",
+    "experiments": "https://127.0.0.1:8443/api/experiments",
+    "messages": "https://127.0.0.1:8443/api/messages",
+    "p-canonical-experiment-number": "https://127.0.0.1:8443/api/p-canonical-experiment-number",
+    "projects": "https://127.0.0.1:8443/api/projects",
+    "requests": "https://127.0.0.1:8443/api/requests",
+    "resources": "https://127.0.0.1:8443/api/resources",
+    "sessions": "https://127.0.0.1:8443/api/sessions",
+    "token/refresh/": "https://127.0.0.1:8443/api/token/refresh/",
+    "user-experiment": "https://127.0.0.1:8443/api/user-experiment",
+    "user-project": "https://127.0.0.1:8443/api/user-project",
+    "users": "https://127.0.0.1:8443/api/users"
+}
+```
+
+---
+
+## How to run the example code
+
+A script has been included for each API endpoint to demonstrate simple usage in Python. It may be easiest to set up a
+virtual environment to run each script. Example output is also included but may have redactions to not expose any
+potentially private information.
 
 ### Virtual environment
 
@@ -16,16 +70,18 @@ A script has been included for each API endpoint to demonstrate simple usage in 
 
 ```
 $ cd aerpaw-portal/examples/code
-$ virtualenv -p /usr/local/bin/python3.10 venv
+$ virtualenv -p /usr/local/bin/python3 venv
 $ source venv/bin/activate
 (venv)$ pip install -r requirements.txt
 ```
 
-**NOTE**: `/usr/local/bin/python3.10` is the full path to Python on my local machine, yours may be different... adjust accordingly
+**NOTE**: `/usr/local/bin/python3` is the full path to Python on my local machine, yours may be different... adjust
+accordingly
 
 ### Configuration
 
-Update the `config.py` file with appropriate values. Initial `access_token` and `refresh_token` values can be retrieved from the AERPAW Portal user profile page.
+Update the `config.py` file with appropriate values. Initial `access_token` and `refresh_token` values can be retrieved
+from the AERPAW Portal user profile page.
 
 ```python
 # User to provide appropriate values
@@ -36,7 +92,8 @@ REFRESH_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...8PSBzKFWiYqKOxBHwi7LZ6T8
 
 ### Running the code
 
-With the virtual environment set the user should be able to run each script. It is important to verify that the example data used in each script is valid for your particular deployment.
+With the virtual environment set the user should be able to run each script. It is important to verify that the example
+data used in each script is valid for your particular deployment.
 
 Using `projects.py` as an example, verify that the sample data is valid
 
@@ -59,52 +116,15 @@ project_membership = {
 ...
 ```
 
-From the terminal where you've activated the virtual environment, issue the appropriate python call: `python -m SCRIPT_NAME`
+From the terminal where you've activated the virtual environment, issue the appropriate python
+call: `python -m SCRIPT_NAME`
 
 So a call to run the `projects.py` script would look like:
 
 ```console
 (venv)$ python -m projects
 ```
----
 
-## `canonical-experiment-resource`
 
-## `experiments`
 
-## `p-canonical-exeriment-number`
-
-## `projects`
-
-Script [`projects.py`](./code/projects.py) examples:
-    
-- `/projects`: paginated list with search (GET), create new project (POST)
-- `/projects/{int:pk}`: detail for single project (GET), update single project (PUT)
-- `/projects/{int:pk}/experiments`: list of project experiments (GET)
-- `/projects/{int:pk}/membership`: list of project membership (GET), edit project membership (PUT)
-
-Expected [example output](./output-projects.md)
-
-## `resources`
-
-## `sessions`
-
-## `user-exerperiment`
-
-## `user-project`
-
-## `users`
-
-Script [`users.py`](./code/users.py) examples:
-
-- `/users`: paginated list of users (GET)
-- `/users?search=string`: paginated list of users with search (GET)
-- `/users/{int:pk}`: retrieve single user (GET)
-- `/users/{int:pk}`: update single user `display_name` (PUT)
-- `/users/{int:pk}/credentials`: list of user credentials (GET)
-- `/users/{int:pk}/tokens`: retrieve user tokens (GET)
-- `/users/{int:pk}/tokens?refresh=true`: refresh user tokens (GET)
-- `/users/{int:pk}/tokens?generate=true`: generate user tokens (GET)
-
-Expected [example output](./output-users.md)
 

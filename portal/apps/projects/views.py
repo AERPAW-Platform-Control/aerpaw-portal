@@ -112,18 +112,34 @@ def project_detail(request, project_id):
         if request.method == "POST":
             if request.POST.get('approve_request_id'):
                 if approve_project_join_request(request_id=int(request.POST.get('approve_request_id'))):
-                    # TODO: placeholder for member / owner check or other login
-                    ur_api_request = Request(request=HttpRequest())
-                    ur = UserRequestViewSet(request=ur_api_request)
-                    ur_api_request.user = request.user
-                    ur_api_request.method = 'PUT'
-                    ur_api_request.data.update(
-                        {'is_approved': True,
-                         'response_note': request.POST.get('response_note', None)})
-                    resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
+                    try:
+                        # add user to project as project_member
+                        p_obj = AerpawProject.objects.get(id=project_id)
+                        ur_obj = AerpawUserRequest.objects.get(id=request.POST.get('approve_request_id'))
+                        p_obj_members = [u.id for u in p_obj.project_members()]
+                        p_obj_members.append(ur_obj.requested_by.id)
+                        api_request = Request(request=HttpRequest())
+                        api_request.data.update(
+                            {'project_members': p_obj_members})
+                        api_request.user = request.user
+                        api_request.method = 'PUT'
+                        p = ProjectViewSet(request=api_request)
+                        p_resp = p.membership(request=api_request, pk=project_id)
+                        # update user request to join project as approved
+                        ur_api_request = Request(request=HttpRequest())
+                        ur = UserRequestViewSet(request=ur_api_request)
+                        ur_api_request.user = request.user
+                        ur_api_request.method = 'PUT'
+                        ur_api_request.data.update(
+                            {'is_approved': True,
+                             'response_note': request.POST.get('response_note', None)})
+                        ur_resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
+                        return redirect('project_detail', project_id=project_id)
+                    except Exception as exc:
+                        message = exc
             elif request.POST.get('deny_request_id'):
                 if deny_project_join_request(request_id=int(request.POST.get('deny_request_id'))):
-                    # TODO: placeholder for member / owner check or other login
+                    # update user request to join project as denied
                     ur_api_request = Request(request=HttpRequest())
                     ur = UserRequestViewSet(request=ur_api_request)
                     ur_api_request.user = request.user

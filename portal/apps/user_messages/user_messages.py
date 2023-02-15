@@ -10,6 +10,12 @@ from portal.apps.user_messages.models import AerpawUserMessage
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.users.models import AerpawRolesEnum, AerpawUser
 
+annotation = """
+***************************************************************************************
+***** ATTENTION - an email has been sent to the user as denoted below - ATTENTION *****
+***************************************************************************************
+"""
+
 
 def send_portal_mail_from_message(request, *args, **kwargs) -> bool:
     """
@@ -242,9 +248,15 @@ Note: {3}
            user_request.get('response_note'))
     else:
         message_owner_ids = []
+    # set annotated message body
+    annotated_message_body = annotation + message_body
     for owner in message_owner_ids:
+        if owner != user_request.get('requested_by'):
+            email_message_body = annotated_message_body
+        else:
+            email_message_body = message_body
         kwargs = {
-            'message_body': message_body,
+            'message_body': email_message_body,
             'message_owner': request.user.id,
             'message_subject': message_subject,
             'received_by': [owner]
@@ -293,6 +305,7 @@ def generate_user_messages_from_project_membership(request, project: AerpawProje
     """
     project_owner_ids = [o.id for o in project.project_owners().all()]
     project_owner_ids.append(AerpawUser.objects.get(username=project.created_by).id)
+    project_owner_ids = list(set(project_owner_ids))
     for member in project_members:
         user_display_name = AerpawUser.objects.filter(id=member).first().display_name
         if add:
@@ -322,13 +335,20 @@ You have been removed from Project: {1} as {2}
                 'received_by': received_by
             }
             user_message_create(request=request, **kwargs)
+        # set annotated message body
+        annotated_message_body = annotation + message_body
         # send email
-        kwargs = {
-            'message_body': message_body,
-            'message_subject': message_subject,
-            'received_by': received_by
-        }
-        send_portal_mail_from_message(request=request, **kwargs)
+        for p in received_by:
+            if p not in project_members:
+                email_message_body = annotated_message_body
+            else:
+                email_message_body = message_body
+            kwargs = {
+                'message_body': email_message_body,
+                'message_subject': message_subject,
+                'received_by': [p]
+            }
+            send_portal_mail_from_message(request=request, **kwargs)
 
 
 def generate_user_messages_from_experiment_membership(request, experiment: AerpawExperiment, experiment_members: [int],
@@ -342,6 +362,7 @@ def generate_user_messages_from_experiment_membership(request, experiment: Aerpa
     """
     experiment_member_ids = [m.id for m in experiment.experiment_members().all()]
     experiment_member_ids.append(AerpawUser.objects.get(username=experiment.created_by).id)
+    experiment_member_ids = list(set(experiment_member_ids))
     for member in experiment_members:
         user_display_name = AerpawUser.objects.filter(id=member).first().display_name
         if add:
@@ -371,13 +392,20 @@ You have been removed from Experiment: {1} as Member
                 'received_by': received_by
             }
             user_message_create(request=request, **kwargs)
+        # set annotated message body
+        annotated_message_body = annotation + message_body
         # send email
-        kwargs = {
-            'message_body': message_body,
-            'message_subject': message_subject,
-            'received_by': received_by
-        }
-        send_portal_mail_from_message(request=request, **kwargs)
+        for p in received_by:
+            if p not in experiment_members:
+                email_message_body = annotated_message_body
+            else:
+                email_message_body = message_body
+            kwargs = {
+                'message_body': email_message_body,
+                'message_subject': message_subject,
+                'received_by': [p]
+            }
+            send_portal_mail_from_message(request=request, **kwargs)
 
 
 def generate_user_messages_for_development(request, experiment: AerpawExperiment):
