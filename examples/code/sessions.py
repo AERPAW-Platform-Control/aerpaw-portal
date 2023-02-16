@@ -2,7 +2,7 @@
 file: examples/code/sessions.py
 
 Examples:
-- /sessions: paginated list of session (GET)
+- /sessions: paginated list of sessions (GET)
 - /sessions?experiment_id=int: paginated list of sessions with search by experiment_id (GET)
 - /sessions/{int:pk}: retrieve single session (GET)
 
@@ -11,7 +11,7 @@ import json
 
 from config import api_session as api, API_URL, print_json_output
 
-# global resource id for examples
+# global session id for examples
 session_id = 0
 
 
@@ -39,7 +39,7 @@ def get_sessions_list_search():
         about='*** GET: {0} ***'.format(api_call),
         payload=response
     )
-    # capture public_key_id of newly created resource - use subsequent examples
+    # capture session_id of first session
     global session_id
     session_id = json.loads(response.text).get('results')[0].get('session_id')
 

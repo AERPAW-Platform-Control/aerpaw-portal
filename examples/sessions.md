@@ -5,7 +5,7 @@
 **`/sessions`**
 
 - GET: paginated list of sessions
-  - if user is `operator` all sessions relations are returned
+  - if user is `operator` all sessions are returned
   - is user is not `operator` only self sessions are returned
 
 **`/sessions?experiment_id=<int>`**

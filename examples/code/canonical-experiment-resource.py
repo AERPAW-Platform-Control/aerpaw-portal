@@ -12,7 +12,7 @@ import json
 
 from config import api_session as api, API_URL, print_json_output
 
-# global resource id for examples
+# global canonical_experiment_resource id for examples
 canonical_experiment_resource_id = 0
 
 
@@ -40,7 +40,7 @@ def get_canonical_experiment_resource_list_search():
         about='*** GET: {0} ***'.format(api_call),
         payload=response
     )
-    # capture public_key_id of newly created resource - use subsequent examples
+    # capture canonical_experiment_resource_id of first canonical_experiment_resource
     global canonical_experiment_resource_id
     canonical_experiment_resource_id = json.loads(response.text).get('results')[0].get(
         'canonical_experiment_resource_id')
