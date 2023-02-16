@@ -22,7 +22,7 @@
 
 **`/canonical-experiment-resource/{int:pk}`**
 
-- GET: retrieve a single canonical-experiment-resource relation by `public_key_id`
+- GET: retrieve a single canonical-experiment-resource relation by `canonical_experiment_resource_id`
   - if user is `operator` all matching canonical-experiment-resource relations are returned
   - is user is not `operator` only self matching canonical-experiment-resource relations are returned
 
