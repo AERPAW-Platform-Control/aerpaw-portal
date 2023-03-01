@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import QueryDict, Request
 
@@ -23,10 +23,17 @@ def profile(request):
     :return:
     """
     message = None
+    # check for user_id in request object - force expiry if not found
+    if not request.user.id:
+        return redirect('session_expired')
     user = get_object_or_404(AerpawUser, pk=request.user.id)
+    # if user was just created force a re-login
+    if not user.last_login:
+        return redirect('session_expired')
     if request.method == 'POST':
         try:
             if request.POST.get('display_name'):
+                # update user: display_name
                 u_api_request = Request(request=HttpRequest())
                 u = UserViewSet(request=u_api_request)
                 u_api_request.user = request.user
@@ -34,29 +41,18 @@ def profile(request):
                 u_api_request.data.update(
                     {'display_name': request.POST.get('display_name')})
                 resp = u.update(request=u_api_request, pk=user.id)
-            if request.POST.get('employer'):
+            if 'employer' in list(request.POST.keys()):
+                # update profile: employer, position and research_field
                 u_api_request = Request(request=HttpRequest())
                 u = UserProfileViewSet(request=u_api_request)
                 u_api_request.user = request.user
                 u_api_request.method = 'PUT'
                 u_api_request.data.update(
-                    {'employer': request.POST.get('employer')})
-                resp = u.update(request=u_api_request, pk=user.id)
-            if request.POST.get('position'):
-                u_api_request = Request(request=HttpRequest())
-                u = UserProfileViewSet(request=u_api_request)
-                u_api_request.user = request.user
-                u_api_request.method = 'PUT'
-                u_api_request.data.update(
-                    {'position': request.POST.get('position')})
-                resp = u.update(request=u_api_request, pk=user.id)
-            if request.POST.get('research_field'):
-                u_api_request = Request(request=HttpRequest())
-                u = UserProfileViewSet(request=u_api_request)
-                u_api_request.user = request.user
-                u_api_request.method = 'PUT'
-                u_api_request.data.update(
-                    {'research_field': request.POST.get('research_field')})
+                    {
+                        'employer': request.POST.get('employer', ''),
+                        'position': request.POST.get('position', ''),
+                        'research_field': request.POST.get('research_field', '')
+                    })
                 resp = u.update(request=u_api_request, pk=user.id)
             if request.POST.get('generate_tokens'):
                 u_api_request = Request(request=HttpRequest())

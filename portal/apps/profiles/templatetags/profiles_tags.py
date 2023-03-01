@@ -19,3 +19,18 @@ def token_expiry(token_jwt):
     utc_date = datetime.fromtimestamp(ts, tz=timezone.utc)
 
     return utc_date
+
+
+@register.filter
+def profile_check(user_profile):
+    try:
+        employer = user_profile.get('employer', None)
+        position = user_profile.get('position', None)
+        if not employer or employer.casefold() == 'none':
+            return False
+        if not position or position.casefold() == 'none':
+            return False
+        return True
+    except Exception as exc:
+        print(exc)
+        return False
