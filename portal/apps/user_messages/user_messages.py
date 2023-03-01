@@ -276,7 +276,7 @@ please refer to relevant instructions before attempting to use this Portal.
 
 - AERPAW Main Site: https://aerpaw.org/
 - AERPAW User Manual: https://sites.google.com/ncsu.edu/aerpaw-wiki/
-- AERPAW Acceptable Use Policy: https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-web-portal/2-5-acceptable-use-policy-aup
+- AERPAW Acceptable Use Policy: https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-lifecycle-workflows/2-5-acceptable-use-policy-aup
 
 Thank you for joining AERPAW,
 - AERPAW Ops
