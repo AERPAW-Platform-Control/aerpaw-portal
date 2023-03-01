@@ -144,9 +144,9 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
 
         Permission:
         - user is_experimenter AND
-            - user is_project_creator OR
-            - user is_project_member OR
-            - user is_project_owner
+        - user is_project_creator OR
+        - user is_project_member OR
+        - user is_project_owner
         """
         try:
             project_id = request.data.get('project_id', None)
@@ -169,7 +169,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             if not name or len(name) < EXPERIMENT_MIN_NAME_LEN:
                 raise ValidationError(
                     detail="name: must be at least {0} chars long".format(EXPERIMENT_MIN_NAME_LEN))
-            # create project
+            # create experiment
             experiment = AerpawExperiment()
             experiment.created_by = user.username
             experiment.experiment_creator = user
