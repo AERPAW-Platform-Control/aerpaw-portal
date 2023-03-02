@@ -1,6 +1,6 @@
-from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, render, redirect
+from django.http import HttpRequest
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import QueryDict, Request
 
@@ -16,20 +16,18 @@ from portal.server.settings import DEBUG
 
 
 @csrf_exempt
-@login_required
 def profile(request):
     """
     :param request:
     :return:
     """
     message = None
-    # check for user_id in request object - force expiry if not found
-    if not request.user.id:
-        return redirect('session_expired')
-    user = get_object_or_404(AerpawUser, pk=request.user.id)
-    # if user was just created force a re-login
-    if not user.last_login:
-        return redirect('session_expired')
+    # get user from request.user.id - redirect if not found
+    try:
+        user = AerpawUser.objects.get(pk=request.user.id)
+    except Exception as exc:
+        print(exc)
+        return redirect('user_not_found')
     if request.method == 'POST':
         try:
             if request.POST.get('display_name'):
@@ -161,3 +159,12 @@ def session_expired(request):
                   {
                       'session_expired': True
                   })
+
+
+def user_not_found(request):
+    """
+    :param request:
+    :return:
+    """
+    print('user_not_found')
+    return render(request, 'user_not_found.html')

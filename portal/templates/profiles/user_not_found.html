@@ -1,0 +1,60 @@
+{% extends "rest_framework/login_base.html" %}
+{% block body %}
+    <head>
+        <meta charset="utf-8"/>
+        <!-- Load static files-->
+        {% load static %}
+        {# Load the tag library #}
+        {% load django_bootstrap5 %}
+        {# Load CSS and JavaScript #}
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+        {# Display django.contrib.messages as Bootstrap alerts #}
+        {% bootstrap_messages %}
+        {# FontAwesome: https://fontawesome.com/docs/web/use-with/python-django #}
+        <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
+
+        <!-- other stylesheets / sources -->
+        <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+        <title>
+            {% block title %}
+                AERPAW Testbed
+            {% endblock %}
+        </title>
+        {% block head %}
+        {% endblock %}
+    </head>
+    {% include 'navbar.html' %}
+    <main class="container">
+        {% if user.is_authenticated %}
+            <h3>Current user: {{ user.email }}</h3>
+            <br><br>
+            <button class="message-btn btn btn-success" type="submit" value="logout">
+                <a href="{% url 'oidc_logout' %}" class="unlink" style="font-size: x-large">
+                    AERPAW Logout <em class="fa fa-fw fa-sign-out"></em>
+                </a>
+            </button>
+        {% else %}
+            <h2 class="text-danger">
+                User Not Found: Please re-login
+            </h2>
+            <div>
+                <b>AERPAW Portal uses <a href="https://www.cilogon.org" target="_blank">CILogon</a> to authenticate user
+                    identity:</b>
+            </div>
+            <br>
+            <strong style="color: red">FIRST TIME USERS:</strong> It is likely that you will need to
+            <strong>login twice</strong> when creating an account for the first time
+            <br><br>
+            <button class="message-btn btn btn-success">
+                <a href="{% url 'oidc_authentication_init' %}" class="unlink" style="font-size: x-large">
+                    <em class="fa fa-fw fa-sign-in"></em> AERPAW Login
+                </a>
+            </button>
+            <br><br>
+            <strong>NOTE:</strong> If this is your first time signing in an account will automatically be created for
+            you based on the Identity Provider you choose to authenticate with.
+        {% endif %}
+    </main>
+    {% include 'footer.html' %}
+{% endblock %}
