@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    Server Error
+{% endblock %}
+
+{% block content %}
+    <h1 style="color: red">500 - Server Error</h1>
+    <h3>Debug information</h3>
+    <table class="table table-striped table-bordered my-4">
+        <tbody>
+        <tr>
+            <th>Attibute</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.session</td>
+            <td style="width: 75%">{{ request.session }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.session.keys</td>
+            <td style="width: 75%">{{ request.session.keys }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.session.oidc_states</td>
+            <td style="width: 75%">{{ request.session.oidc_states }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.session.oidc_login_next</td>
+            <td style="width: 75%">{{ request.session.oidc_login_next }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.session.oidc_id_token_expiration</td>
+            <td style="width: 75%">{{ request.session.oidc_id_token_expiration }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.scheme</td>
+            <td style="width: 75%">{{ request.scheme }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.body</td>
+            <td style="width: 75%">{{ request.body }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.path</td>
+            <td style="width: 75%">{{ request.path }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.path_info</td>
+            <td style="width: 75%">{{ request.path_info }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.method</td>
+            <td style="width: 75%">{{ request.method }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.encoding</td>
+            <td style="width: 75%">{{ request.encoding }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.content_type</td>
+            <td style="width: 75%">{{ request.content_type }}</td>
+        </tr>
+        <tr>
+            <td style="width: 25%">HttpRequest.content_params</td>
+            <td style="width: 75%">{{ request.content_params }}</td>
+        </tr>
+        </tbody>
+    </table>
+{% endblock %}
