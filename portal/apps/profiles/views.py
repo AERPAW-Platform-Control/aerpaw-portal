@@ -51,7 +51,7 @@ def profile(request):
                         'position': request.POST.get('position', ''),
                         'research_field': request.POST.get('research_field', '')
                     })
-                resp = u.update(request=u_api_request, pk=user.id)
+                resp = u.update(request=u_api_request, pk=user.profile.id)
             if request.POST.get('generate_tokens'):
                 u_api_request = Request(request=HttpRequest())
                 u = UserViewSet(request=u_api_request)
