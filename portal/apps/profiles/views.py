@@ -119,7 +119,7 @@ def profile(request):
 
     # user profile
     up = UserProfileViewSet(request=api_request)
-    user_profile = up.retrieve(request=request, pk=request.user.id).data
+    user_profile = up.retrieve(request=request, pk=user.profile.id).data
 
     # modify query_params to get requests and messages data
     request.query_params = QueryDict('', mutable=True)
