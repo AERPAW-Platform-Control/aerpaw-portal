@@ -73,7 +73,7 @@ class UserProfileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
         - user is_self
         """
         profile = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
-        if str(request.user.id) == str(kwargs.get('pk')):
+        if str(request.user.profile.id) == str(kwargs.get('pk')):
             modified = False
             # check for employer
             if isinstance(request.data.get('employer'), str):
