@@ -415,7 +415,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                     canonical_experiment_resource.experiment = experiment
                                     canonical_experiment_resource.resource = resource
                                     canonical_experiment_resource.node_display_name = resource.name
-                                    canonical_experiment_resource.node_uhd = CanonicalExperimentResource.NodeUhd.ONE_THREE_THREE
+                                    canonical_experiment_resource.node_uhd = CanonicalExperimentResource.NodeUhd.FOUR_THREE
                                     if resource.resource_type == AerpawResource.ResourceType.AFRN:
                                         canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.AFRN
                                         canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
