@@ -234,7 +234,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     node_vehicle = models.CharField(
         max_length=255,
         choices=NodeVehicle.choices,
-        default=NodeVehicle.VEHICLE_NONE
+        default=NodeVehicle.VEHICLE_NONE if node_type==NodeType.AFRN else NodeVehicle.VEHICLE_UAV
     )
     resource = models.ForeignKey(
         AerpawResource,
