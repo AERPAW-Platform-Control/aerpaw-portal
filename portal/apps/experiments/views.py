@@ -5,10 +5,11 @@ from django.http import HttpRequest, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
+from portal.apps.experiments.api.experiment_utils import to_retired
 
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
     ExperimentViewSet
-from portal.apps.experiments.dashboard import evaluate_dashboard_action, get_dashboard_buttons
+from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
@@ -172,6 +173,7 @@ def experiment_detail(request, experiment_id):
                 request.data.update({'is_retired': 'true'})
                 e = ExperimentViewSet(request=request)
                 exp = e.partial_update(request=request, pk=experiment_id)
+                to_retired(request, experiment=AerpawExperiment.objects.get(id =experiment_id))
                 return redirect('experiment_list')
         # get canonical experiment resource definitions
         try:
@@ -540,6 +542,14 @@ def experiment_files(request, experiment_id):
 def experiment_sessions(request, experiment_id):
     message = None
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
+    user = request.user
+    is_operator = False
+    if user.groups.filter(name='operator').exists():
+        is_operator = True
+        evaluate_session_dashboard_action(request)
+    print('is_operator ', is_operator)
+    
+    
     try:
         # check for query parameters
         current_page = 1
@@ -555,6 +565,7 @@ def experiment_sessions(request, experiment_id):
         request.query_params.update(data_dict)
         e = ExperimentSessionViewSet(request=request)
         sessions = e.list(request=request, many=True)
+        
         # get prev, next and item range
         next_page = None
         prev_page = None
@@ -598,7 +609,8 @@ def experiment_sessions(request, experiment_id):
     return render(request,
                   'experiment_sessions.html',
                   {
-                      'user': request.user,
+                      'user': user,
+                      'is_operator':is_operator,
                       'experiment': experiment,
                       'sessions': sessions,
                       'item_range': item_range,

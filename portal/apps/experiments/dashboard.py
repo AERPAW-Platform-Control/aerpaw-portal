@@ -232,3 +232,38 @@ def evaluate_dashboard_action(request):
 
     except Exception as exc:
         print(exc)
+
+
+def evaluate_session_dashboard_action(request):
+    print('request.POST', request.POST)
+    api_request = Request(request=HttpRequest())
+    api_request.user = request.user
+    api_request.method = 'PUT'
+    e = ExperimentViewSet(request=api_request)
+    op = None
+    if request.POST.get('new_sandbox'):
+        print('new_sandbox')
+        experiment_id = request.POST.get('new_sandbox')
+        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY})
+        op = e.state(api_request, pk=int(experiment_id))
+    if request.POST.get('new_emulation'):
+        print('new_emulation')
+        experiment_id = request.POST.get('new_emulation')
+        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE})
+        op = e.state(api_request, pk=int(experiment_id))
+    if request.POST.get('new_testbed'):
+        print('new_testbed')
+        experiment_id = request.POST.get('new_testbed')
+        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE})
+        op = e.state(api_request, pk=int(experiment_id))
+    if request.POST.get('pass_session'):
+        print('pass_session')
+    if request.POST.get('fail_session'):
+        print('fail_session')
+    if request.POST.get('cancel_session'):
+        print('cancel_session')
+    if request.POST.get('schedule_session'):
+        print('schedule_session')
+        experiment_id = request.POST.get('new_testbed')
+        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY})
+        op = e.state(api_request, pk=int(experiment_id))

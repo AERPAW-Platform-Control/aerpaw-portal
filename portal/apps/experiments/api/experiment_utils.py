@@ -1150,3 +1150,107 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
         print(exit_code)
         raise NotFound(
             detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
+
+def retired(request, experiment: AerpawExperiment, command: str, mock: bool) -> None:
+    print('######################')
+    print('expirements/api/experiment_utils.py retired()')
+    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
+    
+    if MOCK_OPS:
+        # add sleep when using mock to simulate remote processing delay
+        time.sleep(10)
+        print('response: ' + response)
+        print('exit code: ' + str(exit_code))
+
+    # TODO: determine if any transition should take place based on return value of script
+    # next state transition
+    if exit_code == 0:
+        # ap-cf-retire-exp.py - success
+        # - do nothing
+        print('exit code: ' + exit_code)
+    else:
+        # ap-cf-retire-exp.py- failure
+        # - do nothing
+        print('exit code: ' + exit_code)
+        raise NotFound(
+            detail="RetireError: unable to retire experiment /experiments/{0}".format(experiment.id))
+
+
+def to_retired(request, experiment: AerpawExperiment):
+    print('############################')
+    print('expirements/api/experiment_utils.py to_retired()')
+    print('experiment = ', experiment)
+    """
+    ANY --> SAVED
+    - active_development --> saved && active_sandbox --> saved are not valid transitions according to the experiment_states api
+    - Things to do:
+      - Get current state -- Should be able to just check experiment.state
+      - Exit development/sandbox if state == active_development or active_sandbox
+      - Save experiment
+      - Find APVESN of the experiment		This and the step below need to be their own cf script
+      - Run ap-teardown-virtual-experiment.sh <canNum> <resources> to cleanup experiment containers on APVESN
+      - Cleanup DHCP & OVPN configs on VPN server
+      - Set experiment to retired
+      - (Optional) Send message
+
+    Session: update DEVELOPMENT --> no change		#????
+
+    Permissions:
+    - experimenter OR
+    - operator
+    """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
+    # get active session
+    session = ExperimentSession.objects.filter(
+        experiment_id=experiment.id,
+        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        is_active=True
+    ).first()
+
+    print('session = ', session)
+    if not session:
+        raise NotFound(
+            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+
+    print('experiment.experiment_state = ', experiment.experiment_state)
+    # UPDATE STATE: save_development if current state is ACTIVE_DEVELOPMENT
+    if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
+        request.data.exit_development = True
+        active_development_to_saving_development(request, experiment=experiment)
+    # UPDATE STATE: save_sandbox if current state is ACTIVE_SANDBOX
+    elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_SANDBOX:
+        request.data.exit_sandbox = True
+        active_sandbox_to_saving_sandbox(request, experiment=experiment)
+    # UPDATE STATE: saved if current state is ACTIVE_EMULATION
+    elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_EMULATION:
+        request.data.emulation_passed = False
+        active_emulation_to_saved(request, experiment=experiment)
+    # UPDATE STATE: saved if current state is ACTIVE_TESTBED
+    elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_TESTBED:
+        active_testbed_to_saved(request, experiment=experiment)
+    # UPDATE STATE: saved (for all other cases)
+    if experiment.experiment_state != AerpawExperiment.ExperimentState.SAVED:
+        experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
+        experiment.experiment_flags = '000'
+        experiment.save()
+
+    # Invoke retire script to cleanup all experiment files
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-retire-exp.py {0}".format(
+           experiment.id)
+    if MOCK_OPS:
+        # DEVELOPMENT - always pass
+        mock = True
+    else:
+        # PRODUCTION
+        mock = False
+    print('command = ', command)
+    print('Mock = ', mock)
+    ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock))
+    ssh_thread.start()
+
+
+
+

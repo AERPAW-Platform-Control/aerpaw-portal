@@ -99,7 +99,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 100,
     # metadata settings
     'DEFAULT_METADATA_CLASS': 'portal.server.drf_settings.MinimalMetadata',
 }

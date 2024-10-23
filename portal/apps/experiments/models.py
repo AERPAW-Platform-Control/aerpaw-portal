@@ -185,6 +185,30 @@ class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
 
+class OpsSession(BaseModel, BaseTimestampModel, models.Model):
+    """ 
+    Ops Session - created by Aerpaw Ops personnel to manage sessions manually
+    - created (from BaseTimestampModel)
+    - experiment_session (ForiegnKey to ExperimentSession)
+    - id (from Basemodel)
+    - is_active
+    - modified (from BaseTimestampModel)
+    - scheduled_date_time
+    - success (Boolean)
+    - explanation (an explanation to be emailed to experimenters describing success status)
+    """
+    experiment_session = models.ForeignKey(ExperimentSession, on_delete=models.CASCADE)
+    description = models.TextField()
+    is_active = models.BooleanField(default=True)
+    is_success = models.BooleanField(default=False)
+    is_started = models.BooleanField(default=False)
+    is_scheduled = models.BooleanField(default=False)
+    is_completed = models.BooleanField(default=False)
+    is_canceled = models.BooleanField(default=False)
+    scheduled_date_time = models.DateTimeField()
+    uuid = models.CharField(max_length=255, primary_key=False, editable=False)
+
+
 class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     """
     Canonical Experiment Resource
