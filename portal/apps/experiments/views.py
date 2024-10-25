@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from portal.apps.experiments.api.experiment_utils import to_retired
 
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
-    ExperimentViewSet
+    ExperimentViewSet, OpsSessionViewSet
 from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
@@ -546,9 +546,7 @@ def experiment_sessions(request, experiment_id):
     is_operator = False
     if user.groups.filter(name='operator').exists():
         is_operator = True
-        evaluate_session_dashboard_action(request)
-    print('is_operator ', is_operator)
-    
+        evaluate_session_dashboard_action(request)    
     
     try:
         # check for query parameters
@@ -563,18 +561,28 @@ def experiment_sessions(request, experiment_id):
             current_page = int(request.GET.get('page'))
         request.query_params = QueryDict('', mutable=True)
         request.query_params.update(data_dict)
-        e = ExperimentSessionViewSet(request=request)
-        sessions = e.list(request=request, many=True)
         
+        ops_e = OpsSessionViewSet(request=request)
+        ops_sessions = ops_e.get_queryset()
+
+        e = ExperimentSessionViewSet(request=request)
+        sessions = e.get_queryset()
+
+        # Combines and retrieves data for OpsSessions and ExperimentSessions
+        all_sessions = ops_e.sessions_list(request=request, many=True, ops_sessions=ops_sessions, sessions=sessions)
+
+
+
+
         # get prev, next and item range
         next_page = None
         prev_page = None
         count = 0
         min_range = 0
         max_range = 0
-        if sessions.data:
-            sessions = dict(sessions.data)
-            prev_url = sessions.get('previous', None)
+        if all_sessions.data:
+            all_sessions = dict(all_sessions.data)
+            prev_url = all_sessions.get('previous', None)
             if prev_url:
                 prev_dict = parse_qs(urlparse(prev_url).query)
                 try:
@@ -582,7 +590,7 @@ def experiment_sessions(request, experiment_id):
                 except Exception as exc:
                     print(exc)
                     prev_page = 1
-            next_url = sessions.get('next', None)
+            next_url = all_sessions.get('next', None)
             if next_url:
                 next_dict = parse_qs(urlparse(next_url).query)
                 try:
@@ -590,17 +598,17 @@ def experiment_sessions(request, experiment_id):
                 except Exception as exc:
                     print(exc)
                     next_page = 1
-            count = int(sessions.get('count'))
+            count = int(all_sessions.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
             max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
             if max_range > count:
                 max_range = count
         else:
-            sessions = {}
+            all_sessions = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
         message = exc
-        sessions = None
+        all_sessions = None
         item_range = None
         next_page = None
         prev_page = None
@@ -612,7 +620,7 @@ def experiment_sessions(request, experiment_id):
                       'user': user,
                       'is_operator':is_operator,
                       'experiment': experiment,
-                      'sessions': sessions,
+                      'sessions': all_sessions,
                       'item_range': item_range,
                       'message': message,
                       'next_page': next_page,

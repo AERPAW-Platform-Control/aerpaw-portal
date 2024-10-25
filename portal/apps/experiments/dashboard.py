@@ -3,8 +3,10 @@ from rest_framework.request import Request
 
 from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
-from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
+from portal.apps.experiments.models import AerpawExperiment, ExperimentSession, OpsSession
 from portal.apps.users.models import AerpawUser
+from portal.apps.experiments.api.experiment_states import next_natural_transition
+from portal.apps.experiments.api.experiment_sessions import schedule_experiment_ops_session, start_ops_session
 
 
 def check_initiate_development(user: AerpawUser, experiment: AerpawExperiment):
@@ -235,6 +237,7 @@ def evaluate_dashboard_action(request):
 
 
 def evaluate_session_dashboard_action(request):
+    print('DASHBOARD evaluate_session_dashboard_action')
     print('request.POST', request.POST)
     api_request = Request(request=HttpRequest())
     api_request.user = request.user
@@ -244,26 +247,75 @@ def evaluate_session_dashboard_action(request):
     if request.POST.get('new_sandbox'):
         print('new_sandbox')
         experiment_id = request.POST.get('new_sandbox')
-        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY})
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY,
+            'ops_session':True
+            })
         op = e.state(api_request, pk=int(experiment_id))
     if request.POST.get('new_emulation'):
         print('new_emulation')
         experiment_id = request.POST.get('new_emulation')
-        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE})
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE,
+            'ops_session':True
+            })
         op = e.state(api_request, pk=int(experiment_id))
     if request.POST.get('new_testbed'):
         print('new_testbed')
         experiment_id = request.POST.get('new_testbed')
-        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE})
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE,
+            'ops_session':True
+            })
         op = e.state(api_request, pk=int(experiment_id))
-    if request.POST.get('pass_session'):
-        print('pass_session')
-    if request.POST.get('fail_session'):
-        print('fail_session')
+    if request.POST.get('schedule_session'):
+        experiment = AerpawExperiment.objects.get(id = request.POST.get('schedule_session'))
+        # get next natural experiment state
+        next_state = next_natural_transition(experiment)
+
+        # update the experiment's state 
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState(next_state),
+            'session_date':request.POST.get('session_date'),
+            'session_time':request.POST.get('session_time')
+            })
+        op = e.state(api_request, pk=int(experiment.id))
+
+
+    if request.POST.get('start_session'):
+        print('start_session')
+        experiment = AerpawExperiment.objects.get(id = request.POST.get('start_session'))
+        next_state = next_natural_transition(experiment)
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState(next_state),
+            'ops_session':True
+            })
+        op = e.state(api_request, pk=int(experiment.id))
+
+        
+    if request.POST.get('end_session'):
+        print('DASHBOARD ending session')
+        experiment = AerpawExperiment.objects.get(id = request.POST.get('end_session'))
+        next_state = next_natural_transition(experiment)
+        is_success = False
+        if request.POST.get('session_success') and request.POST.get('session_success') == 'True':
+            is_success = True
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState(next_state),
+            'ops_session':True,
+            'session_description': request.POST.get('session_description'),
+            'is_success': is_success,
+            })
+        op = e.state(api_request, pk=int(experiment.id))
+
+        if request.POST.get('reschedule_session') and request.POST.get('reschedule_session') == 'True':
+            print('Rescheduling Session')
+
     if request.POST.get('cancel_session'):
         print('cancel_session')
-    if request.POST.get('schedule_session'):
-        print('schedule_session')
-        experiment_id = request.POST.get('new_testbed')
-        api_request.data.update({'next_state': AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY})
-        op = e.state(api_request, pk=int(experiment_id))
+
+
+
+
+
+        

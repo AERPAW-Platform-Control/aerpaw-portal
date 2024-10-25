@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from itertools import chain
 from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed, NotFound, PermissionDenied, ValidationError
@@ -15,9 +16,9 @@ from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.experiments.api.experiment_states import is_valid_transition, transition_experiment_state
 from portal.apps.experiments.api.serializers import CanonicalExperimentResourceSerializer, ExperimentSerializerDetail, \
     ExperimentSerializerList, ExperimentSerializerState, ExperimentSessionSerializerDetail, \
-    ExperimentSessionSerializerList, UserExperimentSerializer
+    OpsSessionSerializerDetail, ExperimentSessionSerializerList, OpsSessionSerializerList, UserExperimentSerializer
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
-    UserExperiment
+    UserExperiment, OpsSession
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, \
     increment_current_canonical_number
 from portal.apps.projects.models import AerpawProject
@@ -552,6 +553,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def state(self, request, *args, **kwargs):
+        print('VIEWSETS state')
         """
         GET, PUT, PATCH: retrieve / update experiment state
         - experiment_state     - string
@@ -1052,6 +1054,119 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         """
         raise MethodNotAllowed(method="DELETE: /experiment-session/{int:pk}")
 
+class OpsSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
+    """
+    Experiment Session
+    - paginated list
+    - retrieve one
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = OpsSession.objects.all().order_by('-created').distinct()
+    serializer_class = OpsSessionSerializerDetail
+
+    def get_queryset(self):
+        experiment_id = self.request.query_params.get('experiment_id', None)
+        active = self.request.query_params.get('active', None)
+        if active and str(active).casefold() == 'true':
+            active_set = [True]
+        elif active and str(active).casefold() == 'false':
+            active_set = [False]
+        else:
+            active_set = [True, False]
+        if experiment_id:
+            queryset = OpsSession.objects.filter(
+                experiment__id=experiment_id,
+                is_active__in=active_set
+            ).order_by('-created').distinct()
+        else:
+            queryset = OpsSession.objects.filter(
+                is_active__in=active_set
+            ).order_by('-created').distinct()
+        return queryset
+    
+    def list(self, request,  *args, **kwargs):
+        print(f'OpsSessionViewSet sessions self = {self}')
+        try:
+            experiment = AerpawExperiment.objects.get(pk=request.query_params.get('experiment_id'))
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
+            page = self.paginate_queryset(self.get_queryset())
+            if page:
+                serializer = OpsSessionSerializerList(page, many=True)
+            else:
+                serializer = OpsSessionSerializerList(self.get_queryset(), many=True)
+            response_data = []
+            for u in serializer.data:
+                du = dict(u)
+                response_data.append(
+                    {
+                        'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
+                        'ended_by': du.get('ended_by'),
+                        'experiment_id': du.get('experiment_id'),
+                        'is_active': du.get('is_active'),
+                        'scheduled_active_date':du.get('scheduled_active_date'),
+                        'session_id': du.get('session_id'),
+                        'session_type': du.get('session_type'),
+                        'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
+                        'started_by': du.get('started_by')
+                    }
+                )
+            if page:
+                return self.get_paginated_response(response_data)
+            else:
+                return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET /experiment-session list")
+        
+    def sessions_list(self, request,  *args, **kwargs):
+        try:
+            experiment = AerpawExperiment.objects.get(pk=request.query_params.get('experiment_id'))
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
+            # Reomves non-ops sessions if they have an ops session. 
+            ops_session_ids = [session.id for session in kwargs['ops_sessions']]
+            sessions = [session for session in kwargs['sessions'] if session.id not in ops_session_ids]
+            sessions_queryset = list(chain(kwargs['ops_sessions'], sessions))
+            page = self.paginate_queryset(sessions_queryset)
+            if page:
+                serializer = OpsSessionSerializerList(page, many=True)
+            else:
+                serializer = OpsSessionSerializerList(self.get_queryset(), many=True)
+            response_data = []
+            for u in serializer.data:
+                du = dict(u)
+                response_data.append(
+                    {
+                        'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
+                        'ended_by': du.get('ended_by'),
+                        'experiment_id': du.get('experiment_id'),
+                        'is_active': du.get('is_active'),
+                        'scheduled_active_date':du.get('scheduled_active_date') if du.get('scheduled_active_date') else None,
+                        'session_id': du.get('session_id'),
+                        'session_state': du.get('session_state') if du.get('session_state') else None,
+                        'session_type': du.get('session_type'),
+                        'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
+                        'started_by': du.get('started_by')
+                    }
+                )
+            if page:
+                return self.get_paginated_response(response_data)
+            else:
+                return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET /experiment-session list")
 
 class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
     """

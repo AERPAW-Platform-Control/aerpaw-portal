@@ -185,29 +185,68 @@ class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
 
-class OpsSession(BaseModel, BaseTimestampModel, models.Model):
+class OpsSession(ExperimentSession, models.Model):
     """ 
-    Ops Session - created by Aerpaw Ops personnel to manage sessions manually
-    - created (from BaseTimestampModel)
-    - experiment_session (ForiegnKey to ExperimentSession)
+    Ops Session - created by Aerpaw Ops team to manually manage sessions 
+    - description (an explanation to be emailed to experimenters describing success status)
+    - scheduled_by
+    - scheduled_created_on (date the scheduled date_time was created)
+    - scheduled_active_date (date the session will occur)
+    - canceled_by
+    - canceled
+    - session_state (the place the session is currently in the session workflow)
+    - is_success
+
+    Inherits from Experiment Session
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
+    - ended_by
+    - ended_date_time
+    - experiment
     - id (from Basemodel)
     - is_active
-    - modified (from BaseTimestampModel)
-    - scheduled_date_time
-    - success (Boolean)
-    - explanation (an explanation to be emailed to experimenters describing success status)
-    """
-    experiment_session = models.ForeignKey(ExperimentSession, on_delete=models.CASCADE)
-    description = models.TextField()
-    is_active = models.BooleanField(default=True)
-    is_success = models.BooleanField(default=False)
-    is_started = models.BooleanField(default=False)
-    is_scheduled = models.BooleanField(default=False)
-    is_completed = models.BooleanField(default=False)
-    is_canceled = models.BooleanField(default=False)
-    scheduled_date_time = models.DateTimeField()
-    uuid = models.CharField(max_length=255, primary_key=False, editable=False)
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
+    - session_type
+    - start_date_time
+    - started_by
+    - uuid
 
+    Ops Session Work Flow
+    • wait_schedule -> scheduled -> started -> completed •
+    """
+
+    class SessionStateChoices(models.TextChoices):
+        CANCELED = 'canceled', _('Canceled')
+        COMPLETED = 'completed', _('Completed')
+        SCHEDULED = 'scheduled', _('Scheduled')
+        STARTED = 'started', _('Started')
+        WAIT_SCHEDULE = 'wait_schedule', _('Wait_Schedule')
+
+    canceled_by = models.ForeignKey(
+        AerpawUser,
+        related_name='session_canceled_by',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
+    canceled = models.DateTimeField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    is_success = models.BooleanField(default=False)
+    scheduled_active_date = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_by = models.ForeignKey(
+        AerpawUser,
+        related_name='session_scheduled_by',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
+    scheduled_created_on = models.DateTimeField(blank=True, null=True) # The date when the scheduled_active_date was created
+    session_state = models.CharField(
+        max_length=255,
+        choices=SessionStateChoices.choices,
+        default=SessionStateChoices.WAIT_SCHEDULE
+    )
 
 class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     """
@@ -259,6 +298,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
         max_length=255,
         choices=NodeVehicle.choices,
         default=NodeVehicle.VEHICLE_NONE
+
     )
     resource = models.ForeignKey(
         AerpawResource,

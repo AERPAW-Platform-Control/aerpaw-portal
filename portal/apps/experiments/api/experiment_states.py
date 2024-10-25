@@ -9,7 +9,7 @@ from portal.apps.experiments.api.experiment_utils import active_development_to_s
     wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, wait_testbed_deploy_to_saved, \
     wait_testbed_schedule_to_saved, wait_testbed_schedule_to_wait_emulation_schedule, \
     wait_testbed_schedule_to_wait_testbed_deploy
-from portal.apps.experiments.models import AerpawExperiment
+from portal.apps.experiments.models import AerpawExperiment, OpsSession
 from portal.apps.users.models import AerpawUser
 
 """
@@ -60,6 +60,35 @@ _VALID_OPERATOR_TRANSITION = [
 ]
 
 
+""" 
+Ops Session Work Flow
+    • wait_schedule -> scheduled -> started -> completed •
+
+Ops Session Transitions
+    wait_<session_type>_schedule -> wait_<session_type>_deploy -> active_<session_type> -> saved
+"""
+_OPS_SESSION_TRANSITIONS = [
+    ('wait_emulation_schedule', 'wait_emulation_deploy'),
+    ('wait_emulation_deploy', 'active_emulation'),
+    ('active_emulation', 'saved'),
+    ('wait_testbed_schedule', 'wait_testbed_deploy'),
+    ('wait_testbed_deploy', 'active_testbed'),
+    ('active_testbed', 'saved'),
+    ('wait_sandbox_deploy', 'active_sandbox'),
+    ('active_sandbox', 'saving_sandbox'),
+    ('saving_sandbox', 'saved'),
+]
+
+def next_natural_transition(experiment: AerpawExperiment):
+    current_state = experiment.experiment_state
+    next_state = None
+    for transition in _OPS_SESSION_TRANSITIONS:
+        if transition[0] == current_state:
+            next_state = transition[1]
+    return next_state
+    
+
+
 def is_valid_transition(experiment: AerpawExperiment, next_state: str, user: AerpawUser) -> bool:
     transition = (experiment.state(), next_state)
     if experiment.state() == next_state:
@@ -76,6 +105,7 @@ def is_valid_transition(experiment: AerpawExperiment, next_state: str, user: Aer
 
 
 def transition_experiment_state(request, experiment: AerpawExperiment, next_state: str = None):
+    print('STATES transition_experiment_state')
     """
     Transition experiment state with actions
     - ACTIVE_DEVELOPMENT --> SAVING_DEVELOPMENT - save development session

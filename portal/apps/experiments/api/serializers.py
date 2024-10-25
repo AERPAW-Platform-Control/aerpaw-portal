@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
-    UserExperiment
+    OpsSession, UserExperiment
 
 
 class UserExperimentSerializer(serializers.ModelSerializer):
@@ -106,6 +106,63 @@ class ExperimentSessionSerializerDetail(serializers.ModelSerializer):
         fields = ['created_by', 'created_time', 'end_date_time', 'ended_by', 'experiment_id', 'is_active',
                   'modified_by', 'modified_time', 'session_id', 'session_type', 'start_date_time', 'started_by']
 
+
+class OpsSessionSerializerList(serializers.ModelSerializer):
+    """
+    Ops Session - created by Aerpaw Ops team to manually manage sessions 
+    - *description (an explanation to be emailed to experimenters describing success status)
+    - *scheduled_by
+    - *scheduled_created_on (date the scheduled date_time was created)
+    - scheduled_active_date (date the session will occur)
+    - *canceled_by
+    - *canceled
+    - *session_state (the place the session is currently in the session workflow)
+    - *is_success
+
+    Inherits from Experiment Session
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
+    - *ended_by
+    - *ended_date_time
+    - *experiment
+    - *id (from Basemodel)
+    - *is_active
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
+    - *session_type
+    - *start_date_time
+    - *started_by
+    - uuid
+    """
+    experiment_id = serializers.IntegerField(source='experiment.id')
+    session_id = serializers.IntegerField(source='id')
+
+    class Meta:
+        model = OpsSession
+        fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'scheduled_active_date', 'session_id', 'session_state', 
+                  'session_type', 'start_date_time', 'started_by']
+
+
+
+class OpsSessionSerializerDetail(serializers.ModelSerializer):
+    canceled_date = serializers.DateTimeField(source='canceled')
+    created_by = serializers.CharField(source='created_by')
+    created_date = serializers.DateTimeField(source='created')
+    ended_date = serializers.DateTimeField(source='ended_date_time')
+    ended_by = serializers.CharField(source='ended_by')
+    experiment_id = serializers.IntegerField(source='experiment.id')
+    modifed_date = serializers.DateTimeField(source='modified')
+    modified_by = serializers.CharField(source='modified_by')
+    ops_session_id = serializers.IntegerField(source='id')
+    scheduled_active_date = serializers.DateTimeField(source='scheduled_active_date') # The actual date the session will become active
+    scheduled_created_on = serializers.DateTimeField(source='scheduled_created_on') # The date the scheduled date was planned/created-on
+
+    class Meta:
+        model = OpsSession
+        fields = ['canceled_by', 'canceled_date', 'created_by', 'created_date', 'ended_by', 'ended_date',  'experiment_id', 'description',
+                   'is_active', 'is_success', 'modified_by', 'modifed_date', 'ops_session_id',  
+                   'scheduled_active_date', 'scheduled_by', 'scheduled_created_on', 'session_state', 'session_type'
+                    ]
 
 class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):
     canonical_experiment_resource_id = serializers.IntegerField(source='id')
