@@ -131,7 +131,7 @@ class UserExperiment(BaseModel, models.Model):
     user = models.ForeignKey(AerpawUser, related_name='experiment_user', on_delete=models.CASCADE)
 
 
-class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
+class OnDemandSession(BaseModel, AuditModelMixin, models.Model):
     """
     Experiment Session
     - created (from AuditModelMixin)
@@ -185,9 +185,9 @@ class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
 
-class OpsSession(ExperimentSession, models.Model):
+class ScheduledSession(OnDemandSession, models.Model):
     """ 
-    Ops Session - created by Aerpaw Ops team to manually manage sessions 
+    Scheduled Session  
     - description (an explanation to be emailed to experimenters describing success status)
     - scheduled_by
     - scheduled_created_on (date the scheduled date_time was created)
@@ -197,7 +197,7 @@ class OpsSession(ExperimentSession, models.Model):
     - session_state (the place the session is currently in the session workflow)
     - is_success
 
-    Inherits from Experiment Session
+    Inherits from On Demand Session
     - created (from AuditModelMixin)
     - created_by (from AuditModelMixin)
     - ended_by
@@ -212,7 +212,7 @@ class OpsSession(ExperimentSession, models.Model):
     - started_by
     - uuid
 
-    Ops Session Work Flow
+    Scheduled Session Work Flow
     • wait_schedule -> scheduled -> started -> completed •
     """
 
@@ -223,17 +223,11 @@ class OpsSession(ExperimentSession, models.Model):
         STARTED = 'started', _('Started')
         WAIT_SCHEDULE = 'wait_schedule', _('Wait_Schedule')
 
-    canceled_by = models.ForeignKey(
-        AerpawUser,
-        related_name='session_canceled_by',
-        on_delete=models.PROTECT,
-        blank=True,
-        null=True
-    )
-    canceled = models.DateTimeField(blank=True, null=True)
+        
     description = models.TextField(blank=True)
     is_success = models.BooleanField(default=False)
-    scheduled_active_date = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_start = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_end = models.DateTimeField(blank=True, null=True) # The date the session will turn active
     scheduled_by = models.ForeignKey(
         AerpawUser,
         related_name='session_scheduled_by',
@@ -247,6 +241,7 @@ class OpsSession(ExperimentSession, models.Model):
         choices=SessionStateChoices.choices,
         default=SessionStateChoices.WAIT_SCHEDULE
     )
+
 
 class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     """

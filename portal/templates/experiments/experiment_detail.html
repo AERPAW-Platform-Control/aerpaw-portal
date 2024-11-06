@@ -41,14 +41,19 @@
                         <form action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
                               method="POST">
                             {% csrf_token %}
-                            {% if experiment.membership.is_experiment_creator and not experiment.is_retired %}
+                            {% if experiment.membership.is_experiment_creator and not experiment.is_retired and experiment.experiment_state == 'saved' or experiment.experiment_state == 'wait_development_deploy' or experiment.experiment_state == 'active_development' or experiment.experiment_state == 'saving_development' %}
                                 <button class="btn btn-danger mr-2" type="submit" style="margin-left: 10px"
                                         name="retire_experiment" value="true">
                                     <a onclick="return confirm('Are you sure you want to retire this experiment?')">Retire</a>
                                 </button>
+                            {% else %}
+                                <button class="btn btn-danger mr-2" type="submit" style="margin-left: 10px"
+                                        name="retire_experiment" value="true" disabled>
+                                    <a onclick="return confirm('Are you sure you want to retire this experiment?')">Retire</a>
+                                </button>
                             {% endif %}
                         </form>
-                        <button class="btn btn-secondary mr-2" style="margin-left: 10px">
+                        <button class="btn btn-primary mr-2" style="margin-left: 10px">
                             <a href="{% url 'project_detail' project_id=experiment.project_id %}"
                                class="unlink">Back to Project</a>
                         </button>
@@ -96,7 +101,7 @@
                                     <em class="fa fa-fw fa-refresh"></em> Refresh Status
                                 </a>
                             </button>
-                            <button class="btn btn-secondary mr-2">
+                            <button class="btn btn-primary mr-2">
                                 <a href="{% url 'experiment_sessions' experiment_id=experiment.experiment_id %}"
                                    class="unlink">Session History</a>
                             </button>
@@ -117,7 +122,9 @@
                             <th style="width: 20%; text-align: center"></th>
                             <th style="width: 20%; text-align: center">Development</th>
                             <th style="width: 20%; text-align: center">Sandbox</th>
+                            {% if user.is_operator %}
                             <th style="width: 20%; text-align: center">Emulation</th>
+                            {% endif %}
                             <th style="width: 20%; text-align: center">Testbed</th>
                         </tr>
                         <tr>
@@ -133,25 +140,41 @@
                                 </td>
                             {% else %}
                                 <td style="text-align: center">
-                                    <button class="btn btn-secondary mr-2" disabled>
+                                    <span   
+                                    data-bs-toggle="popover"
+                                    data-bs-trigger="hover focus"
+                                    data-bs-placement="top"
+                                    data-bs-title="Initiate Development is disabled because:"
+                                    data-bs-content="The experiment is currently in a Development Session OR is in another session type.">
+                                    <button class="btn btn-secondary mr-2" type="button"  disabled>
                                         Initiate Development
                                     </button>
+                                </span>
                                 </td>
                             {% endif %}
                             <td style="text-align: center">
                                 {% if buttons.b_sandbox_submit %}
                                     <button class="btn btn-success mr-2"
-                                            type="submit"
-                                            name="b_sandbox_submit"
-                                            value="{{ experiment.experiment_id }}">
+                                            type="button"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#sandboxScheduleModal">
                                         Submit to Sandbox
                                     </button>
-                                {% else %}
-                                    <button class="btn btn-secondary mr-2" disabled>
-                                        Submit to Sandbox
-                                    </button>
+                                {% else %}           
+                                    <span   
+                                        data-bs-toggle="popover"
+                                        data-bs-trigger="hover focus"
+                                        data-bs-placement="top"
+                                        data-bs-title="Submit to Sandbox is disabled because:"
+                                        data-bs-content="The experiment is currently in a Sandbox Session OR is in another session type OR the experiment has more than 2 portable nodes AND/OR more than 2 fixed nodes.">
+                                        <button class="btn btn-secondary mr-2" type="button"  disabled>
+                                            Submit to Sandbox
+                                        </button>
+                                    </span>
+                                    
                                 {% endif %}
                             </td>
+                            {% if user.is_operator %}
                             <td style="text-align: center">
                                 {% if buttons.b_emu_submit %}
                                     <button class="btn btn-success mr-2"
@@ -161,11 +184,19 @@
                                         Submit to Emulation
                                     </button>
                                 {% else %}
-                                    <button class="btn btn-secondary mr-2" disabled>
+                                <span   
+                                    data-bs-toggle="popover"
+                                    data-bs-trigger="hover focus"
+                                    data-bs-placement="top"
+                                    data-bs-title="Submit to Emulation is disabled because:"
+                                    data-bs-content="The experiment is currently in an Emulation Session OR is in another session type.">
+                                    <button class="btn btn-secondary mr-2" type="button"  disabled>
                                         Submit to Emulation
                                     </button>
+                                </span>
                                 {% endif %}
                             </td>
+                            {% endif %}
                             <td style="text-align: center">
                                 {% if buttons.b_testbed_submit %}
                                     <button class="btn btn-success mr-2"
@@ -175,9 +206,16 @@
                                         Submit to Testbed
                                     </button>
                                 {% else %}
-                                    <button class="btn btn-secondary mr-2" disabled>
+                                <span   
+                                    data-bs-toggle="popover"
+                                    data-bs-trigger="hover focus"
+                                    data-bs-placement="top"
+                                    data-bs-title="Submit to Testbed is disabled because:"
+                                    data-bs-content="The experiment is currently in a Testbed Session OR is in another session type OR is waiting for at least one full and completed Development Session.">
+                                    <button class="btn btn-secondary mr-2" type="button"  disabled>
                                         Submit to Testbed
                                     </button>
+                                </span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -198,6 +236,7 @@
                                     </button>
                                 {% endif %}
                             </td>
+                            {% if user.is_operator %}
                             <td style="text-align: center">
                                 {% if buttons.b_emu_cancel %}
                                     <button class="btn btn-success mr-2"
@@ -212,6 +251,7 @@
                                     </button>
                                 {% endif %}
                             </td>
+                            {% endif %}
                             <td style="text-align: center">
                                 {% if buttons.b_testbed_cancel %}
                                     <button class="btn btn-success mr-2"
@@ -313,7 +353,7 @@
                             Linked Files
                             {% if not experiment.is_retired %}
                                 {% if user.is_operator %}
-                                    <button class="btn btn-secondary mr-2" style="float: right">
+                                    <button class="btn btn-primary mr-2" style="float: right">
                                         <a href="{% url 'experiment_files' experiment_id=experiment.experiment_id %}"
                                            class="unlink">Update</a>
                                     </button>
@@ -354,7 +394,7 @@
                             Members
                             {% if not experiment.is_retired %}
                                 {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
-                                    <button class="btn btn-secondary mr-2" style="float: right">
+                                    <button class="btn btn-primary mr-2" style="float: right">
                                         <a href="{% url 'experiment_members' experiment_id=experiment.experiment_id %}"
                                            class="unlink">Update</a>
                                     </button>
@@ -376,7 +416,7 @@
                             {% if not experiment.is_retired %}
                                 {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
                                     {% if not experiment.resources_locked %}
-                                        <button class="btn btn-secondary mr-2" style="float: right">
+                                        <button class="btn btn-primary mr-2" style="float: right">
                                             <a href="{% url 'experiment_resource_list' experiment_id=experiment.experiment_id %}"
                                                class="unlink">Update</a>
                                         </button>
@@ -511,4 +551,116 @@
             <button class="message-btn btn btn-success">Login</button>
         </a>
     {% endif %}
+
+    <!-- Modal for scheduling sandbox session -->
+    <div class="modal fade" id="sandboxScheduleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sandboxScheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content">
+            <div class="modal-header bg-dark">
+              <h1 class="modal-title fs-5 text-light" id="sandboxScheduleModalLabel">Schedule Sandbox Session</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-body-tertiary">
+                <div class="row">
+                    <div class="col-7">
+                        
+                        <form id="sandbox-schedule-form" action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}" method="POST">
+                            {% csrf_token %}  
+                                <div class="container">
+                                    {% for month, calendar in sandbox_calendar.items %}
+                                    <div id="sandbox-calendar" class="calendar">
+                                        <div class="calendar-heading">
+                                            <div class="row calendar-month">
+                                                <h1>{{month}}</h1>
+                                                <hr>
+                                            </div>
+                                            <div class="row calendar-weekday-names">
+                                                {% for weekday, days in calendar.2.items %}
+                                                <div class="col text-center">
+                                                    <div class="weekday-name">{{weekday}}</div>
+                                                    {% for day in days %}
+                                                    <!-- 
+                                                        day.0 == calendar date 
+                                                        day.1 == is_reserved
+                                                        day.2 == out_of_bounds (within the 28 day schedule requirment?)
+                                                    -->
+                                                    {% if day.0 != '00' %} 
+                                                        {% if day.2 == True %}
+                                                        <div class="m-1">
+                                                            <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn-light text-light consecutive-check" disabled>{{day.0}}</button>
+                                                        </div>
+                                                        {% else %}
+                                                            {% if day.1 == False %}
+                                                            <div class="m-1">
+                                                                <input id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0}}" type="checkbox" class="btn-check consecutive-check" autocomplete="off" value="{{calendar.0}}-{{calendar.1}}-{{day.0}}">
+                                                                <label class="btn" for="btn-check-{{calendar.1}}-{{day.0}}">{{day.0}}</label>
+                                                            </div>
+                                                            {% elif day.1 == True %}
+                                                            <div class="m-1">
+                                                                <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn btn-secondary consecutive-check" disabled>{{day.0}}</button>
+                                                            </div>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% else %}
+                                                    <div class="m-1">
+                                                        <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn-light text-light consecutive-check" disabled>{{day.0}}</button>
+                                                    </div>
+                                                    {% endif%}
+                                                    {% endfor %}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                        </form>
+                    </div>
+                    <div class="col-5 mt-4 pt-2">
+                        <div class="contianer  h-100">
+                            <div class="row">
+                                <h3>Requirements</h3>
+                                <hr>
+                            </div>
+                            <div class="row mb-3">
+                                <ul class="list-group list-group-flush border rounded">
+                                    <li id="reservation-min-msg" class="list-group-item">Select at least one day to make a reservation.</li>
+                                    <li id="reservation-advance-msg" class="list-group-item">Reservations can be made up to 28 days in advance.</li>
+                                    <li id="reservation-consecutive-msg" class="list-group-item">Reservations can only be made for consecutive days.</li>
+                                    <li id="reservation-limit-msg" class="list-group-item">For reservations exceeding 5 days, contact AERPAW at: aerpaw-contact@ncsu.edu.</li>
+                                    <li id="reservation-time-msg" class="list-group-item">Rervations start at 10:00am ETC on the first day and end at 5:00am the next/last day. 
+                                        <br><br>Example: 
+                                        <ul class="list-group list-group-flush border rounded">
+                                            <li class="list-group-item">If the reserved dates are for the 3rd and 4th.</li> 
+                                            <li class="list-group-item">Start time would be at 10:00am on the 3rd.</li>
+                                            <li class="list-group-item">End time would be at 5:00am on the 5th</li>
+                                        </ul>
+                                </ul>
+
+                            </div>
+                            <div class="row mb-3">
+                                <div id="sandbox-calendar-messages"></div>
+                            </div>
+                            <div class="row">
+                                <button 
+                                        type="submit"
+                                        form="sandbox-schedule-form"
+                                        name="b_sandbox_submit"
+                                        value="{{ experiment.experiment_id }}" 
+                                        class="btn btn-success float-end"
+                                        disabled>
+                                        Reserve Sandbox
+                                </button>
+                                <button type="button" class="btn btn-primary float-end" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-body-tertiary">
+              
+            </div>
+          </div>
+        </div>
+      </div>
 {% endblock %}

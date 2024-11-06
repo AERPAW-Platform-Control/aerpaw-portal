@@ -31,7 +31,7 @@
                     <tr>
                         <td style="width: 25%">Display Name</td>
                         <td style="width: 75%;">
-                            <input type="text" name="display_name" size="40" value="{{ user_data.display_name }}">
+                            <input type="text" name="display_name" size="40" value="{{ user_data.display_name }}" required>
                             <button type="submit" class="message-btn btn btn-success"
                                     style="float: right; margin-left: 10px"
                             >
@@ -47,10 +47,10 @@
                         <td style="width: 25%">Employer/Organization</td>
                         <td style="width: 75%;">
                             {% if user_profile.employer %}
-                                <input type="text" name="employer" size="40" value="{{ user_profile.employer }}">
+                                <input type="text" name="employer" size="40" value="{{ user_profile.employer }}" required>
                             {% else %}
                                 <input type="text" name="employer" size="40"
-                                       placeholder="required for experimenter role...">
+                                       placeholder="required for experimenter role..." required>
                             {% endif %}
                         </td>
                     </tr>
@@ -58,10 +58,10 @@
                         <td style="width: 25%">Position/Title</td>
                         <td style="width: 75%;">
                             {% if user_profile.position %}
-                                <input type="text" name="position" size="40" value="{{ user_profile.position }}">
+                                <input type="text" name="position" size="40" value="{{ user_profile.position }}" required>
                             {% else %}
                                 <input type="text" name="position" size="40"
-                                       placeholder="required for experimenter role...">
+                                       placeholder="required for experimenter role..." required>
                             {% endif %}
                         </td>
                     </tr>
@@ -70,9 +70,9 @@
                         <td style="width: 75%;">
                             {% if user_profile.research_field %}
                                 <input type="text" name="research_field" size="40"
-                                       value="{{ user_profile.research_field }}">
+                                       value="{{ user_profile.research_field }}" required>
                             {% else %}
-                                <input type="text" name="research_field" size="40" placeholder="optional...">
+                                <input type="text" name="research_field" size="40" placeholder="optional..." required>
                             {% endif %}
                         </td>
                     </tr>

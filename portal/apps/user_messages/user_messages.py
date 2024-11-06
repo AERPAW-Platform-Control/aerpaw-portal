@@ -482,7 +482,83 @@ def generate_user_messages_for_sandbox(request, experiment: AerpawExperiment):
     - message_subject  - string
     - received_by      - array of int:user_id
     """
-    pass
+
+    if experiment.state() == AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY.value:
+        # Submit to Testbed - button pressed by user - emulation required
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update for request to submit to sandbox for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your experiment {0} has been scheduled and is now awaiting execution in the Sandbox.
+
+When the Sandbox Execution has started, you will receive another email.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+        
+    elif experiment.state() == AerpawExperiment.ExperimentState.ACTIVE_SANDBOX.value:
+        # Wait for Testbed deploy - session is scheduled and awaiting execution on testbed
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update - Experiment: {0} is now active in the sandbox'.format(experiment.name)
+        message_body = """
+Your experiment {0} is presently being executed in the Sandbox.
+
+When the Sandbox Execution is complete, you will receive another email.
+As noted in the AERPAW User Manual, this can take a variable amount of time.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))   
+    
+    elif experiment.state() == AerpawExperiment.ExperimentState.SAVING_SANDBOX.value:
+        # Wait for Testbed deploy - session is scheduled and awaiting execution on testbed
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update - Experiment: {0} has returned from the sandbox'.format(experiment.name)
+        message_body = """
+Saving experiment: {0} As noted in the AERPAW User Manual, this can take a variable amount of time, from minutes to hours. """.format(experiment.name)
+        
+    elif experiment.state() == AerpawExperiment.ExperimentState.SAVED.value:
+        # Wait for Testbed deploy - session is scheduled and awaiting execution on testbed
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Saving sandbox execution for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your experiment {0} has returned from Sandbox Execution.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))    
+        
+    else:
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update - Experiment: {0} has been canceled'.format(experiment.name)
+        message_body = """
+Sandbox Execution for experiment {0} has been canceled.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+        
+    # send message
+    received_by = set(received_by_all)
+    for member in received_by:
+        kwargs = {
+            'message_body': message_body,
+            'message_owner': member,
+            'message_subject': message_subject,
+            'received_by': received_by
+        }
+        user_message_create(request=request, **kwargs)
+    # send email
+    kwargs = {
+        'message_body': message_body,
+        'message_subject': message_subject,
+        'received_by': received_by
+    }
+    send_portal_mail_from_message(request=request, **kwargs)
 
 
 def generate_user_messages_for_emulation(request, experiment: AerpawExperiment):
@@ -493,7 +569,74 @@ def generate_user_messages_for_emulation(request, experiment: AerpawExperiment):
     - message_subject  - string
     - received_by      - array of int:user_id
     """
-    pass
+    if experiment.state() == AerpawExperiment.ExperimentState.WAIT_EMULATION_DEPLOY.value:
+        # Submit to Testbed - button pressed by user - emulation required
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update for request to submit to emulation for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your experiment {0} has been scheduled and is now awaiting execution in Emulation.
+
+When the Emulation Execution has started, you will receive another email.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+        
+    elif experiment.state() == AerpawExperiment.ExperimentState.ACTIVE_EMULATION.value:
+        # Wait for Testbed deploy - session is scheduled and awaiting execution on testbed
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update - Experiment: {0} is now active in the emulation'.format(experiment.name)
+        message_body = """
+Your experiment {0} is presently being executed in Emulation.
+
+When the Emulation Execution is complete, you will receive another email.
+As noted in the AERPAW User Manual, this can take a variable amount of time.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))   
+        
+    elif experiment.state() == AerpawExperiment.ExperimentState.SAVED.value:
+        # Wait for Testbed deploy - session is scheduled and awaiting execution on testbed
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Saving emulation execution for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your experiment {0} has returned from Emulation Execution.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))    
+        
+    else:
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update - Experiment: {0} has been canceled'.format(experiment.name)
+        message_body = """
+Emulation Execution for experiment {0} has been canceled.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+        
+    # send message
+    received_by = set(received_by_all)
+    for member in received_by:
+        kwargs = {
+            'message_body': message_body,
+            'message_owner': member,
+            'message_subject': message_subject,
+            'received_by': received_by
+        }
+        user_message_create(request=request, **kwargs)
+    # send email
+    kwargs = {
+        'message_body': message_body,
+        'message_subject': message_subject,
+        'received_by': received_by
+    }
+    send_portal_mail_from_message(request=request, **kwargs)
 
 
 def generate_user_messages_for_testbed(request, experiment: AerpawExperiment):

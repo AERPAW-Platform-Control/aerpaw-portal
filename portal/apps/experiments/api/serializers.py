@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
-    OpsSession, UserExperiment
+from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession, \
+    ScheduledSession, UserExperiment
 
 
 class UserExperimentSerializer(serializers.ModelSerializer):
@@ -53,7 +53,7 @@ class ExperimentSerializerState(serializers.ModelSerializer):
         fields = ['experiment_flags', 'experiment_id', 'experiment_state', 'experiment_uuid']
 
 
-class ExperimentSessionSerializerList(serializers.ModelSerializer):
+class OnDemandSessionSerializerList(serializers.ModelSerializer):
     """
     Experiment Session List
     - created (from AuditModelMixin)
@@ -74,12 +74,12 @@ class ExperimentSessionSerializerList(serializers.ModelSerializer):
     session_id = serializers.IntegerField(source='id')
 
     class Meta:
-        model = ExperimentSession
+        model = OnDemandSession
         fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'session_id', 'session_type',
                   'start_date_time', 'started_by']
 
 
-class ExperimentSessionSerializerDetail(serializers.ModelSerializer):
+class OnDemandSessionSerializerDetail(serializers.ModelSerializer):
     """
     Experiment Session Detail
     - created (from AuditModelMixin)
@@ -102,12 +102,12 @@ class ExperimentSessionSerializerDetail(serializers.ModelSerializer):
     session_id = serializers.IntegerField(source='id')
 
     class Meta:
-        model = ExperimentSession
+        model = OnDemandSession
         fields = ['created_by', 'created_time', 'end_date_time', 'ended_by', 'experiment_id', 'is_active',
                   'modified_by', 'modified_time', 'session_id', 'session_type', 'start_date_time', 'started_by']
 
 
-class OpsSessionSerializerList(serializers.ModelSerializer):
+class ScheduledSessionSerializerList(serializers.ModelSerializer):
     """
     Ops Session - created by Aerpaw Ops team to manually manage sessions 
     - *description (an explanation to be emailed to experimenters describing success status)
@@ -138,30 +138,24 @@ class OpsSessionSerializerList(serializers.ModelSerializer):
     session_id = serializers.IntegerField(source='id')
 
     class Meta:
-        model = OpsSession
-        fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'scheduled_active_date', 'session_id', 'session_state', 
+        model = ScheduledSession
+        fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'scheduled_start', 'scheduled_end', 'session_id', 'session_state', 
                   'session_type', 'start_date_time', 'started_by']
 
 
 
-class OpsSessionSerializerDetail(serializers.ModelSerializer):
-    canceled_date = serializers.DateTimeField(source='canceled')
-    created_by = serializers.CharField(source='created_by')
-    created_date = serializers.DateTimeField(source='created')
-    ended_date = serializers.DateTimeField(source='ended_date_time')
-    ended_by = serializers.CharField(source='ended_by')
+class ScheduledSessionSerializerDetail(serializers.ModelSerializer):
+    created_time = serializers.DateTimeField(source='created')
     experiment_id = serializers.IntegerField(source='experiment.id')
-    modifed_date = serializers.DateTimeField(source='modified')
-    modified_by = serializers.CharField(source='modified_by')
-    ops_session_id = serializers.IntegerField(source='id')
-    scheduled_active_date = serializers.DateTimeField(source='scheduled_active_date') # The actual date the session will become active
-    scheduled_created_on = serializers.DateTimeField(source='scheduled_created_on') # The date the scheduled date was planned/created-on
+    modified_date = serializers.DateTimeField(source='modified')    
+    session_id = serializers.IntegerField(source='id')
 
     class Meta:
-        model = OpsSession
-        fields = ['canceled_by', 'canceled_date', 'created_by', 'created_date', 'ended_by', 'ended_date',  'experiment_id', 'description',
-                   'is_active', 'is_success', 'modified_by', 'modifed_date', 'ops_session_id',  
-                   'scheduled_active_date', 'scheduled_by', 'scheduled_created_on', 'session_state', 'session_type'
+        model = ScheduledSession
+        fields = ['created_by', 'created_time', 'description', 'ended_by', 'ended_date_time',  'experiment_id',
+                   'is_active', 'is_success', 'modified_by', 'modifed_date', 
+                   'scheduled_start', 'scheduled_end', 'scheduled_by', 'scheduled_created_on', 'session_state', 'session_id',  
+                   'session_type', 'start_date_time', 'started_by'
                     ]
 
 class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):

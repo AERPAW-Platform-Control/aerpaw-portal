@@ -9,7 +9,7 @@ from portal.apps.experiments.api.experiment_utils import active_development_to_s
     wait_sandbox_deploy_to_saved, wait_testbed_deploy_to_active_testbed, wait_testbed_deploy_to_saved, \
     wait_testbed_schedule_to_saved, wait_testbed_schedule_to_wait_emulation_schedule, \
     wait_testbed_schedule_to_wait_testbed_deploy
-from portal.apps.experiments.models import AerpawExperiment, OpsSession
+from portal.apps.experiments.models import AerpawExperiment, ScheduledSession
 from portal.apps.users.models import AerpawUser
 
 """
@@ -40,6 +40,7 @@ _VALID_OPERATOR_TRANSITION = [
     ('active_emulation', 'wait_testbed_deploy'),
     ('active_sandbox', 'saving_sandbox'),
     ('active_testbed', 'saved'),
+    ('saved', 'active_development'),
     ('saving_development', 'saved'),
     ('saving_development', 'active_development'),
     ('saving_sandbox', 'saved'),
@@ -76,6 +77,7 @@ _OPS_SESSION_TRANSITIONS = [
     ('active_testbed', 'saved'),
     ('wait_sandbox_deploy', 'active_sandbox'),
     ('active_sandbox', 'saving_sandbox'),
+    ('active_sandbox', 'saved'),
     ('saving_sandbox', 'saved'),
 ]
 

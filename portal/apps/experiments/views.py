@@ -1,18 +1,22 @@
-from urllib.parse import parse_qs, urlparse
+import calendar
 
+from urllib.parse import parse_qs, urlparse
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 from portal.apps.experiments.api.experiment_utils import to_retired
 
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
-    ExperimentViewSet, OpsSessionViewSet
-from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
+    ExperimentViewSet, ScheduledSessionViewSet
+from portal.apps.experiments.calendar import SandboxCalendar
+from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons, get_session_dashboard_buttons
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
-from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
+from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
@@ -112,6 +116,7 @@ def experiment_list(request):
 @csrf_exempt
 @login_required
 def experiment_detail(request, experiment_id):
+    
     e = ExperimentViewSet(request=request)
     message = None
     try:
@@ -212,11 +217,11 @@ def experiment_detail(request, experiment_id):
         user_requests = {}
     dashboard_buttons = get_dashboard_buttons(request, experiment_id=experiment_id)
     try:
-        session_obj = ExperimentSession.objects.filter(
+        session_obj = OnDemandSession.objects.filter(
             experiment_id=experiment_id
         ).order_by('-created').first()
         if session_obj.is_active:
-            s = ExperimentSessionViewSet(request=request)
+            s = OnDemandSessionViewSet(request=request)
             session = s.retrieve(request=request, pk=session_obj.pk).data
         else:
             session = {}
@@ -224,6 +229,14 @@ def experiment_detail(request, experiment_id):
                 message = 'DeploymentError: most recent deployment attempt was cancelled by user/operator'
     except Exception as exc:
         session = {}
+    
+    print(f'dashboard buttons= {dashboard_buttons}')
+    sandbox_calendar = SandboxCalendar().get_calendar()
+    
+    
+
+
+
     return render(request,
                   'experiment_detail.html',
                   {
@@ -234,7 +247,8 @@ def experiment_detail(request, experiment_id):
                       'session': session,
                       'user_requests': user_requests,
                       'message': message,
-                      'debug': DEBUG
+                      'debug': DEBUG,
+                      'sandbox_calendar': sandbox_calendar,
                   })
 
 
@@ -562,14 +576,15 @@ def experiment_sessions(request, experiment_id):
         request.query_params = QueryDict('', mutable=True)
         request.query_params.update(data_dict)
         
-        ops_e = OpsSessionViewSet(request=request)
-        ops_sessions = ops_e.get_queryset()
+        scheduled_e = ScheduledSessionViewSet(request=request)
+        scheduled_sessions = scheduled_e.get_queryset()
+        scheduled_session_ids = scheduled_sessions.values_list('id', flat=True)
 
-        e = ExperimentSessionViewSet(request=request)
-        sessions = e.get_queryset()
+        e = OnDemandSessionViewSet(request=request)
+        sessions = e.get_queryset().exclude(id__in=scheduled_session_ids)
 
-        # Combines and retrieves data for OpsSessions and ExperimentSessions
-        all_sessions = ops_e.sessions_list(request=request, many=True, ops_sessions=ops_sessions, sessions=sessions)
+        # Combines and retrieves data for ScheduledSessions and OnDemandSessions
+        all_sessions = scheduled_e.sessions_list(request=request, many=True, ops_sessions=scheduled_sessions, sessions=sessions)
 
 
 
@@ -582,13 +597,15 @@ def experiment_sessions(request, experiment_id):
         max_range = 0
         if all_sessions.data:
             all_sessions = dict(all_sessions.data)
+            results = all_sessions['results']
+            all_sessions['results'] = sorted(results, key=lambda x: x['session_id'], reverse=True)
             prev_url = all_sessions.get('previous', None)
             if prev_url:
                 prev_dict = parse_qs(urlparse(prev_url).query)
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
+                    print(f'1.) experiments/views experiment_sessions {exc}')
                     prev_page = 1
             next_url = all_sessions.get('next', None)
             if next_url:
@@ -596,7 +613,7 @@ def experiment_sessions(request, experiment_id):
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
+                    print(f'2.) experiments/views experiment_sessions {exc}')
                     next_page = 1
             count = int(all_sessions.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -606,6 +623,7 @@ def experiment_sessions(request, experiment_id):
         else:
             all_sessions = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
+        dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
     except Exception as exc:
         message = exc
         all_sessions = None
@@ -614,6 +632,7 @@ def experiment_sessions(request, experiment_id):
         prev_page = None
         search_term = None
         count = 0
+        dashboard_buttons = get_session_dashboard_buttons(request, experiment_id=experiment_id)
     return render(request,
                   'experiment_sessions.html',
                   {
@@ -627,6 +646,7 @@ def experiment_sessions(request, experiment_id):
                       'prev_page': prev_page,
                       'search': search_term,
                       'count': count,
+                      'buttons': dashboard_buttons,
                       'debug': DEBUG
                   })
 
@@ -636,13 +656,16 @@ def experiment_sessions(request, experiment_id):
 def session_detail(request, experiment_id, session_id):
     message = None
     experiment_obj = get_object_or_404(AerpawExperiment, id=experiment_id)
-    session_obj = get_object_or_404(ExperimentSession, id=session_id)
+    session_obj = get_object_or_404(OnDemandSession, id=session_id)
     try:
-        s = ExperimentSessionViewSet(request=request)
+        scheduled = ScheduledSessionViewSet(request=request)
+        print(f'scheduled session 2')
+        session = scheduled.retrieve(request=request, pk=session_id).data
+        print(f'scheduled session= {session}')
+    except:
+        s = OnDemandSessionViewSet(request=request)
         session = s.retrieve(request=request, pk=session_id).data
-    except Exception as exc:
-        message = exc
-        session = None
+    
     return render(request,
                   'session_detail.html',
                   {
@@ -651,3 +674,5 @@ def session_detail(request, experiment_id, session_id):
                       'message': message,
                       'debug': DEBUG
                   })
+
+
