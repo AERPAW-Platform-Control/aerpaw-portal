@@ -273,11 +273,11 @@
                     <hr class="w-75">
                     <div class="row single-choice-checkbox-group">
                         <div class="col text-center">
-                            <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="showNextGroup(this)" data-target="#initiateDevelopmentBtnGroup" data-hide="false" autocomplete="off">
+                            <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="toggleGroup(this)" data-target="#initiateDevelopmentBtnGroup" autocomplete="off">
                             <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
                         </div>
                         <div class="col text-center">
-                            <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="showNextGroup(this)" data-target="#initiateDevelopmentBtnGroup" data-hide="true" autocomplete="off">
+                            <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="toggleGroup(this)" data-target="#rescheduleBtnGroup" autocomplete="off">
                             <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
                         </div>
                     </div>
@@ -293,6 +293,28 @@
                         <div class="col text-center">
                             <input type="checkbox" class="btn-check single-check" id="no-development-session-btn" name="no_new_development" autocomplete="off" value="{{experiment.id}}">
                             <label class="btn btn-primary btn-lg" for="no-development-session-btn">No</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
+                    <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
+                    <hr class="w-75">
+                    <div class="row single-choice-checkbox-group">
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="yes-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="false" autocomplete="off" value="True">
+                            <label class="btn btn-primary btn-lg" for="yes-reschedule-session-btn">Yes</label>
+                        </div>
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="no-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="true" autocomplete="off" value="False">
+                            <label class="btn btn-primary btn-lg" for="no-reschedule-session-btn">No</label>
+                        </div>
+                    </div>
+                    <div id="rescheduleDateTimeGroup" style="display: none;">
+                        <div class="mb-3">
+                            <label for="session_date_reschedule_start" class="form-label">Reschedule date and time:</label>
+                            <hr class="w-75">
+                            <input type="date" id="session_date_reschedule_start" name="session_date" class="form-control w-75 ms-2">
+                            <input type="time" id="session_time_reschedule_start" name="session_time" class="form-control w-75 ms-2">
                         </div>
                     </div>
                 </div>
