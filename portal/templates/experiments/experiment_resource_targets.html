@@ -39,8 +39,9 @@
                 </div>
                 <div>
                     <form id="create-project" method="POST" class="post-form">
-                        {% csrf_token %}
-                        {{ form.experiment_resources }}
+                        
+                        <!-- {{ form.experiment_resources }} -->
+                          {{form}}
                     </form>
                 </div>
             </div>

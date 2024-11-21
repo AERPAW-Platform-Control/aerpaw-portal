@@ -1,0 +1,18 @@
+<div class="container">
+    <h5>Hey {{user.display_name}},</h5>
+    <p>
+        <br>Your {{experiment_type}} experiment has successfully been submitted to the Aerpaw Operations Team! 
+        A team member will reach out to you shortly via the lead experimenter's email submitted on the form. In the meantime, the <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki" unlink>Aerpaw User Manual</a> is availible to answer common questions and provide in depth detail on how Aerpaw Operates.
+        You may now logout of the portal.
+    </p>
+    <p class="m-3">
+        <br>
+        <button type="button" class="btn btn-success">
+            <a class="nav-link" href="{% url 'logout' %}">
+                <em class="fa fa-fw fa-sign-out"></em> Logout
+            </a>
+        </button>
+    </p> 
+    <p><br>Thank you,</p>
+    <p>The Aerpaw Ops Team<br>aerpaw-operations@ncsu.edu</p>
+</div>

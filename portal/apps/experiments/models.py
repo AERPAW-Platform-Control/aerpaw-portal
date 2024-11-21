@@ -106,7 +106,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         return UserExperiment.objects.filter(
             user=user, experiment=self).exists()
 
-    def experiment_members(self) -> [AerpawUser]:
+    def experiment_members(self) -> AerpawUser:
         return AerpawUser.objects.filter(
             id__in=UserExperiment.objects.filter(experiment=self).values_list('user_id', flat=True)
         ).order_by('display_name')
@@ -292,8 +292,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     node_vehicle = models.CharField(
         max_length=255,
         choices=NodeVehicle.choices,
-        default=NodeVehicle.VEHICLE_NONE
-
+        default=NodeVehicle.VEHICLE_NONE if node_type==NodeType.AFRN else NodeVehicle.VEHICLE_UAV
     )
     resource = models.ForeignKey(
         AerpawResource,
@@ -303,3 +302,4 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
         null=True
     )
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
+

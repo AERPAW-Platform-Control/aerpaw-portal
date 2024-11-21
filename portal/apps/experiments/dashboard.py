@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.http import HttpRequest
 from rest_framework.request import Request
 
@@ -292,21 +293,30 @@ def evaluate_session_dashboard_action(request):
     e = ExperimentViewSet(request=api_request)
     op = None
     if request.POST.get('end_session'):
-        print('DASHBOARD ending session')
         experiment = AerpawExperiment.objects.get(id = request.POST.get('end_session'))
+        try:
+            session_type = ScheduledSession.objects.filter(experiment=experiment).order_by('-created').first().session_type
+        except:
+            session_type = OnDemandSession.objects.filter(experiment=experiment).order_by('-created').first().session_type
+        if session_type == 'sandbox':
+            next_state = AerpawExperiment.ExperimentState.SAVING_SANDBOX
+        else:
+            next_state = AerpawExperiment.ExperimentState.SAVED
         is_success = False
         if request.POST.get('session_success') and request.POST.get('session_success') == 'True':
             is_success = True
         api_request.data.update({
-            'next_state': AerpawExperiment.ExperimentState.SAVED,
+            'next_state': next_state,
             'ops_session':True,
             'session_description': request.POST.get('session_description'),
             'is_success': is_success,
+            'reschedule_session': request.POST.get('reschedule_session') if request.POST.get('reschedule_session') else False,
+            'session_date': request.POST.get("session_date") if request.POST.get('session_date') else None,
+            'session_time': request.POST.get("session_time") if request.POST.get('session_time') else None,
+            'experiment': experiment,
             })
         op = e.state(api_request, pk=int(experiment.id))
 
-        if request.POST.get('reschedule_session') and request.POST.get('reschedule_session') == 'True':
-            print('Rescheduling Session')
 
     if request.POST.get('new_development'):
         experiment_id = request.POST.get('new_development')
@@ -432,13 +442,11 @@ def get_session_dashboard_buttons(request, session_id: int) -> dict:
             
             case _:
                 buttons['no_actions'] = True
-        print('session buttons', buttons)
         return buttons
              
 
     except Exception as exc:
         print(exc)
-        print('session buttons', buttons)
         buttons['no_actions'] = True
         return buttons
     

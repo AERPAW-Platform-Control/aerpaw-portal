@@ -109,10 +109,10 @@ def create_experiment_scheduled_session(session_type: str, experiment: AerpawExp
             scheduled_end = None
             session_state = ScheduledSession.SessionStateChoices.SCHEDULED
         case 'sandbox':
-            scheduled_start = datetime.strptime(f'{scheduled_active_date[0]}T10:00', "%Y-%m-%dT%H:%M")
+            scheduled_start = datetime.strptime(f'{scheduled_active_date[0]}T10:00:00.000001', '%Y-%m-%dT%H:%M:%S.%f')
             scheduled_end = None
             if len(scheduled_active_date) >1:
-                scheduled_end = datetime.strptime(f'{scheduled_active_date[len(scheduled_active_date)-1]}T05:00', "%Y-%m-%dT%H:%M") +timedelta(days=1)
+                scheduled_end = datetime.strptime(f'{scheduled_active_date[len(scheduled_active_date)-1]}T05:00:00.000001', '%Y-%m-%dT%H:%M:%S.%f') +timedelta(days=1)
             else:
                 scheduled_end = scheduled_start + timedelta(hours=19)
             session_state = ScheduledSession.SessionStateChoices.SCHEDULED
@@ -146,8 +146,9 @@ def create_experiment_scheduled_session(session_type: str, experiment: AerpawExp
 def schedule_experiment_scheduled_session(request, session: ScheduledSession, user: AerpawUser) -> bool:
     try:
         # need to save scheduled_by 
-        scheduled_date_time = datetime.strptime(request.data["session_date"]+ 'T' + request.data["session_time"], '%Y-%m-%dT%H:%M')
+        scheduled_date_time = datetime.strptime(f'{request.data["session_date"]}T{request.data["session_time"]}:00.000001', '%Y-%m-%dT%H:%M:%S.%f')
         scheduled_date_time = tz.make_aware(scheduled_date_time)
+        print(f'scheduled_date_time= {scheduled_date_time}')
         session.scheduled_start = scheduled_date_time
         session.scheduled_created_on = tz.now()
         session.scheduled_by = user

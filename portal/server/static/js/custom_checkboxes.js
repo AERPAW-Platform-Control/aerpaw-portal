@@ -1,3 +1,4 @@
+
 var singleChoiceCheckboxGroupCount = 0
 var showNextGroupCount = 0
 var toggleGroupCount = 0
@@ -225,7 +226,7 @@ function enableReserveSandboxBtn(checkbox){
 $(document).ready(function (){
     
     $('input[type="checkbox"]').each((index, checkbox)=>{
-
+        console.log('checkbox')
         /*  
             Only allows one chekbox in a group to be selected by
             unchecking other checkboxes in the group if another one is checked

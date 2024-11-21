@@ -39,6 +39,12 @@
                     </ul>
                 </div>
                 {% endif %}
+                <button class="btn btn-primary mr-2">
+                    <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}"
+                       class="unlink">
+                       <em class="fa fa-fw fa-refresh"></em> Refresh
+                    </a>
+                </button>
                 <button class="btn btn-primary mr-2" value="cancel">
                     <a href="{% url 'experiment_detail' experiment_id=experiment.id %}" class="unlink">
                         Back to Experiment
@@ -50,8 +56,7 @@
                 <tr>
                     <th>Type</th>
                     <th>Active</th>
-                    <th>Scheduled Start</th>
-                    <th>Scheduled End</th>
+                    <th>Scheduled</th>
                     <th>Started</th>
                     <th>Started By</th>
                     <th>Ended</th>
@@ -74,13 +79,9 @@
                             <td>
                                 {% if session.scheduled_start %}
                                     {{ session.scheduled_start|str_to_datetime }}
-                                {% else %}
-                                    ---
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if session.scheduled_end %}
-                                    {{ session.scheduled_end|str_to_datetime }}
+                                    {% if session.scheduled_end %}
+                                     - <br>{{ session.scheduled_end|str_to_datetime }}
+                                    {% endif %}
                                 {% else %}
                                     ---
                                 {% endif %}
@@ -334,7 +335,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
+                <!-- <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
                     <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
                     <hr class="w-75">
                     <div class="row single-choice-checkbox-group">
@@ -355,7 +356,7 @@
                             <input type="time" id="session_time_reschedule_start" name="session_time" class="form-control w-75 ms-2">
                         </div>
                     </div>
-                </div>
+                </div> -->
                 {% endif %}
               </form>
             </div>

@@ -147,14 +147,13 @@ class ScheduledSessionSerializerList(serializers.ModelSerializer):
 class ScheduledSessionSerializerDetail(serializers.ModelSerializer):
     created_time = serializers.DateTimeField(source='created')
     experiment_id = serializers.IntegerField(source='experiment.id')
-    modified_date = serializers.DateTimeField(source='modified')    
+    modified_time = serializers.DateTimeField(source='modified')    
     session_id = serializers.IntegerField(source='id')
 
     class Meta:
         model = ScheduledSession
-        fields = ['created_by', 'created_time', 'description', 'ended_by', 'ended_date_time',  'experiment_id',
-                   'is_active', 'is_success', 'modified_by', 'modifed_date', 
-                   'scheduled_start', 'scheduled_end', 'scheduled_by', 'scheduled_created_on', 'session_state', 'session_id',  
+        fields = ['created_by', 'created_time', 'description', 'ended_by', 'end_date_time',  'experiment_id',
+                   'is_active', 'modified_by', 'modified_time', 'session_id',  
                    'session_type', 'start_date_time', 'started_by'
                     ]
 

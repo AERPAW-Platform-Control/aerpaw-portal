@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
+from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard
 from portal.apps.experiments.api.experiment_utils import to_retired
 
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
@@ -18,6 +19,7 @@ from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditFo
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
+from portal.apps.resources.models import AerpawResource
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.user_requests.user_requests import approve_experiment_join_request, deny_experiment_join_request
@@ -230,7 +232,6 @@ def experiment_detail(request, experiment_id):
     except Exception as exc:
         session = {}
     
-    print(f'dashboard buttons= {dashboard_buttons}')
     sandbox_calendar = SandboxCalendar().get_calendar()
     
     
@@ -258,7 +259,11 @@ def experiment_create(request):
     message = None
     project = None
     if request.method == "POST":
-        form = ExperimentCreateForm(request.POST)
+        project_id = request.GET.get('project_id')
+        p = ProjectViewSet()
+        project = p.retrieve(request=request, pk=project_id).data
+        form = new_experiment_form_dashboard(request, project_id)
+        """ form = ExperimentCreateForm(request.POST)
         if form.is_valid():
             try:
                 request.data = QueryDict('', mutable=True)
@@ -269,12 +274,19 @@ def experiment_create(request):
                 experiment = e.create(request=request).data
                 return redirect('experiment_detail', experiment_id=experiment.get('experiment_id', 9999))
             except Exception as exc:
-                message = exc
+                message = exc """
+        if 'redirect' in form.keys():
+            return redirect(form['redirect'], experiment_id=form['experiment_id'])
+        if 'template' in form.keys():
+            form = form['template']
     else:
         project_id = request.GET.get('project_id')
         p = ProjectViewSet()
         project = p.retrieve(request=request, pk=project_id).data
-        form = ExperimentCreateForm(initial={'project_id': project_id})
+        #form = ExperimentCreateForm(initial={'project_id': project_id})
+
+        form = new_experiment_form_dashboard(request, project_id)
+        form = form['template']
     return render(request,
                   'experiment_create.html',
                   {
@@ -360,7 +372,8 @@ def experiment_members(request, experiment_id):
 @csrf_exempt
 @login_required
 def experiment_resource_list(request, experiment_id):
-    message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
+    #message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
+    message = ''
     try:
         # check for query parameters
         current_page = 1
@@ -440,9 +453,46 @@ def experiment_resource_targets(request, experiment_id):
     is_experiment_creator = experiment.is_creator(request.user)
     is_experiment_member = experiment.is_member(request.user)
     if request.method == "POST":
-        form = ExperimentResourceTargetsForm(request.POST, instance=experiment)
-        if form.is_valid():
-            try:
+        all_resources = AerpawResource.objects.all().order_by('name')
+        cc_resources = [resource for resource in all_resources if resource.hostname[:-1] == 'node-cc']
+        lw_resources = [resource for resource in all_resources if resource.hostname[:7] == 'node-lw']
+        lpn_resources = [resource for resource in all_resources if resource.name[:3] == 'LPN']
+        spn_resources = [resource for resource in all_resources if resource.name[:3] == 'SPN']
+        
+        experiment_resources = experiment.resources.all()
+        canonical_resources = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by('experiment_node_number')
+        context={
+            'all_resources': AerpawResource.objects.all().order_by('name'),
+            'cc_resources': cc_resources,
+            'lw_resources': lw_resources,
+            'lpn_resources': lpn_resources,
+            'spn_resources': spn_resources,
+            'experiment_resources': experiment_resources,
+            'canonical_resources': canonical_resources,
+        }
+        form = render_to_string('experiments/forms/experiment_resource_targets_form.html', context)
+
+        print(f'request.POST: {request.POST}')
+        try:
+            api_request = Request(request=HttpRequest())
+            api_request.data.update({
+                    'experiment_resources': [int(i) for i in request.POST.getlist('resource_id')],
+                    'node_numbers':[i for i in request.POST.getlist('node_number')],
+                 })
+            print(f'node_numbers: {api_request.data.get("node_numbers")}')
+            api_request.user = request.user
+            api_request.method = 'PUT'
+            e = ExperimentViewSet(request=api_request)
+            exp = e.resources(request=api_request, pk=experiment_id)
+            return redirect('experiment_resource_list', experiment_id=experiment_id)
+        except Exception as exc:
+            print(f'EXCEPTION found apps.experiments.views.experiment_resource_targets: {exc}')
+            message = f'Exception found: {exc} {type(exc)}'
+
+
+        #form = ExperimentResourceTargetsForm(request.POST, instance=experiment)
+        #if form.is_valid():
+        """     try:
                 api_request = Request(request=HttpRequest())
                 api_request.data.update(
                     {'experiment_resources': [int(i) for i in request.POST.getlist('experiment_resources')]})
@@ -452,12 +502,30 @@ def experiment_resource_targets(request, experiment_id):
                 exp = e.resources(request=api_request, pk=experiment_id)
                 return redirect('experiment_resource_list', experiment_id=experiment_id)
             except Exception as exc:
-                message = exc
+                message = exc """
     else:
         initial_dict = {
             'experiment_resources': list(experiment.resources.all().values_list('id', flat=True))
         }
-        form = ExperimentResourceTargetsForm(instance=experiment, initial=initial_dict)
+        # form = ExperimentResourceTargetsForm(instance=experiment, initial=initial_dict)
+        all_resources = AerpawResource.objects.all().order_by('name')
+        cc_resources = [resource for resource in all_resources if resource.hostname[:-1] == 'node-cc']
+        lw_resources = [resource for resource in all_resources if resource.hostname[:7] == 'node-lw']
+        lpn_resources = [resource for resource in all_resources if resource.name[:3] == 'LPN']
+        spn_resources = [resource for resource in all_resources if resource.name[:3] == 'SPN']
+        
+        experiment_resources = experiment.resources.all()
+        canonical_resources = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by('experiment_node_number')
+        context={
+            'all_resources': AerpawResource.objects.all().order_by('name'),
+            'cc_resources': cc_resources,
+            'lw_resources': lw_resources,
+            'lpn_resources': lpn_resources,
+            'spn_resources': spn_resources,
+            'experiment_resources': experiment_resources,
+            'canonical_resources': canonical_resources,
+        }
+        form = render_to_string('experiments/forms/experiment_resource_targets_form.html', context)
     return render(request,
                   'experiments/experiment_resource_targets.html',
                   {
@@ -632,7 +700,7 @@ def experiment_sessions(request, experiment_id):
         prev_page = None
         search_term = None
         count = 0
-        dashboard_buttons = get_session_dashboard_buttons(request, experiment_id=experiment_id)
+        dashboard_buttons = None
     return render(request,
                   'experiment_sessions.html',
                   {
@@ -659,13 +727,12 @@ def session_detail(request, experiment_id, session_id):
     session_obj = get_object_or_404(OnDemandSession, id=session_id)
     try:
         scheduled = ScheduledSessionViewSet(request=request)
-        print(f'scheduled session 2')
         session = scheduled.retrieve(request=request, pk=session_id).data
-        print(f'scheduled session= {session}')
     except:
         s = OnDemandSessionViewSet(request=request)
         session = s.retrieve(request=request, pk=session_id).data
     
+
     return render(request,
                   'session_detail.html',
                   {

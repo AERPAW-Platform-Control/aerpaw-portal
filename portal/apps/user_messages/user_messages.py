@@ -482,7 +482,8 @@ def generate_user_messages_for_sandbox(request, experiment: AerpawExperiment):
     - message_subject  - string
     - received_by      - array of int:user_id
     """
-
+    received_by_all = [m.id for m in experiment.experiment_members().all()]
+    received_by_all.append(AerpawUser.objects.get(username=experiment.created_by).id)
     if experiment.state() == AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY.value:
         # Submit to Testbed - button pressed by user - emulation required
         # - notify: experiment_members, operators
@@ -569,7 +570,23 @@ def generate_user_messages_for_emulation(request, experiment: AerpawExperiment):
     - message_subject  - string
     - received_by      - array of int:user_id
     """
-    if experiment.state() == AerpawExperiment.ExperimentState.WAIT_EMULATION_DEPLOY.value:
+    received_by_all = [m.id for m in experiment.experiment_members().all()]
+    received_by_all.append(AerpawUser.objects.get(username=experiment.created_by).id)
+    if experiment.state() == AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE.value:
+        # Submit to Testbed - button pressed by user - emulation required
+        # - notify: experiment_members, operators
+        received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
+        message_subject = '[AERPAW] Update for request to submit to emulation for Experiment: {0}'.format(experiment.name)
+        message_body = """
+Your experiment, {0}, has been forwarded to AERPAW Ops for Emulation Execution.
+
+When the Emulation Execution is scheduled, you will receive another email.
+As noted in the AERPAW User Manual, this can take a variable amount of time, typically several days.
+
+Experiment ID: {1}
+Experiment UUID: {2}
+""".format(experiment.name, str(experiment.id), str(experiment.uuid))
+    elif experiment.state() == AerpawExperiment.ExperimentState.WAIT_EMULATION_DEPLOY.value:
         # Submit to Testbed - button pressed by user - emulation required
         # - notify: experiment_members, operators
         received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]

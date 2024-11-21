@@ -1,0 +1,163 @@
+{% load static %}
+
+<div>
+    <form>
+        <div class="">
+            <div class=" mb-3">
+                <label for="experimentTitle" class="form-label">Short experiment title</label>
+                <input name="title" type="text" class="form-control ms-2" id="experimentTitle"  required>
+            </div>
+        </div>
+        <div class="">
+            <div class="mb-3">
+                <label for="hostInstitution" class="form-label">Provide the name of your host institution</label>
+                <input name="host_institution" type="text" class="form-control ms-2" id="hostInstitution" required>
+            </div>
+        </div>
+        <div class="">
+            <div class="mb-3">
+                <label for="sponsoredProject" class="form-label">Provide the title of your sponsored project under which you are carrying this experiment.</label>
+                <input name="sponsored_project" type="text" class="form-control ms-2" id="sponsoredProject" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="mb-3">
+                <div class="">Is there a grant number for the project?</div>
+                <div class="ms-2 mt-2 single-choice-checkbox-group">
+                    <div class="list-group list-group-horizontal">
+                        <li class="list-group-item border border-0">
+                            <input type="checkbox" class="btn-check single-check" id="grantNumberYes" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="false" autocomplete="off">
+                            <label class="btn btn-primary" for="grantNumberYes">Yes</label>
+                        </li>
+                        <li class="list-group-item border border-0">    
+                            <input type="checkbox" class="btn-check single-check" id="grantNumberNo" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="true" autocomplete="off">
+                            <label class="btn btn-primary" for="grantNumberNo">No</label>
+                        </li>
+                    </div>
+                </div>
+            </div>
+           <div id="grantNumber" style="display: none;">
+               <div class="mb-3 ms-3">
+                   <label for="grantNumber" class="form-label">What is the grant number?</label>
+                   <input name="grant_number" type="text" class="form-control ms-2 w-75" id="grantNumber">
+               </div>
+           </div>
+        </div>
+        <div class="">
+            <div class="mb-3">
+                <label for="leadExperimenterName" class="form-label">Name of the lead experimenter</label>
+                <input name="lead_experimenter" type="text" class="form-control ms-2" id="leadExperimenterName" required>
+            </div>
+        </div>
+        <div class="">
+            <div class="mb-3">
+                <label for="leadExperimenterEmail" class="form-label">Contact email of the lead experimenter</label>
+                <input name="lead_email" type="email" class="form-control ms-2" id="leadExperimenterEmail" required>
+            </div>
+        </div>
+        <div class="">
+            <div class="mb-3">
+                <label for="keywords" class="form-label">Provide 3 to 5 keywords that describes your experiment</label>
+                <input name="keywords" type="text" class="form-control ms-2" id="keywords" required>
+            </div>
+        </div>
+        <div class="">
+            <div class="mb-3">
+                <label for="goal" class="form-label">In a few sentences, please describe the goal of your intended experiment.</label>
+                <textarea name="goal" type="text" class="form-control ms-2" id="goal" style="height: 100px;" required></textarea>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="">
+                <label for="" class="form-label">Identify your experiment location (select one or more of the following)</label>
+                  <div class="form-check ms-2">
+                    <input name="location" class="form-check-input" type="checkbox" value="lake_wheeler" id="experimentLocation-LakeWheeler">
+                    <label class="form-check-label" for="experimentLocation-LakeWheeler">
+                      Lake Wheeler
+                    </label>
+                  </div>
+                  <div class="form-check ms-2">
+                    <input name="location" class="form-check-input" type="checkbox" value="centennial_campus" id="experimentLocation-CentennialCampus">
+                    <label class="form-check-label" for="experimentLocation-CentennialCampus">
+                      Centennial Campus
+                    </label>
+                  </div>
+                  <div class="form-check ms-2">
+                    <input name="location" class="form-check-input" type="checkbox" value="emulation" id="experimentLocation-Emulation">
+                    <label class="form-check-label" for="experimentLocation-Emulation">
+                      Emulation
+                    </label>
+                  </div>
+                  <div class="form-check ms-2">
+                    <input name="location" class="form-check-input" type="checkbox" value="sandbox" id="experimentLocation-Sandbox">
+                    <label class="form-check-label" for="experimentLocation-Sandbox">
+                      Sandbox
+                    </label>
+                  </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="mb-3">
+                <div class="">Do you have any urgency for carrying out the over-the-air testbed experiments?</div>
+                <div class="ms-2 mt-2 single-choice-checkbox-group">
+                    <ul class="list-group list-group-horizontal">
+                        <li class="list-group-item border border-0">
+                            <input type="checkbox" class="btn-check single-check" id="urgentYes" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="false" autocomplete="off">
+                            <label class="btn btn-primary" for="urgentYes">Yes</label>
+                        </li>
+                        <li class="list-group-item border border-0">
+                            <input type="checkbox" class="btn-check single-check" id="urgentNo" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="true" autocomplete="off">
+                            <label class="btn btn-primary" for="urgentNo">No</label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div id="urgencyFollowUp" class="" style="display: none;" >
+                <div class="mb-3 ms-3">
+                    <label for="urgencyDate" class="form-label">Please specify when you would desire the experiment to get finalized. </label>
+                    <div class="form-text ms-2" id="urgencyDateInfo">**AERPAW Ops team will provide a best effort service to carry out the testbed experiments while taking into account priorities and urgencies of different experiment requests.</div>
+                    <input name="urgency_date" type="date" class="form-control w-25 ms-2" id="urgencyDate">
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <div class="mb-3">
+                <div class="">Can the data collected from the experiment be shared publicly?</div>
+                <div class="ms-2 mt-2 single-choice-checkbox-group">
+                    <div class="list-group list-group-horizontal">
+                        <li class="list-group-item border border-0">
+                            <input type="checkbox" class="btn-check single-check" id="shareYes" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="false" autocomplete="off">
+                            <label class="btn btn-primary" for="shareYes">Yes</label>
+                        </li>
+                        <li class="list-group-item border border-0">    
+                            <input type="checkbox" class="btn-check single-check" id="shareNo" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
+                            <label class="btn btn-primary" for="shareNo">No</label>
+                        </li>
+                    </div>
+                </div>
+            </div>
+            <div id="sharedUrlFollowUp" style="display: none;">
+                <div class="mb-3 ms-3">
+                    <label for="sharableUrl" class="form-label"  aria-label="shareable url" aria-describedby="url-add-on"> If available, please provide a link to the website that will be hosting the experiment data (e.g. Github, IEEE Dataport). This website will be linked from the AERPAW user manual.</label>
+                    <input name="sharable_url" type="url" class="form-control" id="sharableUrl">
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="mb-3">
+                <label for="vehicleBehavior" class="form-label">Please specify the expected behavior of the vehicles (if any) in your experiment.</label>
+                <div class="form-text ms-2" id="vehicleBehaviorExample"> For example, you could specify, "Predetermined trajectory within the Phase 1 geofence", or "The rover will drive to a random point on the field and the drone will perform a gradient descent for the strongest RF signal coming from the rover."</div>
+                <textarea name="vehicle_behavior" type="text" class="form-control ms-2" id="vehicleBehavior" placeholder="" style="height: 100px;" required></textarea>
+            </div>
+        </div>
+        <div class="my-5">
+            <button type="submit" class="btn btn-success" name="submit_experiment" value="{{experiment_type}}">Create Experiment</button>
+            <button type="button" class="btn btn-primary" value="cancel">
+                <a href="{% url 'project_detail' project_id=project_id %}" class="unlink">
+                    Cancel
+                </a>
+            </button>
+        </div>
+    </form>
+</div>

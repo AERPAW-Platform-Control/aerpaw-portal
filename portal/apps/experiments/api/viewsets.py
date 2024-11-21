@@ -403,6 +403,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                         resources_added = list(set(resource_ids).difference(set(resources_orig)))
                         resources_removed = list(set(resources_orig).difference(set(resource_ids)))
                         # TODO: canonical-experiment-resource logic
+                        print(f'resources_added: {resources_added}')
                         for pk in resources_added:
                             if AerpawResource.objects.filter(pk=pk).exists():
                                 resource = AerpawResource.objects.get(pk=pk)
@@ -449,11 +450,18 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                     # calculate experiment node numbers
                     cers = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by(
                         'created')
-                    enn = 1
-                    for cer in cers:
-                        cer.experiment_node_number = enn
-                        cer.save()
-                        enn += 1
+                    if isinstance(request.data.get('node_numbers'), list):
+                        node_numbers = {int(resource_node_number.split('-')[0]): int(resource_node_number.split('-')[1]) for resource_node_number in request.data.get('node_numbers')}
+                        print(f'node_numbers: {node_numbers}')
+                        for cer in cers:
+                            cer.experiment_node_number = node_numbers[cer.resource.id]
+                            cer.save()
+                    else:
+                        enn = 1
+                        for cer in cers:
+                            cer.experiment_node_number = enn
+                            cer.save()
+                            enn += 1
                 else:
                     raise ValidationError(
                         detail="ValidationError: invalid resource_id or node_uhd /experiments/{0}/resources".format(
@@ -1203,11 +1211,10 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
         except Exception as exc:
             is_experiment_creator = False
             is_experiment_member = False
+
         if request.user.is_operator() or is_experiment_creator or is_experiment_member:
             serializer = ScheduledSessionSerializerDetail(scheduled_session)
-            print(f'serializer= {serializer}')
             du = dict(serializer.data)
-            print(f'ScheduledSession du= {du}')
             try:
                 created_by = AerpawUser.objects.get(username=du.get('created_by')).id
             except Exception as exc:

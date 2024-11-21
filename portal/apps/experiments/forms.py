@@ -118,6 +118,7 @@ class ExperimentResourceTargetsForm(forms.ModelForm):
             'admin/js/SelectBox.js',
             'admin/js/SelectFilter2.js',
             'admin/js/admin/RelatedObjectLookups.js',
+            'js/experiment_resource_selection.js'
         )
 
     class Meta:

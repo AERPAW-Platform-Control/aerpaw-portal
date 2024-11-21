@@ -1,0 +1,182 @@
+{% load static %}
+<hr>
+<div class="row mt-3">
+    <div class="col">
+        <div id="instructionsContainer">
+            <ul class="list-group shadow">
+                <li id="instructionHeading" class="list-group-item bg-secondary text-light">
+                    <h5 name="instructionListHeading">Instructions</h5>
+                </li>
+                <li class="list-group-item">
+                    <ol class="">
+                        <li>
+                            Select resources from the lists below to include in your experiment. 
+                        </li>
+                        <li>
+                            Selected resources will appear in the Targeted Resource List. Here you can change the node numbers.
+                        </li> 
+                    </ol>
+                    <span class="ms-3 mt-2">**Resources and node numbers cannot be changed once development is initiated.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row my-3">
+    <div class="col">
+        <div id="messageContainer" style="display: none;">
+            <ul id="messageList" class="list-group shadow">
+                <li id="messageHeading" class="list-group-item bg-danger text-light">
+                    <h5 class="" name="messageListHeading">Important!</h5>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+
+    <div class="col">
+        <div id="cc_resources">
+            <ul class="list-group shadow">
+                <li class="list-group-item bg-primary text-light">
+                    <h5 name="resourceListHeading">Centennial Campus Resources</h5>
+                </li>
+                {% for resource in cc_resources %}
+                <li class="list-group-item ">
+                        <div class="form-check form-switch">
+                            <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                                {% if resource in experiment_resources %}
+                                <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc" checked>
+                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                {% else %}
+                                <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc">
+                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                {% endif %}
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col">
+        <dic id="lw_resources">
+            <ul class="list-group shadow">
+                <li class="list-group-item bg-primary text-light">
+                    <h5 name="resourceListHeading">Lake Wheeler Resources</h5>
+                </li>
+                {% for resource in lw_resources %}
+                <li class="list-group-item ">
+                    <div class="form-check form-switch">
+                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                            {% if resource in experiment_resources %}
+                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw" checked>
+                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                            {% else %}
+                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw">
+                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                            {% endif %}
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul> 
+        </dic>
+    </div>
+
+    <div class="col">
+        <div id="pn_resources">
+            <ul class="list-group shadow">
+                <li class="list-group-item bg-primary text-light">
+                    <h5 name="resourceListHeading">Large Portable Nodes</h5>
+                </li>
+                {% for resource in lpn_resources %}
+                <li class="list-group-item ">
+                    <div class="form-check form-switch">
+                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                            {% if resource in experiment_resources %}
+                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
+                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                            {% else %}
+                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
+                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                            {% endif %}
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col">
+        <div id="pn_resources">
+            <ul class="list-group shadow">
+                <li class="list-group-item bg-primary text-light">
+                    <h5 name="resourceListHeading">Small Portable Nodes</h5>
+                </li>
+                {% for resource in spn_resources %}
+                <li class="list-group-item ">
+                    <div class="form-check form-switch">
+                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                            {% if resource in experiment_resources %}
+                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
+                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                            {% else %}
+                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
+                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                            {% endif %}
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row my-3">
+    <div class="col">
+        <form id="create-project" method="POST" class="post-form">
+            {% csrf_token %}
+        <div id="exp_resources" >
+            <ul class="list-group shadow">
+                    <li class="list-group-item bg-success text-light"><h5>Targeted Resources</h5></li>
+                    <li class="list-group-item fw-bold" data-resource_id="None">
+                        <div class="row">
+                            <div class="col-4">Node Number</div>
+                            <div class="col-4">Resource|Node Name</div>
+                            <div class="col-4 text-center">Change Node Number</div>
+                            <div class="col-4" hidden>Resource Id</div>
+                        </div>
+                    </li>
+                    {% for resource in canonical_resources %}
+                        <li id="targetedResource-{{resource.resource.id}}" class="list-group-item" data-resource_id="{{resource.resource.id}}">
+                            <div class="row">
+                                <div class="col-4">
+                                    <input name="node" class="form-control" type="text" value="{{resource.experiment_node_number}}" aria-label="Node Number"  readonly>
+                                </div>
+                                <div class="col-4">
+                                    <input class="form-control" type="text" value="{{resource.resource.name}}" aria-label="resource name"  readonly>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <button id="down-{{resource.resource.id}}" name="nodeNumberBtn" type="button" class="btn btn-sm btn-outline-primary border border-0" onclick="changeNodeNumber(this)" data-ap-direction="down" data-ap-target="targetedResource-{{resource.resource.id}}">↑</button>
+                                    <button id="up-{{resource.resource.id}}" name="nodeNumberBtn" type="button" class="btn btn-sm btn-outline-primary border border-0" onclick="changeNodeNumber(this)" data-ap-direction="up" data-ap-target="targetedResource-{{resource.resource.id}}">↓</button>
+                                </div>
+                                <div class="col-4" hidden>
+                                    <input type="hidden" name="resource_id" value="{{resource.resource.id}}">
+                                    <input type="hidden" name="node_number" class="form-control" type="text" value="{{resource.resource.id}}-{{resource.experiment_node_number}}" aria-label="Node Number"  readonly>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'js/experiment_resource_targets_form.js' %}?{% now 'U' %}"></script>
+<script src="{% static 'js/bootstrap_tooltips.js' %}?{% now 'U' %}"></script>

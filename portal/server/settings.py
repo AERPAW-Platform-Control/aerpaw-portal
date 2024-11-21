@@ -62,11 +62,13 @@ INSTALLED_APPS = [
     'portal.apps.resources',  # resources
     'portal.apps.projects',  # projects
     'portal.apps.experiment_files',  # experiment files
+    'portal.apps.experiment_info', # experiment form data
     'portal.apps.experiments',  # experiments
     'portal.apps.operations',  # operations
     'portal.apps.credentials',  # credentials
     'portal.apps.user_messages',  # user messages
     'portal.apps.user_requests',  # user requests
+
 ]
 
 # Add 'mozilla_django_oidc' authentication backend
