@@ -509,8 +509,8 @@ def experiment_resource_targets(request, experiment_id):
         }
         # form = ExperimentResourceTargetsForm(instance=experiment, initial=initial_dict)
         all_resources = AerpawResource.objects.all().order_by('name')
-        cc_resources = [resource for resource in all_resources if resource.hostname[:-1] == 'node-cc']
-        lw_resources = [resource for resource in all_resources if resource.hostname[:7] == 'node-lw']
+        cc_resources = [resource for resource in all_resources if resource.name[:2] == 'CC']
+        lw_resources = [resource for resource in all_resources if resource.name[:2] == 'LW']
         lpn_resources = [resource for resource in all_resources if resource.name[:3] == 'LPN']
         spn_resources = [resource for resource in all_resources if resource.name[:3] == 'SPN']
         

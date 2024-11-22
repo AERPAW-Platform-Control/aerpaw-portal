@@ -36,103 +36,123 @@
     </div>
 </div>
 <div class="row mb-3">
-
     <div class="col">
-        <div id="cc_resources">
-            <ul class="list-group shadow">
-                <li class="list-group-item bg-primary text-light">
-                    <h5 name="resourceListHeading">Centennial Campus Resources</h5>
-                </li>
-                {% for resource in cc_resources %}
-                <li class="list-group-item ">
-                        <div class="form-check form-switch">
-                            <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
-                                {% if resource in experiment_resources %}
-                                <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc" checked>
-                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                                {% else %}
-                                <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc">
-                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                                {% endif %}
-                            </a>
+        <div class="card">
+            <div class="card-header bg-secondary text-light">
+                <h5>Fixed Resources</h5>
+            </div>
+            <div class="card-body bg-secondary-subtle">
+                <div class="row">
+                    <div class="col">
+                        <div id="cc_resources">
+                            <ul class="list-group shadow">
+                                <li class="list-group-item bg-primary text-light">
+                                    <h5 name="resourceListHeading">Centennial Campus Resources</h5>
+                                </li>
+                                {% for resource in cc_resources %}
+                                <li class="list-group-item ">
+                                        <div class="form-check form-switch">
+                                            <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                                                {% if resource in experiment_resources %}
+                                                <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc" checked>
+                                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                                {% else %}
+                                                <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc">
+                                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </div>
-                    </li>
-                {% endfor %}
-            </ul>
+                    </div>
+                    <div class="col">
+                        <dic id="lw_resources">
+                            <ul class="list-group shadow">
+                                <li class="list-group-item bg-primary text-light">
+                                    <h5 name="resourceListHeading">Lake Wheeler Resources</h5>
+                                </li>
+                                {% for resource in lw_resources %}
+                                <li class="list-group-item ">
+                                    <div class="form-check form-switch">
+                                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                                            {% if resource in experiment_resources %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw" checked>
+                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            {% else %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw">
+                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul> 
+                        </dic>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="col">
-        <dic id="lw_resources">
-            <ul class="list-group shadow">
-                <li class="list-group-item bg-primary text-light">
-                    <h5 name="resourceListHeading">Lake Wheeler Resources</h5>
-                </li>
-                {% for resource in lw_resources %}
-                <li class="list-group-item ">
-                    <div class="form-check form-switch">
-                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
-                            {% if resource in experiment_resources %}
-                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw" checked>
-                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                            {% else %}
-                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw">
-                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                            {% endif %}
-                        </a>
+        <div class="card">
+            <div class="card-header bg-secondary text-light">
+                <h5>Portable Resources</h5>
+            </div>
+            <div class="card-body bg-secondary-subtle">
+                <div class="row">
+                    <div class="col">
+                        <div id="pn_resources">
+                            <ul class="list-group shadow">
+                                <li class="list-group-item bg-primary text-light">
+                                    <h5 name="resourceListHeading">Large Portable Nodes</h5>
+                                </li>
+                                {% for resource in lpn_resources %}
+                                <li class="list-group-item ">
+                                    <div class="form-check form-switch">
+                                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                                            {% if resource in experiment_resources %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
+                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            {% else %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
+                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
-                </li>
-                {% endfor %}
-            </ul> 
-        </dic>
-    </div>
-
-    <div class="col">
-        <div id="pn_resources">
-            <ul class="list-group shadow">
-                <li class="list-group-item bg-primary text-light">
-                    <h5 name="resourceListHeading">Large Portable Nodes</h5>
-                </li>
-                {% for resource in lpn_resources %}
-                <li class="list-group-item ">
-                    <div class="form-check form-switch">
-                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
-                            {% if resource in experiment_resources %}
-                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
-                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                            {% else %}
-                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
-                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                            {% endif %}
-                        </a>
+                    <div class="col">
+                        <div id="pn_resources">
+                            <ul class="list-group shadow">
+                                <li class="list-group-item bg-primary text-light">
+                                    <h5 name="resourceListHeading">Small Portable Nodes</h5>
+                                </li>
+                                {% for resource in spn_resources %}
+                                <li class="list-group-item ">
+                                    <div class="form-check form-switch">
+                                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
+                                            {% if resource in experiment_resources %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
+                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            {% else %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
+                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-    <div class="col">
-        <div id="pn_resources">
-            <ul class="list-group shadow">
-                <li class="list-group-item bg-primary text-light">
-                    <h5 name="resourceListHeading">Small Portable Nodes</h5>
-                </li>
-                {% for resource in spn_resources %}
-                <li class="list-group-item ">
-                    <div class="form-check form-switch">
-                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
-                            {% if resource in experiment_resources %}
-                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
-                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                            {% else %}
-                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
-                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
-                            {% endif %}
-                        </a>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -141,8 +161,8 @@
     <div class="col">
         <form id="create-project" method="POST" class="post-form">
             {% csrf_token %}
-        <div id="exp_resources" >
-            <ul class="list-group shadow">
+            <div id="exp_resources" >
+                <ul class="list-group shadow">
                     <li class="list-group-item bg-success text-light"><h5>Targeted Resources</h5></li>
                     <li class="list-group-item fw-bold" data-resource_id="None">
                         <div class="row">
@@ -174,8 +194,8 @@
                     {% endfor %}
                 </ul>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <script src="{% static 'js/experiment_resource_targets_form.js' %}?{% now 'U' %}"></script>

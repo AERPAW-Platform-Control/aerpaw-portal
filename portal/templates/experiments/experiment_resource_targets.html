@@ -44,6 +44,13 @@
                           {{form}}
                     </form>
                 </div>
+                <div>
+                    <button class="btn btn-success mr-2" type="submit" form="create-project" value="save">Save
+                    </button>
+                    <button class="btn btn-secondary mr-2" value="cancel">
+                        <a href="{% url 'experiment_resource_list' experiment_id=experiment_id %}" class="unlink">Back</a>
+                    </button>
+                </div>
             </div>
         {% else %}
             You are not able to edit this experiment
