@@ -2,6 +2,32 @@
 
 <div>
     <form>
+        <div>
+            <div class="mb-3">
+                <div class="">
+                    <div class="form-label">What type of experiment is this?</div>
+                    <div class="ms-3">
+                        <p>
+                            To help decide what type of experiment to create, refer to the <a
+                                href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/1-aerpaw-overview/1-8-experiment-lifecycle-overview"
+                                target="_blank">AERPAW User Manual</a>.
+                        </p>
+                    </div>
+                      <div class="ms-2 mt-2 single-choice-checkbox-group">
+                        <div class="list-group list-group-horizontal">
+                            <li class="list-group-item border border-0">
+                                <input type="checkbox" class="btn-check single-check" id="expTypeCan" onclick="showNextGroup(this)" data-target="#non-canonicalInfo" data-hide="true" autocomplete="off">
+                                <label class="btn btn-primary" for="expTypeCan">Canonical</label>
+                            </li>
+                            <li class="list-group-item border border-0">    
+                                <input type="checkbox" class="btn-check single-check" id="expTypeNon" onclick="showNextGroup(this)" data-target="#non-canonicalInfo" data-hide="false" autocomplete="off">
+                                <label class="btn btn-primary" for="expTypeNon">Non-Canonical</label>
+                            </li>
+                        </div>
+                      </div>
+                </div>
+            </div>
+        </div>
         <div class="">
             <div class=" mb-3">
                 <label for="experimentTitle" class="form-label">Short experiment title</label>
@@ -68,55 +94,49 @@
             </div>
         </div>
         <div class="mb-3">
-            <div class="">
-                <label for="" class="form-label">Identify your experiment location (select one or more of the following)</label>
+            <div class="single-choice-checkbox-group">
+                <label for="" class="form-label">Identify the ultimate end destination for the experiment. You may only select one.</label>
                   <div class="form-check ms-2">
-                    <input name="location" class="form-check-input" type="checkbox" value="lake_wheeler" id="experimentLocation-LakeWheeler">
+                    <input name="location" class="form-check-input single-check" type="checkbox" value="lake_wheeler" id="experimentLocation-LakeWheeler">
                     <label class="form-check-label" for="experimentLocation-LakeWheeler">
-                      Lake Wheeler
+                      Testbed at Lake Wheeler
                     </label>
                   </div>
                   <div class="form-check ms-2">
-                    <input name="location" class="form-check-input" type="checkbox" value="centennial_campus" id="experimentLocation-CentennialCampus">
+                    <input name="location" class="form-check-input single-check" type="checkbox" value="centennial_campus" id="experimentLocation-CentennialCampus">
                     <label class="form-check-label" for="experimentLocation-CentennialCampus">
-                      Centennial Campus
+                      Testbed at Centennial Campus
                     </label>
                   </div>
                   <div class="form-check ms-2">
-                    <input name="location" class="form-check-input" type="checkbox" value="emulation" id="experimentLocation-Emulation">
+                    <input name="location" class="form-check-input single-check" type="checkbox" value="emulation" id="experimentLocation-Emulation">
                     <label class="form-check-label" for="experimentLocation-Emulation">
-                      Emulation
+                      Emulation Only (No testbed execution planned)
                     </label>
                   </div>
                   <div class="form-check ms-2">
-                    <input name="location" class="form-check-input" type="checkbox" value="sandbox" id="experimentLocation-Sandbox">
+                    <input name="location" class="form-check-input single-check" type="checkbox" value="sandbox" id="experimentLocation-Sandbox">
                     <label class="form-check-label" for="experimentLocation-Sandbox">
-                      Sandbox
+                      Sandbox Only (No testbed execution planned)
                     </label>
                   </div>
             </div>
         </div>
+        <!-- is_urgent -->
         <div class="mb-3">
             <div class="mb-3">
                 <div class="">Do you have any urgency for carrying out the over-the-air testbed experiments?</div>
                 <div class="ms-2 mt-2 single-choice-checkbox-group">
                     <ul class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
-                            <input type="checkbox" class="btn-check single-check" id="urgentYes" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="false" autocomplete="off">
+                            <input name="urgency" type="checkbox" class="btn-check single-check" id="urgentYes" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="false" autocomplete="off" value="True">
                             <label class="btn btn-primary" for="urgentYes">Yes</label>
                         </li>
                         <li class="list-group-item border border-0">
-                            <input type="checkbox" class="btn-check single-check" id="urgentNo" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="true" autocomplete="off">
+                            <input name="urgency" type="checkbox" class="btn-check single-check" id="urgentNo" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="true" autocomplete="off" value="False">
                             <label class="btn btn-primary" for="urgentNo">No</label>
                         </li>
                     </ul>
-                </div>
-            </div>
-            <div id="urgencyFollowUp" class="" style="display: none;" >
-                <div class="mb-3 ms-3">
-                    <label for="urgencyDate" class="form-label">Please specify when you would desire the experiment to get finalized. </label>
-                    <div class="form-text ms-2" id="urgencyDateInfo">**AERPAW Ops team will provide a best effort service to carry out the testbed experiments while taking into account priorities and urgencies of different experiment requests.</div>
-                    <input name="urgency_date" type="date" class="form-control w-25 ms-2" id="urgencyDate">
                 </div>
             </div>
         </div>
@@ -151,8 +171,42 @@
                 <textarea name="vehicle_behavior" type="text" class="form-control ms-2" id="vehicleBehavior" placeholder="" style="height: 100px;" required></textarea>
             </div>
         </div>
+
+        <!-- Non-canonical and custom info form -->
+        <div id="non-canonicalInfo" style="display: none;">
+            <div class="mb-3">
+                <div class="mb-3">
+                    <label for="description" class="form-label">Describe your intended experiment in one or more paragraphs</label>
+                    <textarea name="description" type="text" class="form-control ms-2" id="description" placeholder="" style="height: 100px;" required></textarea>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class=" mb-3">
+                    <label for="hardware" class="form-label">Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.</label>
+                    <div class="form-text ms-2">
+                        Please identify specifics of the hardware, e.g., the specific names and counts for the drones and the radios that you intend to use.
+                    </div>
+                    <textarea name="byod_hardware" type="text" class="form-control ms-2" id="hardware" placeholder="" style="height: 100px;" required></textarea>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="mb-3">
+                    <label for="software" class="form-label">Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software</label>
+                    <textarea name="byod_software" type="text" class="form-control ms-2" id="software" placeholder="" style="height: 100px;" required></textarea>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="mb-3">
+                    <label for="questions" class="form-label">If you have any questions for the AERPAW team, please list them here. The AERPAW team will review your request, and if needed, will arrange a follow up online meeting to discuss your request further, before confirming whether or not your request can be presently accommodated in the platform.</label>
+                    <textarea name="questions" type="text" class="form-control ms-2" id="questions" placeholder="" style="height: 100px;"></textarea>
+                </div>
+            </div>
+        </div>
+
+
         <div class="my-5">
-            <button type="submit" class="btn btn-success" name="submit_experiment" value="{{experiment_type}}">Create Experiment</button>
+            <button id="canonicalSubmit" type="submit" class="btn btn-success" name="submit_experiment" value="canonical" style="display: none;">Create Experiment</button>
+            <button id="nonCanonicalSubmit" type="submit" class="btn btn-success" name="submit_experiment" value="non_canonical"  style="display: none;">Submit to AERPAW Ops</button>
             <button type="button" class="btn btn-primary" value="cancel">
                 <a href="{% url 'project_detail' project_id=project_id %}" class="unlink">
                     Cancel
@@ -161,3 +215,5 @@
         </div>
     </form>
 </div>
+
+<script src="{% static 'js/create_exp_form.js' %}?{% now 'U' %}"></script>

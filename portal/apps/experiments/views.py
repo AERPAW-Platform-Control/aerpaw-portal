@@ -281,6 +281,7 @@ def experiment_create(request):
             form = form['template']
     else:
         project_id = request.GET.get('project_id')
+        print(f'projectID {project_id}')
         p = ProjectViewSet()
         project = p.retrieve(request=request, pk=project_id).data
         #form = ExperimentCreateForm(initial={'project_id': project_id})

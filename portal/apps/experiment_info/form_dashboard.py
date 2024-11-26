@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from rest_framework.request import Request
 from portal.apps.projects.views import project_detail
-from portal.apps.experiment_info.models import GAExperimentFormData, CustomExperimentFormData
+from portal.apps.experiment_info.models import ExperimentFormData
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.users.models import AerpawUser
@@ -12,6 +12,8 @@ from portal.apps.user_messages.user_messages import send_portal_mail_from_messag
 
 def create_canonical_experiment(request, project_id):
     print('creating new general availibility experiment')
+    print('request.POST.get("urgency")', request.POST.get('urgency'))
+    print("request.POST.getlist('location')", request.POST.get('location'))
     try:
         api_request = Request(request=HttpRequest())
         api_request.user = request.user
@@ -24,17 +26,18 @@ def create_canonical_experiment(request, project_id):
         new_experiment = ExperimentViewSet()
         exp = new_experiment.create(api_request)
         
-        exp_info = GAExperimentFormData()
+        exp_info = ExperimentFormData()
+        exp_info.experiment_type = ExperimentFormData.ExperimentType.CANONICAL
         exp_info.experiment = AerpawExperiment.objects.get(id=exp.data.get("experiment_id"))
         exp_info.title = request.POST.get('title')
         exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
         exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
         exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else None
-        exp_info.urgency_date = request.POST.get('urgency_date') if request.POST.get('urgency_date') != 'null' else None 
+        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else None 
         exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else None
         exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
         exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') else None
-        exp_info.location = request.POST.getlist('location') if request.POST.getlist('location') else None
+        exp_info.location = request.POST.get('location') if request.POST.get('location') else None
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else None
         exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else None
@@ -48,19 +51,24 @@ def create_canonical_experiment(request, project_id):
 def save_non_canonical_experiment_info(request, project_id):
     print('Creating new non-canonical experiment')
     try:
-        exp_info = GAExperimentFormData()
+        exp_info = ExperimentFormData()
+        exp_info.experiment_type = ExperimentFormData.ExperimentType.NON_CANONICAL
         exp_info.title = request.POST.get('title')
         exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
         exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
         exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else None
-        exp_info.urgency_date = request.POST.get('urgency_date') if request.POST.get('urgency_date') != 'null' else None 
+        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else None 
         exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else None
         exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
         exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') != 'null' else None
-        exp_info.location = request.POST.getlist('location') if request.POST.getlist('location') != 'null' else None
+        exp_info.location = request.POST.get('location') if request.POST.get('location') != 'null' else None
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else None
         exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') != 'null' else None
+        exp_info.description = request.POST.get('description') if request.POST.get('description') else None
+        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') != 'null' else None
+        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') != 'null' else None
+        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') != 'null' else None
         exp_info.uuid = uuid4()
         exp_info.save()
         return {'success':True, 'experiment_info':exp_info}
@@ -71,7 +79,8 @@ def save_non_canonical_experiment_info(request, project_id):
 def save_custom_experiment_info(request, project_id):
     print('Creating new custom experiment')
     try: 
-        exp_info = CustomExperimentFormData()
+        exp_info = ExperimentFormData()
+        exp_info.experiment_type = ExperimentFormData.ExperimentType.CUSTOM
         exp_info.title = request.POST.get('title')
         exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
         exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
@@ -103,10 +112,6 @@ def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     message_body = ''
 
     if experiment_type == 'canonical':
-        if experiment_info.urgency_date != None:
-            urgency_date = 'Yes'
-        else:
-            urgency_date = 'No'
         if experiment_info.public_url != None:
             public_url = 'Yes'
         else:
@@ -153,17 +158,14 @@ The following experiment has been created successfully!
     Do you have any urgency for carrying out the over-the-air testbed experiments:
         {10}
 
-    Please specify when you would desire the experiment to get finalized:
+    Can the data collected from the experiment be shared publicly?:
         {11}
 
-    Can the data collected from the experiment be shared publicly?:
+    If available, please provide a link to the website that will be hosting the experiment data (e.g. Github, IEEE Dataport):
         {12}
 
-    If available, please provide a link to the website that will be hosting the experiment data (e.g. Github, IEEE Dataport):
-        {13}
-
     Please specify the expected behavior of the vehicles (if any) in your experiment:
-        {14}
+        {13}
 
 Thank you,
     Aerpaw Operations Team
@@ -178,18 +180,13 @@ Thank you,
     experiment_info.keywords,
     experiment_info.goal,
     experiment_info.location,
-    urgency_date,
-    experiment_info.urgency_date,
+    experiment_info.is_urgent,
     public_url,
     experiment_info.public_url,
     experiment_info.vehicle_behavior,
     )
         
     if experiment_type == 'non_canonical' or experiment_type == 'non_canonical_ga':
-        if experiment_info.urgency_date != None:
-            urgency_date = 'Yes'
-        else:
-            urgency_date = 'No'
         if experiment_info.public_url != None:
             public_url = 'Yes'
         else:
@@ -236,17 +233,14 @@ New request for the creation of the following non-canonical experiment:
     Do you have any urgency for carrying out the over-the-air testbed experiments:
         {10}
 
-    Please specify when you would desire the experiment to get finalized:
+    Can the data collected from the experiment be shared publicly?:
         {11}
 
-    Can the data collected from the experiment be shared publicly?:
+    If available, please provide a link to the website that will be hosting the experiment data (e.g. Github, IEEE Dataport):
         {12}
 
-    If available, please provide a link to the website that will be hosting the experiment data (e.g. Github, IEEE Dataport):
-        {13}
-
     Please specify the expected behavior of the vehicles (if any) in your experiment:
-        {14}
+        {13}
 
 A member of the Aerpaw Ops team will reach out to you within a few days for further instruction.
 
@@ -263,59 +257,12 @@ Thank you,
     experiment_info.keywords,
     experiment_info.goal,
     experiment_info.location,
-    urgency_date,
-    experiment_info.urgency_date,
+    experiment_info.is_urgent,
     public_url,
     experiment_info.public_url,
     experiment_info.vehicle_behavior,
     )
         
-
-    if experiment_type == 'custom':
-        
-        message_subject = 'New Request for Custom Experiment'
-        message_body = """
-New Custom Experiment Request for the following experiment: 
-
-    Name of the lead experimenter
-        {0}
-        
-    Contact email of the lead experimenter
-        {1}
-
-    Provide the name of your host institution
-        {2}
-
-    Short experiment title
-        {3}
-
-    Describe your intended experiment in one or more paragraphs
-        {4}
-
-    Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.
-        {5}
-
-    Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software
-        {6}
-
-    If you have any questions for the AERPAW team, please list them here. The AERPAW team will review your request, and if needed, will arrange a follow up online meeting to discuss your request further, before confirming whether or not your request can be presently accommodated in the platform.
-        {7}
-
-A member of the Aerpaw Ops team will reach out to you within a few days for further instruction.
-
-Thank you,
-    Aerpaw Operations Team
-""".format(
-    experiment_info.lead_experimenter,
-    experiment_info.lead_email,
-    experiment_info.host_institution,
-    experiment_info.title,
-    experiment_info.description,
-    experiment_info.byod_hardware,
-    experiment_info.byod_software,
-    experiment_info.questions,
-)
-    
     print('')
     print(f'message body= \n{message_body}')
     print('')
@@ -331,22 +278,6 @@ def new_experiment_form_dashboard(request, project_id):
         'project_id':project_id,
         'user':request.user
         }
-
-    if 'can' in request.POST:
-        context['experiment_type'] = 'canonical'
-        return {'template': render_to_string('experiment_info/new_experiment_form/general_availibility_form.html', context)}
-    
-    if 'non_can_ga' in request.POST:
-        context['experiment_type'] = 'non_canonical_ga'
-        return {'template':render_to_string('experiment_info/new_experiment_form/general_availibility_form.html', context)}
-    
-    if 'non_can' in request.POST:
-        context['experiment_type'] = 'non_canonical'
-        return {'template': render_to_string('experiment_info/new_experiment_form/general_availibility_form.html', context)}
-    
-    if 'custom' in request.POST:
-        context['experiment_type'] = 'custom'
-        return {'template':render_to_string('experiment_info/new_experiment_form/custom_experiment_form.html', context)}
     
     if 'submit_experiment' in request.POST:
         print(f'Experiment Info=  {request.POST}')
@@ -382,4 +313,4 @@ def new_experiment_form_dashboard(request, project_id):
                 return {'template': render_to_string('experiment_info/new_experiment_form/non_canonical_success.html', context)}
     
     else:
-        return {'template':render_to_string('experiment_info/new_experiment_form/choose_experiment_type.html')}
+        return {'template':render_to_string('experiment_info/new_experiment_form/general_availibility_form.html', context)}
