@@ -31,7 +31,8 @@ def check_submit_to_sandbox(user: AerpawUser, experiment: AerpawExperiment):
     """  
     Sandbox environment has access to limited resources:
         2 - Fixed Nodes
-        2 - Portable Nodes
+        1 - Large Portable Node
+        1 - Small Portable Node
 
     Experiments with more resources than listed above are unable to access the sandbox environment
 

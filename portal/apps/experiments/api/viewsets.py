@@ -1328,7 +1328,8 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                         'node_type': du.get('node_type'),
                         'node_uhd': du.get('node_uhd'),
                         'node_vehicle': du.get('node_vehicle'),
-                        'resource_id': resource_id
+                        'resource_id': resource_id,
+                        'resource_hostname': du.get('resource_hostname'),
                     }
                 )
             if page:

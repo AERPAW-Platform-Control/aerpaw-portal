@@ -1,4 +1,4 @@
-import calendar
+import calendar, logging
 
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
@@ -26,6 +26,7 @@ from portal.apps.user_requests.user_requests import approve_experiment_join_requ
 from portal.server.download_utils import download_sftp_experiment_file
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @login_required
@@ -118,7 +119,7 @@ def experiment_list(request):
 @csrf_exempt
 @login_required
 def experiment_detail(request, experiment_id):
-    
+    logger.debug('TEST Logging: Some Debug Error')
     e = ExperimentViewSet(request=request)
     message = None
     try:
@@ -234,10 +235,6 @@ def experiment_detail(request, experiment_id):
     
     sandbox_calendar = SandboxCalendar().get_calendar()
     
-    
-
-
-
     return render(request,
                   'experiment_detail.html',
                   {

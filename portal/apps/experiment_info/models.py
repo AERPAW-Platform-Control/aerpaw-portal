@@ -28,6 +28,11 @@ class ExperimentFormData(BaseModel, BaseTimestampModel, models.Model):
         CANONICAL = 'canonical', _('Canonical')
         NON_CANONICAL = 'non_canonical', _('Non-Canonical')
         CUSTOM = 'custom', _('Custom')
+
+    class ExtendedBoolean(models.TextChoices):
+        YES = 'yes', _('Yes')
+        NO = 'no', _('No')
+        NOT_SURE = 'not_sure', _('Not Sure')
     
     experiment_type = models.CharField(max_length=25,  choices=ExperimentType.choices, default=ExperimentType.CANONICAL)
     title = models.CharField(max_length=255)
@@ -41,6 +46,7 @@ class ExperimentFormData(BaseModel, BaseTimestampModel, models.Model):
     grant_number = models.CharField(max_length=255, blank=True, null=True)
     keywords = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=255, choices=ExperimentLocation.choices, blank=True)
+    is_shared = models.CharField(max_length=10, choices=ExtendedBoolean.choices, default=ExtendedBoolean.NOT_SURE)
     public_url = models.URLField(blank=True, null=True)
     goal = models.TextField()
     vehicle_behavior = models.TextField()

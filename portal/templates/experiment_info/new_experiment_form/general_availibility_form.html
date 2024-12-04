@@ -154,6 +154,10 @@
                             <input type="checkbox" class="btn-check single-check" id="shareNo" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
                             <label class="btn btn-primary" for="shareNo">No</label>
                         </li>
+                        <li class="list-group-item border border-0">    
+                            <input type="checkbox" class="btn-check single-check" id="shareNotSure" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
+                            <label class="btn btn-primary" for="shareNotSure">Not Sure</label>
+                        </li>
                     </div>
                 </div>
             </div>
@@ -184,7 +188,9 @@
                 <div class=" mb-3">
                     <label for="hardware" class="form-label">Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.</label>
                     <div class="form-text ms-2">
-                        Please identify specifics of the hardware, e.g., the specific names and counts for the drones and the radios that you intend to use.
+                        *Please identify specifics of the hardware, e.g., the specific names and counts for the drones and the radios that you intend to use.
+                        <br>
+                        *If none, please write, "No BYOD Hardware"
                     </div>
                     <textarea name="byod_hardware" type="text" class="form-control ms-2" id="hardware" placeholder="" style="height: 100px;" required></textarea>
                 </div>
@@ -192,6 +198,9 @@
             <div class="mb-3">
                 <div class="mb-3">
                     <label for="software" class="form-label">Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software</label>
+                    <div class="form-text ms-2">
+                        *If none, please write, "No BYOD Software"
+                    </div>
                     <textarea name="byod_software" type="text" class="form-control ms-2" id="software" placeholder="" style="height: 100px;" required></textarea>
                 </div>
             </div>

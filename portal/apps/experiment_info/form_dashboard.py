@@ -38,6 +38,7 @@ def create_canonical_experiment(request, project_id):
         exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
         exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') else None
         exp_info.location = request.POST.get('location') if request.POST.get('location') else None
+        exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else None
         exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else None
@@ -242,6 +243,18 @@ New request for the creation of the following non-canonical experiment:
     Please specify the expected behavior of the vehicles (if any) in your experiment:
         {13}
 
+    Describe your intended experiment in one or more paragraphs
+        {14}
+
+    Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.
+        {15}
+
+    Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software
+        {16}
+
+    If you have any questions for the AERPAW team, please list them here. The AERPAW team will review your request, and if needed, will arrange a follow up online meeting to discuss your request further, before confirming whether or not your request can be presently accommodated in the platform.
+        {17}
+
 A member of the Aerpaw Ops team will reach out to you within a few days for further instruction.
 
 Thank you,
@@ -261,6 +274,10 @@ Thank you,
     public_url,
     experiment_info.public_url,
     experiment_info.vehicle_behavior,
+    experiment_info.description,
+    experiment_info.byod_hardware,
+    experiment_info.byod_software,
+    experiment_info.questions,
     )
         
     print('')

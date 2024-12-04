@@ -161,8 +161,9 @@ class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):
     canonical_experiment_resource_id = serializers.IntegerField(source='id')
     experiment_id = serializers.IntegerField(source='experiment.id')
     resource_id = serializers.IntegerField(source='resource.id')
+    resource_hostname = serializers.CharField(source='resource.location')
 
     class Meta:
         model = CanonicalExperimentResource
         fields = ['canonical_experiment_resource_id', 'experiment_id', 'experiment_node_number', 'node_display_name',
-                  'node_type', 'node_uhd', 'node_vehicle', 'resource_id']
+                  'node_type', 'node_uhd', 'node_vehicle', 'resource_id', 'resource_hostname']
