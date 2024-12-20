@@ -69,7 +69,7 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
 
     # PORTAL CF: saving_development
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # aerpaw ops: ap-cf-saveexit-ve-exp.py
+    # aerpaw ops: ap-cf-ops-saveexit-ve-exp.py
     if exit_development:
         command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
             experiment.id)
@@ -515,7 +515,6 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # aerpaw ops: ap-cf-deploy-ve-exp.py
     command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
         experiment.id)
     if MOCK_OPS:
@@ -625,50 +624,50 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     """
     # PREFLIGHT CHECK:
     # Check if emulation is required first
-    if is_emulation_required(experiment=experiment):
+    """if is_emulation_required(experiment=experiment):
         wait_testbed_schedule_to_wait_emulation_schedule(request=request, experiment=experiment)
-    else:
-        # ACTION ITEMS:
-        # create new TESTBED session
-        is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
-        if is_ops_session == True:
-            create_experiment_scheduled_session(
-                session_type=OnDemandSession.SessionType.TESTBED,
-                experiment=experiment,
-                user=request.user
-            )
+    else:"""
+    #ACTION ITEMS:        
+    # create new TESTBED session
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        create_experiment_scheduled_session(
+            session_type=OnDemandSession.SessionType.TESTBED,
+            experiment=experiment,
+            user=request.user 
+        )
             
-        else:
-            create_experiment_session(
-                session_type=OnDemandSession.SessionType.TESTBED,
-                experiment=experiment,
-                user=request.user
-            )
+    else:
+        create_experiment_session(
+            session_type=OnDemandSession.SessionType.TESTBED,
+            experiment=experiment,
+            user=request.user 
+        )
 
-        # UPDATE STATE: wait_testbed_schedule
-        experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
-        experiment.save()
+    # UPDATE STATE: wait_testbed_schedule
+    experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
+    experiment.save()
 
-        reschedule = False if 'reschedule_session' not in request.data else request.data.get('reschedule_session')
-        if reschedule == 'True':
-            scheduled_session = wait_testbed_schedule_to_wait_testbed_deploy(request, experiment=experiment)
+    reschedule = False if 'reschedule_session' not in request.data else request.data.get('reschedule_session')
+    if reschedule == 'True':
+        scheduled_session = wait_testbed_schedule_to_wait_testbed_deploy(request, experiment=experiment)
 
-        # MESSAGE / EMAIL: submit to testbed - emulation not required
-        generate_user_messages_for_testbed(request=request, experiment=experiment)
+    # MESSAGE / EMAIL: submit to testbed - emulation not required
+     generate_user_messages_for_testbed(request=request, experiment=experiment)
 
-        # PORTAL CF: wait_testbed_schedule
-        # TODO: Portal to manage next_state transition - normally this would be an Operator call
-        # aerpaw ops: ap-cf-submit-to-tbed.py
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.pyy {0}".format(
-            experiment.id)
-        if MOCK_OPS:
-            # DEVELOPMENT - always pass
-            mock = True
-        else:
-            # PRODUCTION
-            mock = False
-        ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock))
-        ssh_thread.start()
+    # PORTAL CF: wait_testbed_schedule
+    # TODO: Portal to manage next_state transition - normally this would be an Operator call
+    # aerpaw ops: ap-cf-submit-to-tbed.py
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
+        experiment.id)
+    if MOCK_OPS:
+        # DEVELOPMENT - always pass
+        mock = True
+    else:
+        # PRODUCTION
+        mock = False
+    ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock))
+    ssh_thread.start()
 
 
 def wait_development_deploy_to_active_development(request, experiment: AerpawExperiment):
@@ -1279,11 +1278,11 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
     # TODO: determine if any transition should take place based on return value of script
     # next state transition
     if exit_code == 0:
-        # ap-cf-submit-to-tbed.py - success
+        # ap-cf-ops-submit-to-tbed.py - success
         # - do nothing
         print(exit_code)
     else:
-        # ap-cf-submit-to-tbed.py- failure
+        # ap-cf-ops-submit-to-tbed.py- failure
         # - do nothing
         print(exit_code)
         raise NotFound(
@@ -1333,7 +1332,7 @@ def to_retired(request, experiment: AerpawExperiment):
       - Set experiment to retired
       - (Optional) Send message
 
-    Session: update DEVELOPMENT --> no change		#????
+    Session: update DEVELOPMENT --> no change           #????
 
     Permissions:
     - experimenter OR
@@ -1349,27 +1348,30 @@ def to_retired(request, experiment: AerpawExperiment):
         is_active=True
     ).first()
 
-    print('session = ', session)
+
+    print('Session: ',session)
     if not session:
         raise NotFound(
             detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-
-    print('experiment.experiment_state = ', experiment.experiment_state)
+    print('experiment State before retire: ', experiment.experiment_state)
+    # saveexit script is commented out to prevent it from running when retirement script is called
     # UPDATE STATE: save_development if current state is ACTIVE_DEVELOPMENT
     if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
         request.data.exit_development = True
-        active_development_to_saving_development(request, experiment=experiment)
+        #active_development_to_saving_development(request, experiment=experiment)
     # UPDATE STATE: save_sandbox if current state is ACTIVE_SANDBOX
     elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_SANDBOX:
         request.data.exit_sandbox = True
-        active_sandbox_to_saving_sandbox(request, experiment=experiment)
+        #active_sandbox_to_saving_sandbox(request, experiment=experiment)
     # UPDATE STATE: saved if current state is ACTIVE_EMULATION
     elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_EMULATION:
         request.data.emulation_passed = False
-        active_emulation_to_saved(request, experiment=experiment)
+        #active_emulation_to_saved(request, experiment=experiment)
     # UPDATE STATE: saved if current state is ACTIVE_TESTBED
     elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_TESTBED:
-        active_testbed_to_saved(request, experiment=experiment)
+        pass
+        #active_testbed_to_saved(request, experiment=experiment)
+
     # UPDATE STATE: saved (for all other cases)
     if experiment.experiment_state != AerpawExperiment.ExperimentState.SAVED:
         experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
@@ -1377,19 +1379,12 @@ def to_retired(request, experiment: AerpawExperiment):
         experiment.save()
 
     # Invoke retire script to cleanup all experiment files
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(
-           experiment.id)
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = True
     else:
         # PRODUCTION
         mock = False
-    print('command = ', command)
-    print('Mock = ', mock)
     ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock))
     ssh_thread.start()
-
-
-
-
