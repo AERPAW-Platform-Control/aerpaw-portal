@@ -1,0 +1,86 @@
+<div>
+    <div class="">
+        <div class="mb-3">
+            <label for="leadExperimenterName" class="form-label">Name of the lead experimenter</label>
+            <input name="lead_experimenter" type="text" class="form-control ms-2" id="leadExperimenterName" placeholder="" required>
+        </div>
+    </div>
+    <div class="">
+        <div class="mb-3">
+            <label for="leadExperimenterEmail" class="form-label">Contact email of the lead experimenter</label>
+            <input name="lead_email" type="email" class="form-control ms-2" id="leadExperimenterEmail" placeholder="" required>
+        </div>
+    </div>
+    <div class="">
+        <div class="mb-3">
+            <label for="hostInstitution" class="form-label">Provide the name of your host institution</label>
+            <input name="host_institution" type="text" class="form-control ms-2" id="hostInstitution" placeholder="" required>
+        </div>
+    </div>
+    <div class="">
+        <div class="mb-3">
+            <label for="sponsoredProject" class="form-label">Provide the title of your sponsored project under which you are carrying this experiment.</label>
+            <input name="sponsored_project" type="text" class="form-control ms-2" id="sponsoredProject" required>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="mb-3">
+            <div class="">Is there a grant number for the project?</div>
+            <div class="ms-2 mt-2 single-choice-checkbox-group">
+                <div class="list-group list-group-horizontal">
+                    <li class="list-group-item border border-0">
+                        <input type="checkbox" class="btn-check single-check" id="grantNumberYes" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="false" autocomplete="off">
+                        <label class="btn btn-primary" for="grantNumberYes">Yes</label>
+                    </li>
+                    <li class="list-group-item border border-0">    
+                        <input type="checkbox" class="btn-check single-check" id="grantNumberNo" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="true" autocomplete="off">
+                        <label class="btn btn-primary" for="grantNumberNo">No</label>
+                    </li>
+                </div>
+            </div>
+        </div>
+       <div id="grantNumber" style="display: none;">
+           <div class="mb-3 ms-3">
+               <label for="grantNumber" class="form-label">What is the grant number?</label>
+               <input name="grant_number" type="text" class="form-control ms-2 w-75" id="grantNumber">
+           </div>
+       </div>
+    </div>
+    <div class="">
+        <div class="mb-3">
+            <label for="experimentTitle" class="form-label">Short experiment title</label>
+            <input name="title" type="text" class="form-control ms-2" id="experimentTitle"  placeholder="" required>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="mb-3">
+            <label for="description" class="form-label">Describe your intended experiment in one or more paragraphs</label>
+            <textarea name="description" type="text" class="form-control ms-2" id="description" placeholder="" style="height: 100px;" required></textarea>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class=" mb-3">
+            <label for="hardware" class="form-label">Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.</label>
+            <div class="form-text ms-2">
+                Please identify specifics of the hardware, e.g., the specific names and counts for the drones and the radios that you intend to use.
+            </div>
+            <textarea name="byod_hardware" type="text" class="form-control ms-2" id="hardware" placeholder="" style="height: 100px;" required></textarea>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="mb-3">
+            <label for="software" class="form-label">Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software</label>
+            <textarea name="byod_software" type="text" class="form-control ms-2" id="software" placeholder="" style="height: 100px;" required></textarea>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="mb-3">
+            <label for="questions" class="form-label">If you have any questions for the AERPAW team, please list them here. The AERPAW team will review your request, and if needed, will arrange a follow up online meeting to discuss your request further, before confirming whether or not your request can be presently accommodated in the platform.</label>
+            <textarea name="questions" type="text" class="form-control ms-2" id="questions" placeholder="" style="height: 100px;" required></textarea>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <button type="submit" class="btn btn-success" name="submit_experiment" value="custom">Create Custom Experiment</button>
+    <a href="{% url 'project_detail' project_id=project_id %}" type="button" class="btn btn-primary" name="cancel">Cancel</a>
+</div>

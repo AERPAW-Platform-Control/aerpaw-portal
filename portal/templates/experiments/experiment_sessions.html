@@ -24,7 +24,28 @@
                     {% endif %}
                     <button class="btn btn-primary mr-2" id="search_submit" type="submit">Search</button>
                 </form>
-                <button class="btn btn-secondary mr-2" value="cancel">
+                {% if is_operator == True %}
+                <div class="dropdown">
+                    <button type="button" class="btn btn-success mr-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Add Session
+                    </button>
+                    <ul class="dropdown-menu">
+                        <form id="new_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
+                            {% csrf_token %}
+                            <!-- <li><button type="submit" form="new_session_form" name="new_sandbox" class="dropdown-item" value="{{experiment.id}}">Sandbox</button></li> -->
+                            <li><button type="submit" form="new_session_form" name="new_emulation" class="dropdown-item" value="{{experiment.id}}">Emulation</button></li>
+                            <li><button type="submit" form="new_session_form" name="new_testbed" class="dropdown-item" value="{{experiment.id}}">Testbed</button></li>
+                        </form>
+                    </ul>
+                </div>
+                {% endif %}
+                <button class="btn btn-primary mr-2">
+                    <a href="{% url 'experiment_sessions' experiment_id=experiment.id %}"
+                       class="unlink">
+                       <em class="fa fa-fw fa-refresh"></em> Refresh
+                    </a>
+                </button>
+                <button class="btn btn-primary mr-2" value="cancel">
                     <a href="{% url 'experiment_detail' experiment_id=experiment.id %}" class="unlink">
                         Back to Experiment
                     </a>
@@ -35,11 +56,15 @@
                 <tr>
                     <th>Type</th>
                     <th>Active</th>
+                    <th>Scheduled</th>
                     <th>Started</th>
                     <th>Started By</th>
                     <th>Ended</th>
                     <th>Ended By</th>
                     <th>Run Time</th>
+                    {% if is_operator == True %}
+                    <th>Ops Actions</th>
+                    {% endif %}
 
                     {% for session in sessions.results %}
                         <tr>
@@ -50,6 +75,16 @@
                             </td>
                             <td>
                                 {{ session.is_active }}
+                            </td>
+                            <td>
+                                {% if session.scheduled_start %}
+                                    {{ session.scheduled_start|str_to_datetime }}
+                                    {% if session.scheduled_end %}
+                                     - <br>{{ session.scheduled_end|str_to_datetime }}
+                                    {% endif %}
+                                {% else %}
+                                    ---
+                                {% endif %}
                             </td>
                             <td>
                                 {% if session.start_date_time %}
@@ -82,6 +117,39 @@
                             <td>
                                 {{ session.session_id|session_run_time }}
                             </td>
+                            {% if is_operator == True %}
+                            
+                                {% if session.session_type == 'sandbox' or session.session_type == 'emulation' or session.session_type == 'testbed' %}
+                                <td>
+                                    <form id="edit_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
+                                    {% if session.is_active == True %}
+                                        {% if session.id == buttons.0 %}
+                                            <input hidden name="session_type" value="{{session.session_type}}">
+                                            {% if buttons.schedule %}
+                                            <button type="button" class="btn btn-success btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#scheduleSessionModal">Schedule</button>
+                                            {% endif %}
+                                            {% if buttons.start %}
+                                            <button type="submit" form="edit_session_form" name="start_session" class="btn btn-success btn-sm mb-1" value="{{ experiment.id }}">Start</button>
+                                            {% endif %}
+                                            {% if buttons.end %}
+                                            <button type="button" form="edit_session_form" name="end_session mb-1" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#endSessionModal">End</button>
+                                            {% endif %}
+                                            {% if buttons.no_actions %}
+                                            <button class="btn btn-secondary btn-sm" disabled>No Action</button>
+                                            {% endif %}  
+                                        {% endif %}
+                                    {% else %}
+                                            <button class="btn btn-secondary btn-sm" disabled>No Action</button>
+                                    {% endif %}
+                                        </form>
+                                    </td>
+                                {% else %}
+                                    <td>
+                                        <button class="btn btn-secondary btn-sm" disabled>No Action</button>
+                                    </td>
+                                {% endif %}
+                            {% endif %}
+
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -147,4 +215,157 @@
             <button class="message-btn btn btn-success">Login</button>
         </a>
     {% endif %}
-{% endblock %}
+
+    <!-- Schedule Session Modal -->
+    <div class="modal fade" id="scheduleSessionModal" tabindex="-1" aria-labelledby="scheduleSessionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-dark">
+              <h1 class="modal-title fs-5 text-light" id="scheduleSessionModalLabel">Choose Date & Time for {{sessions.results.0.session_type|capfirst}}</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-body-tertiary">
+              <form id="session_schedule_form" method="POST" action="">
+                  <div class="mb-3">
+                    <label for="session_date_start" class="form-label">Date</label>
+                    <input type="date" id="session_date_start" name="session_date" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                      <label for="session_time_start" class="form-label">Time</label>
+                      <input type="time" id="session_time_start" name="session_time" class="form-control" required>
+                  </div>
+              </form>
+            </div>
+            <div class="modal-footer bg-body-tertiary">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" form="session_schedule_form" name="schedule_session" class="btn btn-primary" value="{{ experiment.id }}">Schedule</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+  
+
+    <!-- End Session Modal -->
+    <div class="modal fade" id="endSessionModal" tabindex="-1" aria-labelledby="endSessionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-dark">
+              <h1 class="modal-title fs-5 text-light" id="endSessionModalLabel">End {{sessions.results.0.session_type|capfirst}} Session</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-body-tertiary">
+              <form id="end_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
+                <div class="mb-3">
+                    <label for="end_session_explanation" class="fs-5 form-label">Why did this session end?</label>
+                    <hr class="w-75">
+                    <div class="border p-1 mb-1 rounded-3">
+                        <ul style="font-size: small;">
+                            <li>**Please note, this explanation will be saved and emailed to the experimenters</li>
+                            <li>Explain if and what kind of further development is needed by the experimenter</li>
+                            <li>Explain any other next steps</li>
+                        </ul>
+                    </div>
+                    <textarea id="end_session_explanation" name="session_description" class="form-control" rows="4" required></textarea>
+                </div>
+                {% if sessions.results.0.session_type == 'testbed' %}
+                <div class="mb-3">
+                    <p>Was this {{sessions.results.0.session_type}} session successful?</p>
+                    <hr class="w-75">
+                    <div class="row single-choice-checkbox-group">
+                        <div class="col text-center">
+                            <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="toggleGroup(this)" data-target="#initiateDevelopmentBtnGroup" autocomplete="off">
+                            <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
+                        </div>
+                        <div class="col text-center">
+                            <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="toggleGroup(this)" data-target="#rescheduleBtnGroup" autocomplete="off">
+                            <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="initiateDevelopmentBtnGroup" class="mb-3" style="display: none;">
+                    <p>Initiate a new Development Session?</p>
+                    <hr class="w-75">
+                    <div class="row single-choice-checkbox-group">
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="yes-development-session-btn" name="new_development" autocomplete="off" value="{{experiment.id}}">
+                            <label class="btn btn-primary btn-lg" for="yes-development-session-btn">Yes</label>
+                        </div>
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="no-development-session-btn" name="no_new_development" autocomplete="off" value="{{experiment.id}}">
+                            <label class="btn btn-primary btn-lg" for="no-development-session-btn">No</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
+                    <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
+                    <hr class="w-75">
+                    <div class="row single-choice-checkbox-group">
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="yes-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="false" autocomplete="off" value="True">
+                            <label class="btn btn-primary btn-lg" for="yes-reschedule-session-btn">Yes</label>
+                        </div>
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="no-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="true" autocomplete="off" value="False">
+                            <label class="btn btn-primary btn-lg" for="no-reschedule-session-btn">No</label>
+                        </div>
+                    </div>
+                    <div id="rescheduleDateTimeGroup" style="display: none;">
+                        <div class="mb-3">
+                            <label for="session_date_reschedule_start" class="form-label">Reschedule date and time:</label>
+                            <hr class="w-75">
+                            <input type="date" id="session_date_reschedule_start" name="session_date" class="form-control w-75 ms-2">
+                            <input type="time" id="session_time_reschedule_start" name="session_time" class="form-control w-75 ms-2">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+
+                <div class="mb-3">
+                    <p>Was this {{sessions.results.0.session_type}} session successful?</p>
+                    <hr class="w-75">
+                    <div class="row single-choice-checkbox-group">
+                        <div class="col text-center">
+                            <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="showNextGroup(this)" data-target="#rescheduleBtnGroup" data-hide="true" autocomplete="off">
+                            <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
+                        </div>
+                        <div class="col text-center">
+                            <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="showNextGroup(this)" data-target="#rescheduleBtnGroup" data-hide="false" autocomplete="off">
+                            <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
+                    <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
+                    <hr class="w-75">
+                    <div class="row single-choice-checkbox-group">
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="yes-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="false" autocomplete="off" value="True">
+                            <label class="btn btn-primary btn-lg" for="yes-reschedule-session-btn">Yes</label>
+                        </div>
+                        <div class="col text-center">
+                            <input type="checkbox" class="btn-check single-check" id="no-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="true" autocomplete="off" value="False">
+                            <label class="btn btn-primary btn-lg" for="no-reschedule-session-btn">No</label>
+                        </div>
+                    </div>
+                    <div id="rescheduleDateTimeGroup" style="display: none;">
+                        <div class="mb-3">
+                            <label for="session_date_reschedule_start" class="form-label">Reschedule date and time:</label>
+                            <hr class="w-75">
+                            <input type="date" id="session_date_reschedule_start" name="session_date" class="form-control w-75 ms-2">
+                            <input type="time" id="session_time_reschedule_start" name="session_time" class="form-control w-75 ms-2">
+                        </div>
+                    </div>
+                </div> -->
+                {% endif %}
+              </form>
+            </div>
+            <div class="modal-footer bg-body-tertiary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="end_session_form" name="end_session" class="btn btn-primary" value="{{ experiment.id }}">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {% endblock %}

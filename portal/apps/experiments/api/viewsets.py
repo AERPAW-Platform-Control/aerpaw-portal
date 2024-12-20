@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from itertools import chain
 from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed, NotFound, PermissionDenied, ValidationError
@@ -14,10 +15,10 @@ from portal.apps.experiment_files.api.serializers import ExperimentFileSerialize
 from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.experiments.api.experiment_states import is_valid_transition, transition_experiment_state
 from portal.apps.experiments.api.serializers import CanonicalExperimentResourceSerializer, ExperimentSerializerDetail, \
-    ExperimentSerializerList, ExperimentSerializerState, ExperimentSessionSerializerDetail, \
-    ExperimentSessionSerializerList, UserExperimentSerializer
-from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
-    UserExperiment
+    ExperimentSerializerList, ExperimentSerializerState, OnDemandSessionSerializerDetail, \
+    ScheduledSessionSerializerDetail, OnDemandSessionSerializerList, ScheduledSessionSerializerList, UserExperimentSerializer
+from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession, \
+    UserExperiment, ScheduledSession
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, \
     increment_current_canonical_number
 from portal.apps.projects.models import AerpawProject
@@ -402,6 +403,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                         resources_added = list(set(resource_ids).difference(set(resources_orig)))
                         resources_removed = list(set(resources_orig).difference(set(resource_ids)))
                         # TODO: canonical-experiment-resource logic
+                        print(f'resources_added: {resources_added}')
                         for pk in resources_added:
                             if AerpawResource.objects.filter(pk=pk).exists():
                                 resource = AerpawResource.objects.get(pk=pk)
@@ -448,11 +450,18 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                     # calculate experiment node numbers
                     cers = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by(
                         'created')
-                    enn = 1
-                    for cer in cers:
-                        cer.experiment_node_number = enn
-                        cer.save()
-                        enn += 1
+                    if isinstance(request.data.get('node_numbers'), list):
+                        node_numbers = {int(resource_node_number.split('-')[0]): int(resource_node_number.split('-')[1]) for resource_node_number in request.data.get('node_numbers')}
+                        print(f'node_numbers: {node_numbers}')
+                        for cer in cers:
+                            cer.experiment_node_number = node_numbers[cer.resource.id]
+                            cer.save()
+                    else:
+                        enn = 1
+                        for cer in cers:
+                            cer.experiment_node_number = enn
+                            cer.save()
+                            enn += 1
                 else:
                     raise ValidationError(
                         detail="ValidationError: invalid resource_id or node_uhd /experiments/{0}/resources".format(
@@ -552,6 +561,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def state(self, request, *args, **kwargs):
+        print('VIEWSETS state')
         """
         GET, PUT, PATCH: retrieve / update experiment state
         - experiment_state     - string
@@ -679,8 +689,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         """
         experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
         if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
-            sessions = ExperimentSession.objects.filter(experiment_id=experiment.id).order_by('-created')
-            serializer = ExperimentSessionSerializerDetail(sessions, many=True)
+            sessions = OnDemandSession.objects.filter(experiment_id=experiment.id).order_by('-created')
+            serializer = OnDemandSessionSerializerDetail(sessions, many=True)
             experiment_sessions = []
             for u in serializer.data:
                 du = dict(u)
@@ -839,15 +849,15 @@ class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
         raise MethodNotAllowed(method="DELETE: /user-experiment/{int:pk}")
 
 
-class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
+class OnDemandSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
     """
     Experiment Session
     - paginated list
     - retrieve one
     """
     permission_classes = [permissions.IsAuthenticated]
-    queryset = ExperimentSession.objects.all().order_by('-created').distinct()
-    serializer_class = ExperimentSessionSerializerDetail
+    queryset = OnDemandSession.objects.all().order_by('-created').distinct()
+    serializer_class = OnDemandSessionSerializerDetail
 
     def get_queryset(self):
         experiment_id = self.request.query_params.get('experiment_id', None)
@@ -859,12 +869,12 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         else:
             active_set = [True, False]
         if experiment_id:
-            queryset = ExperimentSession.objects.filter(
+            queryset = OnDemandSession.objects.filter(
                 experiment__id=experiment_id,
                 is_active__in=active_set
             ).order_by('-created').distinct()
         else:
-            queryset = ExperimentSession.objects.filter(
+            queryset = OnDemandSession.objects.filter(
                 is_active__in=active_set
             ).order_by('-created').distinct()
         return queryset
@@ -898,9 +908,9 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         if request.user.is_operator() or is_experiment_creator or is_experiment_member:
             page = self.paginate_queryset(self.get_queryset())
             if page:
-                serializer = ExperimentSessionSerializerList(page, many=True)
+                serializer = OnDemandSessionSerializerList(page, many=True)
             else:
-                serializer = ExperimentSessionSerializerList(self.get_queryset(), many=True)
+                serializer = OnDemandSessionSerializerList(self.get_queryset(), many=True)
             response_data = []
             for u in serializer.data:
                 du = dict(u)
@@ -973,17 +983,21 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
             is_experiment_member = False
 
         if request.user.is_operator() or is_experiment_creator or is_experiment_member:
-            serializer = ExperimentSessionSerializerDetail(experiment_session)
+            serializer = OnDemandSessionSerializerDetail(experiment_session)
             du = dict(serializer.data)
             try:
                 created_by = AerpawUser.objects.get(username=du.get('created_by')).id
             except Exception as exc:
-                print(exc)
+                print(f'EXCEPTION IN: OnDemandSessionViewSet.retrieve')
+                print(f'TRY: created_by = AerpawUser.objects.get(username=du.get("created_by")).id')
+                print(f'EXCEPT: {exc}')
                 created_by = None
             try:
                 modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
             except Exception as exc:
-                print(exc)
+                print(f'EXCEPTION IN: OnDemandSessionViewSet.retrieve')
+                print(f'TRY: modified_by = AerpawUser.objects.get(username=du.get("modified_by")).id')
+                print(f'EXCEPT: {exc}')
                 modified_by = None
             response_data = {
                 'created_by': created_by,
@@ -1051,6 +1065,191 @@ class ExperimentSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixi
         - user is_operator
         """
         raise MethodNotAllowed(method="DELETE: /experiment-session/{int:pk}")
+
+class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
+    """
+    Experiment Session
+    - paginated list
+    - retrieve one
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = ScheduledSession.objects.all().order_by('-created').distinct()
+    serializer_class = ScheduledSessionSerializerDetail
+
+    def get_queryset(self):
+        experiment_id = self.request.query_params.get('experiment_id', None)
+        active = self.request.query_params.get('active', None)
+        if active and str(active).casefold() == 'true':
+            active_set = [True]
+        elif active and str(active).casefold() == 'false':
+            active_set = [False]
+        else:
+            active_set = [True, False]
+        if experiment_id:
+            queryset = ScheduledSession.objects.filter(
+                experiment__id=experiment_id,
+                is_active__in=active_set
+            ).order_by('-created').distinct()
+        else:
+            queryset = ScheduledSession.objects.filter(
+                is_active__in=active_set
+            ).order_by('-created').distinct()
+        return queryset
+    
+    def list(self, request,  *args, **kwargs):
+        print(f'ScheduledSessionViewSet sessions self = {self}')
+        try:
+            experiment = AerpawExperiment.objects.get(pk=request.query_params.get('experiment_id'))
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
+            page = self.paginate_queryset(self.get_queryset())
+            if page:
+                serializer = ScheduledSessionSerializerList(page, many=True)
+            else:
+                serializer = ScheduledSessionSerializerList(self.get_queryset(), many=True)
+            response_data = []
+            for u in serializer.data:
+                du = dict(u)
+                response_data.append(
+                    {
+                        'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
+                        'ended_by': du.get('ended_by'),
+                        'experiment_id': du.get('experiment_id'),
+                        'is_active': du.get('is_active'),
+                        'scheduled_start':du.get('scheduled_start'),
+                        'scheduled_end':du.get('scheduled_end'),
+                        'session_id': du.get('session_id'),
+                        'session_type': du.get('session_type'),
+                        'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
+                        'started_by': du.get('started_by')
+                    }
+                )
+            if page:
+                return self.get_paginated_response(response_data)
+            else:
+                return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET /experiment-session list")
+        
+    def sessions_list(self, request,  *args, **kwargs):
+        try:
+            experiment = AerpawExperiment.objects.get(pk=request.query_params.get('experiment_id'))
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
+            # Reomves non-ops sessions if they have an ops session. 
+            ops_session_ids = [session.id for session in kwargs['ops_sessions']]
+            sessions = [session for session in kwargs['sessions'] if session.id not in ops_session_ids]
+            sessions_queryset = list(chain(kwargs['ops_sessions'], sessions))
+            page = self.paginate_queryset(sessions_queryset)
+            if page:
+                serializer = ScheduledSessionSerializerList(page, many=True)
+            else:
+                serializer = ScheduledSessionSerializerList(self.get_queryset(), many=True)
+            response_data = []
+            for u in serializer.data:
+                du = dict(u)
+                response_data.append(
+                    {
+                        'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
+                        'ended_by': du.get('ended_by'),
+                        'experiment_id': du.get('experiment_id'),
+                        'is_active': du.get('is_active'),
+                        'scheduled_start':du.get('scheduled_start'),
+                        'scheduled_end':du.get('scheduled_end'),
+                        'session_id': du.get('session_id'),
+                        'session_state': du.get('session_state') if du.get('session_state') else None,
+                        'session_type': du.get('session_type'),
+                        'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
+                        'started_by': du.get('started_by')
+                    }
+                )
+            if page:
+                return self.get_paginated_response(response_data)
+            else:
+                return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET /experiment-session list")
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        GET: retrieve scheduled-session as detailed result
+        - created_by (fk)        - int
+        - description            - string
+        - end_date_time          - string
+        - ended_by (fk)          - user_id
+        - experiment_id (fk)     - int
+        - is_active              - bool
+        - scheduled_start        - string
+        - scheduled_end          - string
+        - session_id (pk)        - int
+        - session_type           - string
+        - start_date_time        - string
+        - started_by (fk)        - user_id
+
+        Permission:
+        - user is_operator
+        - user is_experiment_creator
+        - user is_experiment_member
+        """
+        scheduled_session = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
+        try:
+            experiment = AerpawExperiment.objects.get(pk=scheduled_session.experiment_id)
+            is_experiment_creator = experiment.is_creator(request.user)
+            is_experiment_member = experiment.is_member(request.user)
+        except Exception as exc:
+            is_experiment_creator = False
+            is_experiment_member = False
+
+        if request.user.is_operator() or is_experiment_creator or is_experiment_member:
+            serializer = ScheduledSessionSerializerDetail(scheduled_session)
+            du = dict(serializer.data)
+            try:
+                created_by = AerpawUser.objects.get(username=du.get('created_by')).id
+            except Exception as exc:
+                print(f'EXCEPTION IN: ScheduledSessionViewSet.retrieve')
+                print(f'TRY: created_by = AerpawUser.objects.get(username=du.get("created_by")).id')
+                print(f'EXCEPT: {exc}')
+                created_by = None
+            try:
+                modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
+            except Exception as exc:
+                print(f'EXCEPTION IN: ScheduledSessionViewSet.retrieve')
+                print(f'TRY: modified_by = AerpawUser.objects.get(username=du.get("modified_by")).id')
+                print(f'EXCEPT: {exc}')
+                modified_by = None
+            response_data = {
+                'created_by': created_by,
+                'created_time': str(du.get('created_time')) if du.get('created_time') else None,
+                'description': du.get('description') if du.get('description') else None,
+                'end_date_time': str(du.get('end_date_time')) if du.get('end_date_time') else None,
+                'ended_by': du.get('ended_by'),
+                'experiment_id': du.get('experiment_id'),
+                'is_active': du.get('is_active'),
+                'modified_by': modified_by,
+                'modified_time': str(du.get('modified_time')) if du.get('modified_time') else None,
+                'scheduled_start': str(du.get('scheduled_start')) if du.get('scheduled_start') else None,
+                'scheduled_end': str(du.get('scheduled_end')) if du.get('scheduled_end') else None,
+                'session_id': du.get('session_id'),
+                'session_type': du.get('session_type'),
+                'start_date_time': str(du.get('start_date_time')) if du.get('start_date_time') else None,
+                'started_by': du.get('started_by')
+            }
+            return Response(response_data)
+        else:
+            raise PermissionDenied(
+                detail="PermissionDenied: unable to GET /experiment-session/{0} details".format(kwargs.get('pk')))
 
 
 class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
@@ -1129,7 +1328,8 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                         'node_type': du.get('node_type'),
                         'node_uhd': du.get('node_uhd'),
                         'node_vehicle': du.get('node_vehicle'),
-                        'resource_id': resource_id
+                        'resource_id': resource_id,
+                        'resource_hostname': du.get('resource_hostname'),
                     }
                 )
             if page:

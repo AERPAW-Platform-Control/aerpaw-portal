@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession, \
-    UserExperiment
+from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession, \
+    ScheduledSession, UserExperiment
 
 
 class UserExperimentSerializer(serializers.ModelSerializer):
@@ -53,7 +53,7 @@ class ExperimentSerializerState(serializers.ModelSerializer):
         fields = ['experiment_flags', 'experiment_id', 'experiment_state', 'experiment_uuid']
 
 
-class ExperimentSessionSerializerList(serializers.ModelSerializer):
+class OnDemandSessionSerializerList(serializers.ModelSerializer):
     """
     Experiment Session List
     - created (from AuditModelMixin)
@@ -74,12 +74,12 @@ class ExperimentSessionSerializerList(serializers.ModelSerializer):
     session_id = serializers.IntegerField(source='id')
 
     class Meta:
-        model = ExperimentSession
+        model = OnDemandSession
         fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'session_id', 'session_type',
                   'start_date_time', 'started_by']
 
 
-class ExperimentSessionSerializerDetail(serializers.ModelSerializer):
+class OnDemandSessionSerializerDetail(serializers.ModelSerializer):
     """
     Experiment Session Detail
     - created (from AuditModelMixin)
@@ -102,17 +102,68 @@ class ExperimentSessionSerializerDetail(serializers.ModelSerializer):
     session_id = serializers.IntegerField(source='id')
 
     class Meta:
-        model = ExperimentSession
+        model = OnDemandSession
         fields = ['created_by', 'created_time', 'end_date_time', 'ended_by', 'experiment_id', 'is_active',
                   'modified_by', 'modified_time', 'session_id', 'session_type', 'start_date_time', 'started_by']
 
+
+class ScheduledSessionSerializerList(serializers.ModelSerializer):
+    """
+    Ops Session - created by Aerpaw Ops team to manually manage sessions 
+    - *description (an explanation to be emailed to experimenters describing success status)
+    - *scheduled_by
+    - *scheduled_created_on (date the scheduled date_time was created)
+    - scheduled_active_date (date the session will occur)
+    - *canceled_by
+    - *canceled
+    - *session_state (the place the session is currently in the session workflow)
+    - *is_success
+
+    Inherits from Experiment Session
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
+    - *ended_by
+    - *ended_date_time
+    - *experiment
+    - *id (from Basemodel)
+    - *is_active
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
+    - *session_type
+    - *start_date_time
+    - *started_by
+    - uuid
+    """
+    experiment_id = serializers.IntegerField(source='experiment.id')
+    session_id = serializers.IntegerField(source='id')
+
+    class Meta:
+        model = ScheduledSession
+        fields = ['end_date_time', 'ended_by', 'experiment_id', 'is_active', 'scheduled_start', 'scheduled_end', 'session_id', 'session_state', 
+                  'session_type', 'start_date_time', 'started_by']
+
+
+
+class ScheduledSessionSerializerDetail(serializers.ModelSerializer):
+    created_time = serializers.DateTimeField(source='created')
+    experiment_id = serializers.IntegerField(source='experiment.id')
+    modified_time = serializers.DateTimeField(source='modified')    
+    session_id = serializers.IntegerField(source='id')
+
+    class Meta:
+        model = ScheduledSession
+        fields = ['created_by', 'created_time', 'description', 'ended_by', 'end_date_time',  'experiment_id',
+                   'is_active', 'modified_by', 'modified_time', 'session_id',  
+                   'session_type', 'start_date_time', 'started_by'
+                    ]
 
 class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):
     canonical_experiment_resource_id = serializers.IntegerField(source='id')
     experiment_id = serializers.IntegerField(source='experiment.id')
     resource_id = serializers.IntegerField(source='resource.id')
+    resource_hostname = serializers.CharField(source='resource.location')
 
     class Meta:
         model = CanonicalExperimentResource
         fields = ['canonical_experiment_resource_id', 'experiment_id', 'experiment_node_number', 'node_display_name',
-                  'node_type', 'node_uhd', 'node_vehicle', 'resource_id']
+                  'node_type', 'node_uhd', 'node_vehicle', 'resource_id', 'resource_hostname']

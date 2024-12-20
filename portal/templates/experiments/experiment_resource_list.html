@@ -33,6 +33,7 @@
                 <tbody>
                 <tr>
                     <th>Name</th>
+                    <th>Location</th>
                     <th>Node Number</th>
                     <th>Node Type</th>
                     <th>Node UHD</th>
@@ -48,6 +49,13 @@
                                     {{ resource.node_display_name }}
                                 {% endif %}
                             </td>
+                            <td>
+                                {% if resource.node_type == 'afrn' %}
+                                {{ resource.resource_hostname }}
+                                {% else %}
+                                ----
+                                {% endif %}
+                            </td> 
                             <td>{{ resource.experiment_node_number }}</td>
                             <td>{{ resource.node_type }}</td>
                             <td>{{ resource.node_uhd }}</td>

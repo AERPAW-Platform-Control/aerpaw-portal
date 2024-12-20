@@ -12,11 +12,22 @@
     {% if user.is_authenticated %}
         {% if project.membership.is_project_creator or project.membership.is_project_owner or project.membership.is_project_member %}
             <div class="container w-85">
-                <h2>Create Experiment <em class="text-success" style="font-size: medium">
-                    (Project: {{ project.project_id|id_to_project_name }})</em>
-                </h2>
+                <div class="row">
+                    <div class="col-11">
+                        <h2>Create Experiment <em class="text-success" style="font-size: medium">
+                            (Project: {{ project.project_id|id_to_project_name }})</em>
+                        </h2>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-primary" value="cancel">
+                            <a href="{% url 'project_detail' project_id=project.project_id %}" class="unlink">
+                                Back to Project
+                            </a>
+                        </button>
+                    </div>
+                </div>
                 <hr>
-                <div>
+                <!-- <div>
                     <h5>Step 1:</h5>
                     <p>
                         Decide whether you are trying to create a <strong>canonical</strong> (Program-it-Yourself)
@@ -51,20 +62,12 @@
                         continue below to give your experiment
                         a short name and a short description, and save it, in order to continue.
                     </p>
-                </div>
-                <hr>
+                </div> -->
+               <!--  <hr> -->
                 <form id="create-experiment" method="POST" class="post-form">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    {{ form }}
                 </form>
-                <button class="btn btn-success mr-2" type="submit" form="create-experiment" value="save">
-                    <a onclick="return confirm('By Saving this Experiment you are verifying that you have completed Step 2: fill out the AERPAW Experiment Information Request Form')">
-                        Save
-                    </a>
-                </button>
-                <button class="btn btn-secondary mr-2" value="cancel">
-                    <a href="{% url 'project_detail' project_id=project.project_id %}" class="unlink">Back</a>
-                </button>
             </div>
         {% else %}
             You are not able to create an experiment
