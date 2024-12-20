@@ -197,7 +197,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
             for u in serializer.data:
                 du = dict(u)
                 is_expired = True if datetime.strptime(
-                    du.get('public_key_expiration'), "%Y-%m-%dT%H:%M:%S.%f%z") < datetime.now(timezone.utc) else False
+                    du.get('public_key_expiration'), "%Y-%m-%dT%H:%M:%S%z") < datetime.now(timezone.utc) else False
                 response_data.append(
                     {
                         'created_date': str(du.get('created_date')) if du.get('created_date') else None,

@@ -9,15 +9,17 @@ Define the following for each transition between states
 import os
 import threading
 import time
+from datetime import datetime, timezone, timedelta
 
 from rest_framework.exceptions import NotFound, ValidationError
 
 from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
-    start_experiment_session, stop_experiment_session
-from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
-from portal.apps.user_messages.user_messages import generate_user_messages_for_development, \
-    generate_user_messages_for_testbed
+    start_experiment_session, stop_experiment_session, create_experiment_scheduled_session, schedule_experiment_scheduled_session, \
+        start_scheduled_session, end_scheduled_session, cancel_scheduled_session
+from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, ScheduledSession
+from portal.apps.user_messages.user_messages import generate_user_messages_for_development, generate_user_messages_for_sandbox,\
+    generate_user_messages_for_emulation, generate_user_messages_for_testbed
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
 
@@ -37,17 +39,15 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
 
     Session: update DEVELOPMENT --> no change
 
-    Permissions:
-    - experimenter OR
     - operator
     """
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
     # get active session
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
         is_active=True
     ).first()
     if not session:
@@ -71,10 +71,10 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-saveexit-ve-exp.py
     if exit_development:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-saveexit-ve-exp.py {0} save-and-exit".format(
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
             experiment.id)
     else:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-saveexit-ve-exp.py {0} save".format(
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
             experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -104,14 +104,26 @@ def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.SANDBOX,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        scheduled_session = ScheduledSession.objects.filter(
+                experiment=experiment, 
+                session_type=ScheduledSession.SessionType.SANDBOX, 
+                is_active=True
+            ).first()
+        if not scheduled_session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        
+    else:
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.SANDBOX,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
 
     # UPDATE STATE: save_sandbox
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVING_SANDBOX
@@ -138,6 +150,8 @@ def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
     # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
     # ssh_thread.start()
 
+    generate_user_messages_for_sandbox(request, experiment=experiment)
+
 
 def saving_development_to_saved(request, experiment: AerpawExperiment):
     """
@@ -155,9 +169,9 @@ def saving_development_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and stop
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
         is_active=True
     ).first()
     if not session:
@@ -191,9 +205,9 @@ def saving_development_to_active_development(request, experiment: AerpawExperime
 
     # ACTION ITEMS:
     # get active session
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
         is_active=True
     ).first()
     if not session:
@@ -238,9 +252,9 @@ def saving_sandbox_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and stop
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.SANDBOX,
+        session_type=OnDemandSession.SessionType.SANDBOX,
         is_active=True
     ).first()
     if not session:
@@ -254,6 +268,9 @@ def saving_sandbox_to_saved(request, experiment: AerpawExperiment):
     experiment.save()
 
     # PORTAL CF:
+
+
+    generate_user_messages_for_sandbox(request, experiment=experiment)
 
 
 def saving_sandbox_to_active_sandbox(request, experiment: AerpawExperiment):
@@ -271,9 +288,9 @@ def saving_sandbox_to_active_sandbox(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.SANDBOX,
+        session_type=OnDemandSession.SessionType.SANDBOX,
         is_active=True
     ).first()
     if not session:
@@ -299,8 +316,11 @@ def saving_sandbox_to_active_sandbox(request, experiment: AerpawExperiment):
     # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
     # ssh_thread.start()
 
+    generate_user_messages_for_sandbox(request, experiment=experiment)
+
 
 def active_emulation_to_saved(request, experiment: AerpawExperiment):
+    print('UTILS active_emulation_to_saved')
     """
     ACTIVE_EMULATION --> SAVED
     - emulation complete
@@ -316,22 +336,31 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
-    # get active session and stop
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.EMULATION,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    stop_experiment_session(session=session, user=request.user)
+    if request.data['ops_session'] == True:
+        print('UTILS ops session')
+        ops_session = ScheduledSession.objects.filter(experiment=experiment, is_active=True).first()
+        ended = end_scheduled_session(request=request, session=ops_session, user=request.user)
+        if request.data.get('is_success') == True:
+            request.data.update({'emulation_passed': True})
+
+    else:
+        print('UTILS not ops')
+        # get active session and stop
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.EMULATION,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        stop_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
     try:
         emulation_passed = request.data.get('emulation_passed', False)
     except Exception as exc:
-        print(exc)
+        print('UTILS Exception', exc)
         emulation_passed = False
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     if emulation_passed:
@@ -339,6 +368,8 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
     else:
         experiment.experiment_flags = '100'
     experiment.save()
+
+    generate_user_messages_for_emulation(request, experiment=experiment)
 
 
 def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperiment):
@@ -359,9 +390,9 @@ def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperimen
 
     # ACTION ITEMS:
     # get active session and stop
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.EMULATION,
+        session_type=OnDemandSession.SessionType.EMULATION,
         is_active=True
     ).first()
     if not session:
@@ -384,7 +415,7 @@ def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperimen
         # ACTION ITEMS:
         # create new TESTBED session
         create_experiment_session(
-            session_type=ExperimentSession.SessionType.TESTBED,
+            session_type=OnDemandSession.SessionType.TESTBED,
             experiment=experiment,
             user=request.user
         )
@@ -412,21 +443,29 @@ def active_testbed_to_saved(request, experiment: AerpawExperiment):
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
-    # get active session and stop
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.TESTBED,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    stop_experiment_session(session=session, user=request.user)
+    if request.data['ops_session'] == True:
+        ops_session = ScheduledSession.objects.filter(experiment=experiment, is_active=True).first()
+        ended = end_scheduled_session(request=request, session=ops_session, user=request.user)
+    else:
+        # get active session and stop
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.TESTBED,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        stop_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.experiment_flags = '010'
     experiment.save()
+
+    reschedule = False if 'reschedule_session' not in request.data else request.data['reschedule_session']
+    if reschedule == 'True':
+        new_session = saved_to_wait_testbed_schedule(request, experiment=experiment)
 
     # MESSAGE / EMAIL: active testbed to saved
     generate_user_messages_for_testbed(request=request, experiment=experiment)
@@ -462,7 +501,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     experiment.save()
     # create new DEVELOPMENT session
     create_experiment_session(
-        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
         experiment=experiment,
         user=request.user
     )
@@ -477,7 +516,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-deploy-ve-exp.py
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-deploy-ve-exp.py {0}".format(
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
         experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -502,12 +541,21 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
-    # create new SANDBOX session
-    create_experiment_session(
-        session_type=ExperimentSession.SessionType.SANDBOX,
-        experiment=experiment,
-        user=request.user
-    )
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        create_experiment_scheduled_session(
+            session_type=ScheduledSession.SessionType.SANDBOX,
+            experiment=experiment,
+            scheduled_active_date=request.data.get('session_date'),
+            user=request.user
+        )
+    else:
+        # create new SANDBOX session
+        create_experiment_session(
+            session_type=OnDemandSession.SessionType.SANDBOX,
+            experiment=experiment,
+            user=request.user
+        )
 
     # UPDATE STATE: wait_sandbox_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY
@@ -527,6 +575,8 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     # ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock))
     # ssh_thread.start()
 
+    generate_user_messages_for_sandbox(request, experiment=experiment)
+
 
 def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
     """
@@ -542,15 +592,25 @@ def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # create new EMULATION session
-    create_experiment_session(
-        session_type=ExperimentSession.SessionType.EMULATION,
-        experiment=experiment,
-        user=request.user
-    )
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        create_experiment_scheduled_session(
+            session_type=ScheduledSession.SessionType.EMULATION,
+            experiment=experiment,
+            user=request.user
+        )
+    else:
+        create_experiment_session(
+            session_type=OnDemandSession.SessionType.EMULATION,
+            experiment=experiment,
+            user=request.user
+        )
 
     # UPDATE STATE: wait_emulation_schedule
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
     experiment.save()
+
+    generate_user_messages_for_emulation(request, experiment=experiment)
 
 
 def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
@@ -570,15 +630,28 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     else:
         # ACTION ITEMS:
         # create new TESTBED session
-        create_experiment_session(
-            session_type=ExperimentSession.SessionType.TESTBED,
-            experiment=experiment,
-            user=request.user
-        )
+        is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+        if is_ops_session == True:
+            create_experiment_scheduled_session(
+                session_type=OnDemandSession.SessionType.TESTBED,
+                experiment=experiment,
+                user=request.user
+            )
+            
+        else:
+            create_experiment_session(
+                session_type=OnDemandSession.SessionType.TESTBED,
+                experiment=experiment,
+                user=request.user
+            )
 
         # UPDATE STATE: wait_testbed_schedule
         experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_SCHEDULE
         experiment.save()
+
+        reschedule = False if 'reschedule_session' not in request.data else request.data.get('reschedule_session')
+        if reschedule == 'True':
+            scheduled_session = wait_testbed_schedule_to_wait_testbed_deploy(request, experiment=experiment)
 
         # MESSAGE / EMAIL: submit to testbed - emulation not required
         generate_user_messages_for_testbed(request=request, experiment=experiment)
@@ -586,7 +659,7 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
         # PORTAL CF: wait_testbed_schedule
         # TODO: Portal to manage next_state transition - normally this would be an Operator call
         # aerpaw ops: ap-cf-submit-to-tbed.py
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/workflow-scripts/ap-cf-submit-to-tbed.py {0}".format(
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.pyy {0}".format(
             experiment.id)
         if MOCK_OPS:
             # DEVELOPMENT - always pass
@@ -612,9 +685,9 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
 
     # ACTION ITEMS:
     # get active session and start
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
         is_active=True
     ).first()
     if not session:
@@ -648,9 +721,9 @@ def wait_development_deploy_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and cancel
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.DEVELOPMENT,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
         is_active=True
     ).first()
     if not session:
@@ -681,20 +754,29 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
-    # get active session and start
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.EMULATION,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    start_experiment_session(session=session, user=request.user)
+    # get active ScheduledSession and start
+    if request.data['ops_session'] == True:
+        ops_session = ScheduledSession.objects.filter(experiment = experiment, is_active = True).first()
+        started = start_scheduled_session(session = ops_session, user=request.user)
+        
+    else:
+        # get active session and start
+
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.EMULATION,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        start_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: active_emulation
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_EMULATION
     experiment.save()
+
+    generate_user_messages_for_emulation(request, experiment=experiment)
 
 
 def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
@@ -712,9 +794,9 @@ def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and cancel
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.EMULATION,
+        session_type=OnDemandSession.SessionType.EMULATION,
         is_active=True
     ).first()
     if not session:
@@ -726,6 +808,8 @@ def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
     experiment.is_emulation_required = False
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
+
+    generate_user_messages_for_emulation(request, experiment=experiment)
 
 
 def wait_emulation_schedule_to_wait_emulation_deploy(request, experiment: AerpawExperiment):
@@ -743,9 +827,15 @@ def wait_emulation_schedule_to_wait_emulation_deploy(request, experiment: Aerpaw
     # ACTION ITEMS:
     # no change to session
 
+    #Schedule Emulation Deployment
+    ops_session = ScheduledSession.objects.filter(experiment = experiment, is_active = True).first()
+    scheduled = schedule_experiment_scheduled_session(request=request, session=ops_session, user=request.user)
+
     # UPDATE STATE: wait_emulation_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_DEPLOY
     experiment.save()
+
+    generate_user_messages_for_emulation(request, experiment=experiment)
 
 
 def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
@@ -763,20 +853,34 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and cancel
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.EMULATION,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    cancel_experiment_session(session=session, user=request.user)
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        ops_session = ScheduledSession.objects.filter(
+                experiment=experiment, 
+                session_type=ScheduledSession.SessionType.EMULATION, 
+                is_active=True
+            ).first()
+        if not ops_session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        cancel_scheduled_session(request=request, session=ops_session, user=request.user)
+    else:
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.EMULATION,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        cancel_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
     experiment.is_emulation_required = False
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
+
+    generate_user_messages_for_emulation(request, experiment=experiment)
 
 
 def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment):
@@ -793,9 +897,9 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
 
     # ACTION ITEMS:
     # get active session and start
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.SANDBOX,
+        session_type=OnDemandSession.SessionType.SANDBOX,
         is_active=True
     ).first()
     if not session:
@@ -809,6 +913,8 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_SANDBOX
     experiment.experiment_flags = '000'
     experiment.save()
+
+    generate_user_messages_for_sandbox(request, experiment=experiment)
 
 
 def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
@@ -826,9 +932,9 @@ def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and cancel
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.SANDBOX,
+        session_type=OnDemandSession.SessionType.SANDBOX,
         is_active=True
     ).first()
     if not session:
@@ -845,6 +951,8 @@ def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     experiment.save()
 
+    generate_user_messages_for_sandbox(request, experiment=experiment)
+
 
 def wait_testbed_deploy_to_active_testbed(request, experiment: AerpawExperiment):
     """
@@ -859,16 +967,20 @@ def wait_testbed_deploy_to_active_testbed(request, experiment: AerpawExperiment)
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
-    # get active session and start
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.TESTBED,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    start_experiment_session(session=session, user=request.user)
+    if request.data['ops_session'] == True:
+        ops_session = ScheduledSession.objects.filter(experiment = experiment, is_active = True).first()
+        started = start_scheduled_session(session = ops_session, user=request.user)
+    else:
+        # get active session and start
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.TESTBED,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        start_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: active_testbed
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_TESTBED
@@ -892,9 +1004,9 @@ def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and cancel
-    session = ExperimentSession.objects.filter(
+    session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.TESTBED,
+        session_type=OnDemandSession.SessionType.TESTBED,
         is_active=True
     ).first()
     if not session:
@@ -912,6 +1024,7 @@ def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
 
 
 def wait_testbed_schedule_to_wait_testbed_deploy(request, experiment: AerpawExperiment):
+    print(f'\n wait_testbed_schedule_to_wait_testbed_deploy')
     """
     WAIT_TESTBED_SCHEDULE --> WAIT_TESTBED_DEPLOY
     - schedule
@@ -925,6 +1038,10 @@ def wait_testbed_schedule_to_wait_testbed_deploy(request, experiment: AerpawExpe
 
     # ACTION ITEMS:
     # no change to session
+
+    #Schedule Emulation Deployment
+    ops_session = ScheduledSession.objects.filter(experiment = experiment, is_active = True).first()
+    scheduled = schedule_experiment_scheduled_session(request=request, session=ops_session, user=request.user)
 
     # UPDATE STATE: wait_testbed_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_TESTBED_DEPLOY
@@ -949,15 +1066,28 @@ def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
 
     # ACTION ITEMS:
     # get active session and cancel
-    session = ExperimentSession.objects.filter(
-        experiment_id=experiment.id,
-        session_type=ExperimentSession.SessionType.TESTBED,
-        is_active=True
-    ).first()
-    if not session:
-        raise NotFound(
-            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-    cancel_experiment_session(session=session, user=request.user)
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        ops_session = ScheduledSession.objects.filter(
+                experiment=experiment, 
+                session_type=ScheduledSession.SessionType.TESTBED, 
+                is_active=True
+            ).first()
+        if not ops_session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        end_scheduled_session(request=request, session=ops_session, user=request.user)
+
+    else:
+        session = OnDemandSession.objects.filter(
+            experiment_id=experiment.id,
+            session_type=OnDemandSession.SessionType.TESTBED,
+            is_active=True
+        ).first()
+        if not session:
+            raise NotFound(
+                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+        cancel_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
@@ -982,12 +1112,20 @@ def wait_testbed_schedule_to_wait_emulation_schedule(request, experiment: Aerpaw
     # PREFLIGHT CHECK:
 
     # ACTION ITEMS:
-    # create new EMULATION session
-    create_experiment_session(
-        session_type=ExperimentSession.SessionType.EMULATION,
-        experiment=experiment,
-        user=request.user
-    )
+    is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
+    if is_ops_session == True:
+        create_experiment_scheduled_session(
+            session_type=OnDemandSession.SessionType.EMULATION,
+            experiment=experiment,
+            user=request.user
+        )
+    else:
+        # create new EMULATION session
+        create_experiment_session(
+            session_type=OnDemandSession.SessionType.EMULATION,
+            experiment=experiment,
+            user=request.user
+        )
 
     # UPDATE STATE: wait_emulation_schedule
     experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
@@ -1150,3 +1288,108 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
         print(exit_code)
         raise NotFound(
             detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
+
+
+def retired(request, experiment: AerpawExperiment, command: str, mock: bool) -> None:
+    print('######################')
+    print('expirements/api/experiment_utils.py retired()')
+    ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
+    response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
+    
+    if MOCK_OPS:
+        # add sleep when using mock to simulate remote processing delay
+        time.sleep(10)
+        print('response: ' + response)
+        print('exit code: ' + str(exit_code))
+
+    # TODO: determine if any transition should take place based on return value of script
+    # next state transition
+    if exit_code == 0:
+        # ap-cf-retire-exp.py - success
+        # - do nothing
+        print('exit code: ' + exit_code)
+    else:
+        # ap-cf-retire-exp.py- failure
+        # - do nothing
+        print('exit code: ' + exit_code)
+        raise NotFound(
+            detail="RetireError: unable to retire experiment /experiments/{0}".format(experiment.id))
+
+
+def to_retired(request, experiment: AerpawExperiment):
+    print('############################')
+    print('expirements/api/experiment_utils.py to_retired()')
+    print('experiment = ', experiment)
+    """
+    ANY --> SAVED
+    - active_development --> saved && active_sandbox --> saved are not valid transitions according to the experiment_states api
+    - Things to do:
+      - Get current state -- Should be able to just check experiment.state
+      - Exit development/sandbox if state == active_development or active_sandbox
+      - Save experiment
+      - Find APVESN of the experiment		This and the step below need to be their own cf script
+      - Run ap-teardown-virtual-experiment.sh <canNum> <resources> to cleanup experiment containers on APVESN
+      - Cleanup DHCP & OVPN configs on VPN server
+      - Set experiment to retired
+      - (Optional) Send message
+
+    Session: update DEVELOPMENT --> no change		#????
+
+    Permissions:
+    - experimenter OR
+    - operator
+    """
+    # PREFLIGHT CHECK:
+
+    # ACTION ITEMS:
+    # get active session
+    session = OnDemandSession.objects.filter(
+        experiment_id=experiment.id,
+        session_type=OnDemandSession.SessionType.DEVELOPMENT,
+        is_active=True
+    ).first()
+
+    print('session = ', session)
+    if not session:
+        raise NotFound(
+            detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
+
+    print('experiment.experiment_state = ', experiment.experiment_state)
+    # UPDATE STATE: save_development if current state is ACTIVE_DEVELOPMENT
+    if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
+        request.data.exit_development = True
+        active_development_to_saving_development(request, experiment=experiment)
+    # UPDATE STATE: save_sandbox if current state is ACTIVE_SANDBOX
+    elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_SANDBOX:
+        request.data.exit_sandbox = True
+        active_sandbox_to_saving_sandbox(request, experiment=experiment)
+    # UPDATE STATE: saved if current state is ACTIVE_EMULATION
+    elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_EMULATION:
+        request.data.emulation_passed = False
+        active_emulation_to_saved(request, experiment=experiment)
+    # UPDATE STATE: saved if current state is ACTIVE_TESTBED
+    elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_TESTBED:
+        active_testbed_to_saved(request, experiment=experiment)
+    # UPDATE STATE: saved (for all other cases)
+    if experiment.experiment_state != AerpawExperiment.ExperimentState.SAVED:
+        experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
+        experiment.experiment_flags = '000'
+        experiment.save()
+
+    # Invoke retire script to cleanup all experiment files
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(
+           experiment.id)
+    if MOCK_OPS:
+        # DEVELOPMENT - always pass
+        mock = True
+    else:
+        # PRODUCTION
+        mock = False
+    print('command = ', command)
+    print('Mock = ', mock)
+    ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock))
+    ssh_thread.start()
+
+
+
+

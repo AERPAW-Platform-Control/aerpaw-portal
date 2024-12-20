@@ -1,24 +1,32 @@
-from urllib.parse import parse_qs, urlparse
+import calendar, logging
 
+from urllib.parse import parse_qs, urlparse
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
+from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard
+from portal.apps.experiments.api.experiment_utils import to_retired
 
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
-    ExperimentViewSet
-from portal.apps.experiments.dashboard import evaluate_dashboard_action, get_dashboard_buttons
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
+    ExperimentViewSet, ScheduledSessionViewSet
+from portal.apps.experiments.calendar import SandboxCalendar
+from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons, get_session_dashboard_buttons
 from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
     ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
-from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, ExperimentSession
+from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
+from portal.apps.resources.models import AerpawResource
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.user_requests.user_requests import approve_experiment_join_request, deny_experiment_join_request
 from portal.server.download_utils import download_sftp_experiment_file
 from portal.server.settings import DEBUG, REST_FRAMEWORK
 
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @login_required
@@ -111,6 +119,7 @@ def experiment_list(request):
 @csrf_exempt
 @login_required
 def experiment_detail(request, experiment_id):
+    logger.debug('TEST Logging: Some Debug Error')
     e = ExperimentViewSet(request=request)
     message = None
     try:
@@ -172,6 +181,7 @@ def experiment_detail(request, experiment_id):
                 request.data.update({'is_retired': 'true'})
                 e = ExperimentViewSet(request=request)
                 exp = e.partial_update(request=request, pk=experiment_id)
+                to_retired(request, experiment=AerpawExperiment.objects.get(id =experiment_id))
                 return redirect('experiment_list')
         # get canonical experiment resource definitions
         try:
@@ -210,11 +220,11 @@ def experiment_detail(request, experiment_id):
         user_requests = {}
     dashboard_buttons = get_dashboard_buttons(request, experiment_id=experiment_id)
     try:
-        session_obj = ExperimentSession.objects.filter(
+        session_obj = OnDemandSession.objects.filter(
             experiment_id=experiment_id
         ).order_by('-created').first()
         if session_obj.is_active:
-            s = ExperimentSessionViewSet(request=request)
+            s = OnDemandSessionViewSet(request=request)
             session = s.retrieve(request=request, pk=session_obj.pk).data
         else:
             session = {}
@@ -222,6 +232,9 @@ def experiment_detail(request, experiment_id):
                 message = 'DeploymentError: most recent deployment attempt was cancelled by user/operator'
     except Exception as exc:
         session = {}
+    
+    sandbox_calendar = SandboxCalendar().get_calendar()
+    
     return render(request,
                   'experiment_detail.html',
                   {
@@ -232,7 +245,8 @@ def experiment_detail(request, experiment_id):
                       'session': session,
                       'user_requests': user_requests,
                       'message': message,
-                      'debug': DEBUG
+                      'debug': DEBUG,
+                      'sandbox_calendar': sandbox_calendar,
                   })
 
 
@@ -242,7 +256,11 @@ def experiment_create(request):
     message = None
     project = None
     if request.method == "POST":
-        form = ExperimentCreateForm(request.POST)
+        project_id = request.GET.get('project_id')
+        p = ProjectViewSet()
+        project = p.retrieve(request=request, pk=project_id).data
+        form = new_experiment_form_dashboard(request, project_id)
+        """ form = ExperimentCreateForm(request.POST)
         if form.is_valid():
             try:
                 request.data = QueryDict('', mutable=True)
@@ -253,12 +271,20 @@ def experiment_create(request):
                 experiment = e.create(request=request).data
                 return redirect('experiment_detail', experiment_id=experiment.get('experiment_id', 9999))
             except Exception as exc:
-                message = exc
+                message = exc """
+        if 'redirect' in form.keys():
+            return redirect(form['redirect'], experiment_id=form['experiment_id'])
+        if 'template' in form.keys():
+            form = form['template']
     else:
         project_id = request.GET.get('project_id')
+        print(f'projectID {project_id}')
         p = ProjectViewSet()
         project = p.retrieve(request=request, pk=project_id).data
-        form = ExperimentCreateForm(initial={'project_id': project_id})
+        #form = ExperimentCreateForm(initial={'project_id': project_id})
+
+        form = new_experiment_form_dashboard(request, project_id)
+        form = form['template']
     return render(request,
                   'experiment_create.html',
                   {
@@ -344,7 +370,8 @@ def experiment_members(request, experiment_id):
 @csrf_exempt
 @login_required
 def experiment_resource_list(request, experiment_id):
-    message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
+    #message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
+    message = ''
     try:
         # check for query parameters
         current_page = 1
@@ -424,9 +451,46 @@ def experiment_resource_targets(request, experiment_id):
     is_experiment_creator = experiment.is_creator(request.user)
     is_experiment_member = experiment.is_member(request.user)
     if request.method == "POST":
-        form = ExperimentResourceTargetsForm(request.POST, instance=experiment)
-        if form.is_valid():
-            try:
+        all_resources = AerpawResource.objects.all().order_by('name')
+        cc_resources = [resource for resource in all_resources if resource.hostname[:-1] == 'node-cc']
+        lw_resources = [resource for resource in all_resources if resource.hostname[:7] == 'node-lw']
+        lpn_resources = [resource for resource in all_resources if resource.name[:3] == 'LPN']
+        spn_resources = [resource for resource in all_resources if resource.name[:3] == 'SPN']
+        
+        experiment_resources = experiment.resources.all()
+        canonical_resources = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by('experiment_node_number')
+        context={
+            'all_resources': AerpawResource.objects.all().order_by('name'),
+            'cc_resources': cc_resources,
+            'lw_resources': lw_resources,
+            'lpn_resources': lpn_resources,
+            'spn_resources': spn_resources,
+            'experiment_resources': experiment_resources,
+            'canonical_resources': canonical_resources,
+        }
+        form = render_to_string('experiments/forms/experiment_resource_targets_form.html', context)
+
+        print(f'request.POST: {request.POST}')
+        try:
+            api_request = Request(request=HttpRequest())
+            api_request.data.update({
+                    'experiment_resources': [int(i) for i in request.POST.getlist('resource_id')],
+                    'node_numbers':[i for i in request.POST.getlist('node_number')],
+                 })
+            print(f'node_numbers: {api_request.data.get("node_numbers")}')
+            api_request.user = request.user
+            api_request.method = 'PUT'
+            e = ExperimentViewSet(request=api_request)
+            exp = e.resources(request=api_request, pk=experiment_id)
+            return redirect('experiment_resource_list', experiment_id=experiment_id)
+        except Exception as exc:
+            print(f'EXCEPTION found apps.experiments.views.experiment_resource_targets: {exc}')
+            message = f'Exception found: {exc} {type(exc)}'
+
+
+        #form = ExperimentResourceTargetsForm(request.POST, instance=experiment)
+        #if form.is_valid():
+        """     try:
                 api_request = Request(request=HttpRequest())
                 api_request.data.update(
                     {'experiment_resources': [int(i) for i in request.POST.getlist('experiment_resources')]})
@@ -436,12 +500,30 @@ def experiment_resource_targets(request, experiment_id):
                 exp = e.resources(request=api_request, pk=experiment_id)
                 return redirect('experiment_resource_list', experiment_id=experiment_id)
             except Exception as exc:
-                message = exc
+                message = exc """
     else:
         initial_dict = {
             'experiment_resources': list(experiment.resources.all().values_list('id', flat=True))
         }
-        form = ExperimentResourceTargetsForm(instance=experiment, initial=initial_dict)
+        # form = ExperimentResourceTargetsForm(instance=experiment, initial=initial_dict)
+        all_resources = AerpawResource.objects.all().order_by('name')
+        cc_resources = [resource for resource in all_resources if resource.name[:2] == 'CC']
+        lw_resources = [resource for resource in all_resources if resource.name[:2] == 'LW']
+        lpn_resources = [resource for resource in all_resources if resource.name[:3] == 'LPN']
+        spn_resources = [resource for resource in all_resources if resource.name[:3] == 'SPN']
+        
+        experiment_resources = experiment.resources.all()
+        canonical_resources = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by('experiment_node_number')
+        context={
+            'all_resources': AerpawResource.objects.all().order_by('name'),
+            'cc_resources': cc_resources,
+            'lw_resources': lw_resources,
+            'lpn_resources': lpn_resources,
+            'spn_resources': spn_resources,
+            'experiment_resources': experiment_resources,
+            'canonical_resources': canonical_resources,
+        }
+        form = render_to_string('experiments/forms/experiment_resource_targets_form.html', context)
     return render(request,
                   'experiments/experiment_resource_targets.html',
                   {
@@ -540,6 +622,12 @@ def experiment_files(request, experiment_id):
 def experiment_sessions(request, experiment_id):
     message = None
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
+    user = request.user
+    is_operator = False
+    if user.groups.filter(name='operator').exists():
+        is_operator = True
+        evaluate_session_dashboard_action(request)    
+    
     try:
         # check for query parameters
         current_page = 1
@@ -553,60 +641,78 @@ def experiment_sessions(request, experiment_id):
             current_page = int(request.GET.get('page'))
         request.query_params = QueryDict('', mutable=True)
         request.query_params.update(data_dict)
-        e = ExperimentSessionViewSet(request=request)
-        sessions = e.list(request=request, many=True)
+        
+        scheduled_e = ScheduledSessionViewSet(request=request)
+        scheduled_sessions = scheduled_e.get_queryset()
+        scheduled_session_ids = scheduled_sessions.values_list('id', flat=True)
+
+        e = OnDemandSessionViewSet(request=request)
+        sessions = e.get_queryset().exclude(id__in=scheduled_session_ids)
+
+        # Combines and retrieves data for ScheduledSessions and OnDemandSessions
+        all_sessions = scheduled_e.sessions_list(request=request, many=True, ops_sessions=scheduled_sessions, sessions=sessions)
+
+
+
+
         # get prev, next and item range
         next_page = None
         prev_page = None
         count = 0
         min_range = 0
         max_range = 0
-        if sessions.data:
-            sessions = dict(sessions.data)
-            prev_url = sessions.get('previous', None)
+        if all_sessions.data:
+            all_sessions = dict(all_sessions.data)
+            results = all_sessions['results']
+            all_sessions['results'] = sorted(results, key=lambda x: x['session_id'], reverse=True)
+            prev_url = all_sessions.get('previous', None)
             if prev_url:
                 prev_dict = parse_qs(urlparse(prev_url).query)
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
+                    print(f'1.) experiments/views experiment_sessions {exc}')
                     prev_page = 1
-            next_url = sessions.get('next', None)
+            next_url = all_sessions.get('next', None)
             if next_url:
                 next_dict = parse_qs(urlparse(next_url).query)
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
+                    print(f'2.) experiments/views experiment_sessions {exc}')
                     next_page = 1
-            count = int(sessions.get('count'))
+            count = int(all_sessions.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
             max_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + int(REST_FRAMEWORK['PAGE_SIZE'])
             if max_range > count:
                 max_range = count
         else:
-            sessions = {}
+            all_sessions = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
+        dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
     except Exception as exc:
         message = exc
-        sessions = None
+        all_sessions = None
         item_range = None
         next_page = None
         prev_page = None
         search_term = None
         count = 0
+        dashboard_buttons = None
     return render(request,
                   'experiment_sessions.html',
                   {
-                      'user': request.user,
+                      'user': user,
+                      'is_operator':is_operator,
                       'experiment': experiment,
-                      'sessions': sessions,
+                      'sessions': all_sessions,
                       'item_range': item_range,
                       'message': message,
                       'next_page': next_page,
                       'prev_page': prev_page,
                       'search': search_term,
                       'count': count,
+                      'buttons': dashboard_buttons,
                       'debug': DEBUG
                   })
 
@@ -616,13 +722,15 @@ def experiment_sessions(request, experiment_id):
 def session_detail(request, experiment_id, session_id):
     message = None
     experiment_obj = get_object_or_404(AerpawExperiment, id=experiment_id)
-    session_obj = get_object_or_404(ExperimentSession, id=session_id)
+    session_obj = get_object_or_404(OnDemandSession, id=session_id)
     try:
-        s = ExperimentSessionViewSet(request=request)
+        scheduled = ScheduledSessionViewSet(request=request)
+        session = scheduled.retrieve(request=request, pk=session_id).data
+    except:
+        s = OnDemandSessionViewSet(request=request)
         session = s.retrieve(request=request, pk=session_id).data
-    except Exception as exc:
-        message = exc
-        session = None
+    
+
     return render(request,
                   'session_detail.html',
                   {
@@ -631,3 +739,5 @@ def session_detail(request, experiment_id, session_id):
                       'message': message,
                       'debug': DEBUG
                   })
+
+

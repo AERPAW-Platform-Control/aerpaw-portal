@@ -106,7 +106,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         return UserExperiment.objects.filter(
             user=user, experiment=self).exists()
 
-    def experiment_members(self) -> [AerpawUser]:
+    def experiment_members(self) -> AerpawUser:
         return AerpawUser.objects.filter(
             id__in=UserExperiment.objects.filter(experiment=self).values_list('user_id', flat=True)
         ).order_by('display_name')
@@ -131,7 +131,7 @@ class UserExperiment(BaseModel, models.Model):
     user = models.ForeignKey(AerpawUser, related_name='experiment_user', on_delete=models.CASCADE)
 
 
-class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
+class OnDemandSession(BaseModel, AuditModelMixin, models.Model):
     """
     Experiment Session
     - created (from AuditModelMixin)
@@ -185,6 +185,64 @@ class ExperimentSession(BaseModel, AuditModelMixin, models.Model):
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
 
+class ScheduledSession(OnDemandSession, models.Model):
+    """ 
+    Scheduled Session  
+    - description (an explanation to be emailed to experimenters describing success status)
+    - scheduled_by
+    - scheduled_created_on (date the scheduled date_time was created)
+    - scheduled_active_date (date the session will occur)
+    - canceled_by
+    - canceled
+    - session_state (the place the session is currently in the session workflow)
+    - is_success
+
+    Inherits from On Demand Session
+    - created (from AuditModelMixin)
+    - created_by (from AuditModelMixin)
+    - ended_by
+    - ended_date_time
+    - experiment
+    - id (from Basemodel)
+    - is_active
+    - modified (from AuditModelMixin)
+    - modified_by (from AuditModelMixin)
+    - session_type
+    - start_date_time
+    - started_by
+    - uuid
+
+    Scheduled Session Work Flow
+    • wait_schedule -> scheduled -> started -> completed •
+    """
+
+    class SessionStateChoices(models.TextChoices):
+        CANCELED = 'canceled', _('Canceled')
+        COMPLETED = 'completed', _('Completed')
+        SCHEDULED = 'scheduled', _('Scheduled')
+        STARTED = 'started', _('Started')
+        WAIT_SCHEDULE = 'wait_schedule', _('Wait_Schedule')
+
+        
+    description = models.TextField(blank=True)
+    is_success = models.BooleanField(default=False)
+    scheduled_start = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_end = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_by = models.ForeignKey(
+        AerpawUser,
+        related_name='session_scheduled_by',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
+    scheduled_created_on = models.DateTimeField(blank=True, null=True) # The date when the scheduled_active_date was created
+    session_state = models.CharField(
+        max_length=255,
+        choices=SessionStateChoices.choices,
+        default=SessionStateChoices.WAIT_SCHEDULE
+    )
+
+
 class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     """
     Canonical Experiment Resource
@@ -234,7 +292,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     node_vehicle = models.CharField(
         max_length=255,
         choices=NodeVehicle.choices,
-        default=NodeVehicle.VEHICLE_NONE
+        default=NodeVehicle.VEHICLE_NONE if node_type==NodeType.AFRN else NodeVehicle.VEHICLE_UAV
     )
     resource = models.ForeignKey(
         AerpawResource,
@@ -244,3 +302,4 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
         null=True
     )
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
+

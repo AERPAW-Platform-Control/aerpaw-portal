@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from django import template
 
-from portal.apps.experiments.models import AerpawExperiment, ExperimentSession
+from portal.apps.experiments.models import AerpawExperiment, OnDemandSession
 
 register = template.Library()
 
@@ -20,7 +20,7 @@ def id_to_experiment_name(experiment_id):
 @register.filter
 def session_elapsed_time(session_id):
     try:
-        session = ExperimentSession.objects.get(pk=int(session_id))
+        session = OnDemandSession.objects.get(pk=int(session_id))
         if not session.start_date_time:
             return '0:00:00'
         else:
@@ -34,7 +34,7 @@ def session_elapsed_time(session_id):
 @register.filter
 def session_run_time(session_id):
     try:
-        session = ExperimentSession.objects.get(pk=int(session_id))
+        session = OnDemandSession.objects.get(pk=int(session_id))
         if not session.is_active and not session.start_date_time:
             return 'cancelled by user/operator'
         elif not session.start_date_time:

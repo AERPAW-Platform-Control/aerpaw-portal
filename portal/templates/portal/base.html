@@ -12,8 +12,14 @@
     {# Display django.contrib.messages as Bootstrap alerts #}
     {% bootstrap_messages %}
     {# FontAwesome: https://fontawesome.com/docs/web/use-with/python-django #}
-    <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+    <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
+    <script src="{% static 'rest_framework/js/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'rest_framework/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/custom_checkboxes.js' %}?{% now 'U' %}"></script>
+    <script src="{% static 'js/bootstrap_tooltips.js' %}?{% now 'U' %}"></script>
+    
     <!-- other stylesheets / sources -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
     <title>
@@ -28,6 +34,8 @@
 {% include 'navbar.html' %}
 <main class="container">
     {% block content %}
+    {% endblock %}
+    {% block extra_js %}
     {% endblock %}
 </main>
 {% include 'footer.html' %}

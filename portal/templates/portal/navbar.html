@@ -74,8 +74,11 @@
                 {% endif %}
             </ul>
             <div class="navbar-nav nav-item ms-auto order-5">
-                <a class="nav-link" href="{% url 'logout' %}">
-                    <em class="fa fa-fw fa-sign-out"></em> Logout</a>
+                <form id="logout_form" method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                <button class="nav-link" form="logout_form" type="submit">
+                    <em class="fa fa-fw fa-sign-out"></em> Logout</button>
+                </form>
             </div>
         {% else %}
             <ul class="navbar-nav ms-auto">

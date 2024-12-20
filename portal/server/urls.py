@@ -22,7 +22,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
 from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, ExperimentSessionViewSet, \
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
 from portal.apps.profiles.views import session_expired
@@ -45,7 +45,7 @@ router.register(r'p-canonical-experiment-number', CanonicalNumberViewSet, basena
 router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'requests', UserRequestViewSet, basename='requests')
 router.register(r'resources', ResourceViewSet, basename='resources')
-router.register(r'sessions', ExperimentSessionViewSet, basename='sessions')
+router.register(r'sessions', OnDemandSessionViewSet, basename='sessions')
 router.register(r'user-experiment', UserExperimentViewSet, basename='user-experiment')
 router.register(r'user-project', UserProjectViewSet, basename='user-project')
 router.register(r'users', UserViewSet, basename='users')
