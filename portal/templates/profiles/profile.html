@@ -26,7 +26,7 @@
                     <td style="width: 75%"><strong>{{ user_data.username }}</strong></td>
                 </tr>
 
-                <form action="#" method="post">
+                <form id="profile_details_form" action="#" method="post">
                     {% csrf_token %}
                     <tr>
                         <td style="width: 25%">Display Name</td>
@@ -191,11 +191,9 @@
                             </tbody>
                         </table>
                         
-                        <button type="submit" class="message-btn btn btn-success"
-                                                style="float: right; margin-left: 10px"
-                                        >
-                                            <em class="fa fa-fw fa-pencil"></em> save updates
-                                        </button>
+                        <button form="profile_details_form" type="submit" class="message-btn btn btn-success" style="float: right; margin-left: 10px">
+                            <em class="fa fa-fw fa-pencil"></em> save updates
+                        </button>
                     </td>
                 </tr>
                 </tbody>
