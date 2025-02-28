@@ -21,6 +21,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
+from portal.apps.error_handling.api.viewsets import AerpawErrorViewset, AerpawThreadViewset
 from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
@@ -38,6 +39,8 @@ router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'canonical-experiment-resource', CanonicalExperimentResourceViewSet,
                 basename='canonical-experiment-resource')
 router.register(r'credentials', CredentialViewSet, basename='credentials')
+router.register(r'aerpaw-error', AerpawErrorViewset, basename='aerpaw-error')
+router.register(r'aerpaw-thread', AerpawThreadViewset, basename='aerpaw-thread')
 router.register(r'experiment-files', ExperimentFileViewSet, basename='experiment-files')
 router.register(r'experiments', ExperimentViewSet, basename='experiments')
 router.register(r'messages', UserMessageViewSet, basename='messages')
@@ -64,11 +67,14 @@ urlpatterns = [
     path('auth/', include('django.contrib.auth.urls')),
     path('oidc/', include('mozilla_django_oidc.urls')),
     path('credentials/', include('portal.apps.credentials.urls')),  # credentials app
+    path('error_handling/', include('portal.apps.error_handling.urls')),  # error_handling app
     path('operators/experiment-files/', include('portal.apps.experiment_files.urls')),  # experiment_files app
+    path('operators/experiment-info/', include('portal.apps.experiment_info.urls')),  # experiment_files app
     path('experiments/', include('portal.apps.experiments.urls')),  # experiments app
     path('messages/', include('portal.apps.user_messages.urls')),  # user_messages app
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app
+    path('reports/', include('portal.apps.reports.urls')),  # reports app
     path('resources/', include('portal.apps.resources.urls')),  # resources app
     path('requests/', include('portal.apps.user_requests.urls')),  # user_requests app
 ]

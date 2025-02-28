@@ -1,13 +1,21 @@
+import pandas as pd
+from datetime import datetime
 from uuid import uuid4
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
+from django.utils import timezone
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
+
 from portal.apps.projects.views import project_detail
-from portal.apps.experiment_info.models import ExperimentFormData
+from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.experiment_info.models import ExperimentFormData, FieldTrip
+from portal.apps.experiment_info.forms import FieldTripForm
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
-from portal.apps.users.models import AerpawUser
+from portal.apps.resources.models import AerpawResource
+from portal.apps.users.models import AerpawUser, AerpawRolesEnum
 from portal.apps.user_messages.user_messages import send_portal_mail_from_message
 
 def create_canonical_experiment(request, project_id):
@@ -47,10 +55,14 @@ def create_canonical_experiment(request, project_id):
         return exp
     
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard create_canonical_experiment: {exc}')
 
 def save_non_canonical_experiment_info(request, project_id):
     print('Creating new non-canonical experiment')
+
+    
+
     try:
         exp_info = ExperimentFormData()
         exp_info.experiment_type = ExperimentFormData.ExperimentType.NON_CANONICAL
@@ -75,6 +87,7 @@ def save_non_canonical_experiment_info(request, project_id):
         return {'success':True, 'experiment_info':exp_info}
     
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard save_non_canonical_experiment_info: {exc}')
 
 def save_custom_experiment_info(request, project_id):
@@ -96,6 +109,7 @@ def save_custom_experiment_info(request, project_id):
         exp_info.save()
         return {'success':True, 'experiment_info':exp_info}
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard save_custom_experiment_info: {exc}')
 
 def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
@@ -103,6 +117,7 @@ def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     try:
         lead_experimenter_id = AerpawUser.objects.filter(email=experiment_info.lead_email)
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard notify_aerpaw_ops: {exc}')
 
     recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # aerpaw_ops?
@@ -300,34 +315,203 @@ def new_experiment_form_dashboard(request, project_id):
         print(f'Experiment Info=  {request.POST}')
         experiment_type = request.POST.get('submit_experiment')
         
-        match experiment_type:
-            case 'canonical':
-                new_experiment = create_canonical_experiment(request, project_id)
-                return {'experiment_id': new_experiment.data.get('experiment_id'), 'experiment_type':experiment_type, 'redirect':'experiment_detail'}
-            
-            case 'non_canonical_ga':
-                new_non_canonical_info = save_non_canonical_experiment_info(request, project_id)
-                if new_non_canonical_info['success'] == True:
-                    print('send email to ops')
-                    notify_aerpaw_ops(request, experiment_info=new_non_canonical_info['experiment_info'], experiment_type='non_canonical_ga')
+        if experiment_type == 'canonical':
+            new_experiment = create_canonical_experiment(request, project_id)
+            return {'experiment_id': new_experiment.data.get('experiment_id'), 'experiment_type':experiment_type, 'redirect':'experiment_detail'}
+
+        elif experiment_type == 'non_canonical_ga':
+            new_non_canonical_info = save_non_canonical_experiment_info(request, project_id)
+            if new_non_canonical_info['success'] == True:
+                print('send email to ops')
+                notify_aerpaw_ops(request, experiment_info=new_non_canonical_info['experiment_info'], experiment_type='non_canonical_ga')
+            context['experiment_type'] = 'non-canonical'
+            return {'template': render_to_string('experiment_info/new_experiment_form/non_canonical_success.html', context)}
+
+        elif experiment_type == 'non_canonical':
+            new_non_canonical_info = save_non_canonical_experiment_info(request, project_id)
+            if new_non_canonical_info['success'] == True:
+                print('send email to ops')
+                notify_aerpaw_ops(request, experiment_info=new_non_canonical_info['experiment_info'], experiment_type='non_canonical')
                 context['experiment_type'] = 'non-canonical'
                 return {'template': render_to_string('experiment_info/new_experiment_form/non_canonical_success.html', context)}
-            
-            case 'non_canonical':
-                new_non_canonical_info = save_non_canonical_experiment_info(request, project_id)
-                if new_non_canonical_info['success'] == True:
-                    print('send email to ops')
-                    notify_aerpaw_ops(request, experiment_info=new_non_canonical_info['experiment_info'], experiment_type='non_canonical')
-                context['experiment_type'] = 'non-canonical'
-                return {'template': render_to_string('experiment_info/new_experiment_form/non_canonical_success.html', context)}
-            
-            case 'custom':
-                new_custom_experiment_info = save_custom_experiment_info(request, project_id)
-                if new_custom_experiment_info['success'] == True:
-                    print('send email to ops')
-                    notify_aerpaw_ops(request, experiment_info=new_custom_experiment_info['experiment_info'], experiment_type='custom')
-                context['experiment_type'] = 'custom'
-                return {'template': render_to_string('experiment_info/new_experiment_form/non_canonical_success.html', context)}
+
+        elif experiment_type == 'custom':
+            new_custom_experiment_info = save_custom_experiment_info(request, project_id)
+            if new_custom_experiment_info['success'] == True:
+                print('send email to ops')
+                notify_aerpaw_ops(request, experiment_info=new_custom_experiment_info['experiment_info'], experiment_type='custom')
+            context['experiment_type'] = 'custom'
+            return {'template': render_to_string('experiment_info/new_experiment_form/non_canonical_success.html', context)}
     
     else:
         return {'template':render_to_string('experiment_info/new_experiment_form/general_availibility_form.html', context)}
+    
+def upload_old_form_data():
+    dframe = pd.read_excel('Old Create Experiment Google Form Data.xlsx')
+    for row_index, row in dframe.iterrows():
+        ser = pd.Series(row)
+        is_urgent = True if ser.iloc[10] == 'YES' else False
+        exp_fd = ExperimentFormData.objects.filter(old_form_row_number=row_index+2)
+        if len(exp_fd) == 0:
+            exp_fd = ExperimentFormData(
+                old_form_row_number=row_index+2,
+                title=ser.iloc[1] if not pd.isna(ser.iloc[1]) else 'None provided',
+                host_institution=ser.iloc[2] if not pd.isna(ser.iloc[2]) else None,
+                sponsored_project=ser.iloc[3] if not pd.isna(ser.iloc[3]) else None,
+                grant_number=ser.iloc[4] if not pd.isna(ser.iloc[4]) else None,
+                lead_experimenter=ser.iloc[5] if not pd.isna(ser.iloc[5]) else None,
+                lead_email=ser.iloc[6] if not pd.isna(ser.iloc[6]) else None,
+                keywords=ser.iloc[7] if not pd.isna(ser.iloc[7]) else 'None provided',
+                goal=ser.iloc[8] if not pd.isna(ser.iloc[8]) else 'None provided',
+                location=str(ser.iloc[9]).lower(),
+                is_urgent=is_urgent,
+                is_shared=ser.iloc[11] if not pd.isna(ser.iloc[11]) else 'NO',
+                public_url=ser.iloc[12] if not pd.isna(ser.iloc[12]) else None,
+                vehicle_behavior=ser.iloc[13] if not pd.isna(ser.iloc[13]) else 'None provided'
+            )
+            
+            exp_fd.save()        
+    upload_fieldtrips()
+
+def get_fieldtrip_operators(op_names: list):
+    print(f'op_ids {op_names}')
+    user_operators = AerpawUser.objects.filter(groups__name=AerpawRolesEnum.OPERATOR.value).distinct()
+    print('Operators =', [f'{operator.first_name} {operator.last_name}' for operator in user_operators])
+    for name in op_names:
+        if name == 'Ozgur':
+            op = 'oozdemi@ncsu.edu' 
+        elif name == 'Sudhanva':
+            op = 'snagara9@ncsu.edu'
+        elif name == 'Keshav':
+            op = 'bkeshav1@asu.edu'
+        elif name == 'John':
+            op = 'jckesle2@ncsu.edu'
+        elif name == 'Mihai':
+            op = 'mlsichit@ncsu.edu'
+        elif name == 'Tom Z':
+            op = 'tjzajkow@ncsu.edu'
+        elif name == 'Anil':
+            op = 'agurses@ncsu.edu'
+        elif name == 'Thomas':
+            op = 'mlsichit@ncsu.edu'
+        elif name == 'Thomas H.':
+            op = 'mlsichit@ncsu.edu'
+        elif name == 'Shreyas':
+            op = ''
+        elif name == 'Tom H.':
+            op = 'mlsichit@ncsu.edu'
+        elif name == 'Sarah':
+            op = ''
+        elif name == 'Mike':
+            op = 'mbarts@ncsu.edu'
+        elif name == 'Eli':
+            op = ''
+        elif name == 'Asokan':
+            op = 'aram2@ncsu.edu'
+        elif name == 'Jeffin':
+            op = ''
+        elif name == 'Niall':
+            op = 'npmullan@ncsu.edu'
+        elif name == 'Vishwas':
+            op = ''
+        elif name == 'Ken':
+            op = ''
+        elif name == 'Corey':
+            op = ''
+        elif name == 'Sainath':
+            op = ''
+        elif name == 'Cole':
+            op = ''
+        elif name == 'Evan':
+            op = ''
+        elif name == 'Ismail':
+            op = 'iguvenc@ncsu.edu'
+
+def upload_fieldtrips():
+    dframe = pd.read_excel('FieldTrips.xlsx')
+    user_operators = AerpawUser.objects.filter(groups__name=AerpawRolesEnum.OPERATOR.value).distinct()
+    
+    print('Operators =', [f'{operator.first_name} {operator.last_name}' for operator in user_operators])
+    for row_index, row in dframe.iterrows():
+        ser = pd.Series(row)
+        # Gets the ExperimentFormData instances for each FieldTrip row
+        row_numbers = [int(row_number) for row_number in ser.iloc[0].split(',')]
+        exp_fds = ExperimentFormData.objects.filter(old_form_row_number__in = row_numbers)
+
+        # Gets the Aerpaw Operators from the FieldTrip sheet
+        operators = ser.iloc[8]
+        get_fieldtrip_operators(operators)
+        # Gets the Fixed Nodes from the FieldTrip sheet
+        fixed_nodes = [AerpawResource.objects.get(name=node.strip()) for node in str(ser.iloc[12]).split(',') if not pd.isna(ser.iloc[12])]
+        print(f'Fixed nodes = {[node.name for node in fixed_nodes]}')
+
+        # gets the site location
+        location = FieldTrip.AerpawSite.OTHER
+        if str(ser.iloc[14]) == 'Lake Wheeler':
+            location = FieldTrip.AerpawSite.LAKE_WHEELER
+        elif str(ser.iloc[14]) == 'Centennial Campus':
+            location = FieldTrip.AerpawSite.CENTENNIAL_CAMPUS
+
+
+        field_trip = FieldTrip()
+        field_trip.number_of_fixed_nodes = int(ser.iloc[1]) if not pd.isna(ser.iloc[1]) else 0
+        field_trip.number_of_portable_nodes = int(ser.iloc[2]) if not pd.isna(ser.iloc[2]) else 0
+        field_trip.LAMs = int(ser.iloc[3]) if not pd.isna(ser.iloc[3]) else 0
+        field_trip.SAMs = int(ser.iloc[4]) if not pd.isna(ser.iloc[4]) else 0
+        field_trip.rovers = int(ser.iloc[5]) if not pd.isna(ser.iloc[5]) else 0
+        field_trip.helikite = int(ser.iloc[6]) if not pd.isna(ser.iloc[6]) else 0
+        field_trip.person_hours = int(ser.iloc[7]) if not pd.isna(ser.iloc[7]) else 0
+        field_trip.list_of_operators = str(ser.iloc[8]) if not pd.isna(ser.iloc[8]) else None
+        field_trip.experiment_date = str(ser.iloc[9]).split(' ')[0]
+        field_trip.start_time = str(ser.iloc[10]) if not pd.isna(ser.iloc[10]) else None
+        field_trip.end_time = str(ser.iloc[11]) if not pd.isna(ser.iloc[11]) else None
+        field_trip.radio_hardware = str(ser.iloc[13]) if not pd.isna(ser.iloc[13]) else None
+        field_trip.site = location
+        field_trip.comments = str(ser.iloc[15]) if not pd.isna(ser.iloc[15]) else None
+        field_trip.save()
+        field_trip.experiment_form.add(*exp_fds)
+        field_trip.fixed_nodes_used.add(*fixed_nodes)
+
+def field_trip_form(experiment_id):
+    experiment_form_data = ExperimentFormData.objects.filter(experiment=experiment_id) if len(ExperimentFormData.objects.filter(experiment=experiment_id)) >0 else None
+    if experiment_form_data:
+        form = FieldTripForm(initial={'experiment_form':experiment_form_data})
+    else:
+        form = FieldTripForm()
+    return form        
+        
+def new_field_trip(request):
+    print(f'\nnew_field_trip request= {request.data}')
+    try:
+        exp_form_data = ExperimentFormData.objects.get(experiment__id=request.data.get('experiment_id'))
+    except Exception as exc:
+        new_error(exc, request.user)
+        exp_form_data = None
+    
+    ft = FieldTrip()
+    ft.number_of_fixed_nodes = request.data.get('number_of_fixed_nodes')[0]
+    ft.number_of_portable_nodes = request.data.get('number_of_portable_nodes')[0]
+    ft.LAMs = request.data.get('LAMs')[0]
+    ft.SAMs = request.data.get('SAMs')[0]
+    ft.rovers = request.data.get('rovers')[0]
+    ft.helikite = request.data.get('helikite')[0]
+    ft.person_hours = request.data.get('person_hours')[0]
+    ft.experiment_date = request.data.get('experiment_date')[0]
+    ft.start_time = request.data.get('start_time')[0]
+    ft.end_time = request.data.get('end_time')[0]
+    ft.radio_hardware = request.data.get('radio_hardware')[0]
+    ft.site = request.data.get('site')[0]
+    ft.comments = request.data.get('comments')[0]
+    ft.save()
+
+    if exp_form_data:
+        ft.experiment_form.add(exp_form_data)
+    for fn in request.data.get('fixed_nodes_used'):
+        ft.fixed_nodes_used.add(fn)
+    for op in request.data.get('operators'):
+        ft.operators.add(op)
+    print(f'Field Trip = {ft.operators.all()}')
+
+
+    
+    

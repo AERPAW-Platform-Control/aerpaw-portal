@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load static profiles_tags users_tags user_request_tags %}
+
+{% block title %}
+    Aerpaw Reports
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+{% if message %}
+    <div class="text-danger" style="font-size: large">{{ message }}</div>
+{% endif %}
+
+<div>
+    <div class="row">
+        <div class="col">
+            <h3>Aerpaw Field Trips</h3>
+            <hr>
+        </div>
+    </div>
+    {% if is_operator == True %}
+        {% if user.is_authenticated %}
+        <div class="row">
+            <div class="col-4">
+                    <button class="btn btn-primary d-inline-block" type="button" data-bs-toggle="modal" data-bs-target="#ftModal">New Field Trip</button>
+            </div>
+        </div>
+            <div class="m-0 p-0 position-relative" style="display: table; overflow-x: scroll;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Experiment Row Number</th>
+                            <th>Experiment ID</th>
+                            <th># of Fixed Nodes</th>
+                            <th># of Portable Nodes</th>
+                            <th># of LAMs</th>
+                            <th>#  of SAMs</th>
+                            <th>Rovers</th>
+                            <th>Helikite</th>
+                            <th>Person Hours</th>
+                            <th>Operators</th>
+                            <th>Experiment Date</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Fixed Radio Nodes Used</th>
+                            <th>Radio Hardware</th>
+                            <th>Site</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ft in field_trips %}
+                        <tr>
+                            <td>
+                                {% for exp in ft.experiment_form.all %}
+                                    {% if exp.experiment == None %}
+                                        {{exp.old_form_row_number}},  
+                                    {% else %}
+                                        ----
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for exp in ft.experiment_form.all %}
+                                    {% if exp.experiment != None %}
+                                        {{exp.experiment.id}}
+                                    {% else %}
+                                        ----
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ft.number_of_fixed_nodes}}</td>
+                            <td>{{ft.number_of_portable_nodes}}</td>
+                            <td>{{ft.LAMs}}</td>
+                            <td>{{ft.SAMs}}</td>
+                            <td>{{ft.rovers}}</td>
+                            <td>{{ft.helikite}}</td>
+                            <td>{{ft.person_hours}}</td>
+                            <td>
+                                {% if ft.list_of_operators == None %}
+                                    {% for op in ft.operators.all %}
+                                        {{ op.first_name }}, 
+                                    {% endfor %}
+                                {% else %}
+                                    {{ft.list_of_operators}}
+                                {% endif %}
+                            </td>
+                            <td>{{ft.experiment_date}}</td>
+                            <td>
+                                {% if ft.start_time != None %}
+                                    {{ft.start_time}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ft.end_time != None %}
+                                    {{ft.end_time}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for fn in ft.fixed_nodes_used.all %}
+                                    {{fn}}
+                                {% endfor %}    
+                            </td>
+                            <td>{{ft.radio_hardware}}</td>
+                            <td>{{ft.site}}</td>
+                            <td>{{ft.comments}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- New Field Trip Modal -->
+            <div class="modal fade" id="ftModal" tabindex="-1" aria-labelledby="ftModalModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header bg-dark">
+                      <h1 class="modal-title fs-5 text-light" id="ftModalModalLabel">New Field Trip</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="field-trip-form" method="POST" action="{% url 'field_trip_dashboard' %}">
+                            {% csrf_token %}
+                            <div class="mb-3"> 
+                                    
+                                {% with field=form.visible_fields %}
+                                <!-- Experiments -->
+                                <div class="container mb-1">
+                                    <label class="mb-1">{{field.0.label}}</label>
+                                    <div class="form-control">
+                                        <div class="row row-cols-1">
+                                            {% for exp in field.0 %}
+                                            <div class="col">
+                                                <div>
+                                                    {{exp}}
+                                                    <div name="next-session-details" class="container" style="display: none;">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="success-{{exp.id}}" name="is-success" value="">
+                                                            <label class="form-check-label" for="success-{{exp.id}}">This testbed session is a success.</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="reschedule-testbed-{{exp.id}}" name="reschedule-testbed" value="">
+                                                            <label class="form-check-label" for="reschedule-testbed-{{exp.id}}">Reschedule a New Testbed Session</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="init-development-{{exp.id}}" name="init-development" value="">
+                                                            <label class="form-check-label" for="init-development-{{exp.id}}">Initiate a New Development Session</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row row-cols-2">
+                                    <!-- Number of Fixed Nodes -->
+                                    <div class="col mb-1">
+                                        {{field.1.label}}
+                                        {{field.1}}
+                                    </div>
+                                    
+                                    <!-- Number of Portable Nodes -->
+                                    <div class="col mb-1">
+                                        {{field.2.label}}
+                                        {{field.2}}
+                                    </div>
+                                    <!-- Number of LAMs -->
+                                    <div class="col mb-1">
+                                        {{field.3.label}}
+                                        {{field.3}}
+                                    </div>
+                                    <!-- Number of SAMs -->
+                                    <div class="col mb-1">
+                                        {{field.4.label}}
+                                        {{field.4}}
+                                    </div>
+                                    <!-- Number of Rovers -->
+                                    <div class="col mb-1">
+                                        {{field.5.label}}
+                                        {{field.5}}
+                                    </div>
+                                    <!-- Helikite -->
+                                    <div class="col mb-1">
+                                        {{field.6.label}}
+                                        {{field.6}}
+                                    </div>
+                                </div>
+                                <!-- Person Hours -->
+                                <div class="container mb-1">
+                                    {{field.7.label}}
+                                    {{field.7}}
+                                </div>
+                                <!-- Operators -->
+                                <div class="container mb-1">
+                                    <label class="mb-1">{{field.8.label}}</label>
+                                    <div class="form-control">
+                                        <div class="row row-cols-2 gy-2">
+                                            {% for operator in field.8 %}
+                                            <div class="col">{{operator}}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Date of Experiment -->
+                                <div class="col mb-1">
+                                    {{field.9.label}}
+                                    {{field.9}}
+                                </div>
+                                <div class="row">
+                                    <!-- Time Start -->
+                                    <div class="col mb-1">
+                                        {{field.10.label}}
+                                        {{field.10}}
+                                    </div>
+                                    <!-- Time End -->
+                                    <div class="col mb-1">
+                                        {{field.11.label}}
+                                        {{field.11}}
+                                    </div>
+                                </div>
+                                <!-- Fixed Nodes Used -->
+                                <div class="container mb-1">
+                                    <label class="mb-1">{{field.12.label}}</label>
+                                    <div class="form-control">
+                                        <div class="row row-cols-2 gy-2">
+                                            {% for fn in field.12 %}
+                                            <div class="col">{{fn}}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Experiment Radio Hardware -->
+                                <div class="container mb-1">
+                                    {{field.13.label}}
+                                    {{field.13}}
+                                </div>
+                                <!-- AERPAW Site -->
+                                <div class="container mb-1">
+                                    <label class="mb-1">{{field.14.label}}</label>
+                                    <div class="form-control">
+                                        <div class="row row-cols-3">
+                                            {% for fn in field.14 %}
+                                            <div class="col">{{fn}}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Comments -->
+                                <div class="container mb-1">
+                                    {{field.15.label}}
+                                    {{field.15}}
+                                </div>
+                                {% endwith %}
+                                
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="submit" form="field-trip-form" class="btn btn-primary">Next</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+
+        {% endif %}
+    {% else %}
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">
+        <button class="message-btn btn btn-success">Login</button>
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/fieldtrips.js' %}?{% now 'U' %}"></script>
+{% endblock %}

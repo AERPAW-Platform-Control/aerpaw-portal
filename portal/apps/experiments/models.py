@@ -91,6 +91,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         related_name='experiment_resources'
     )
     resources_locked = models.BooleanField(default=False)
+    members_locked = models.BooleanField(default=False)
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
     class Meta:
@@ -227,7 +228,7 @@ class ScheduledSession(OnDemandSession, models.Model):
     description = models.TextField(blank=True)
     is_success = models.BooleanField(default=False)
     scheduled_start = models.DateTimeField(blank=True, null=True) # The date the session will turn active
-    scheduled_end = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_end = models.DateTimeField(blank=True, null=True) # The date the session will turn inactive
     scheduled_by = models.ForeignKey(
         AerpawUser,
         related_name='session_scheduled_by',
@@ -262,6 +263,7 @@ class CanonicalExperimentResource(BaseModel, BaseTimestampModel, models.Model):
     class NodeType(models.TextChoices):
         AFRN = 'afrn', _('AFRN')
         APRN = 'aprn', _('APRN')
+        ACN = 'acn', _('ACN')
 
     class NodeUhd(models.TextChoices):
         FOUR_THREE = '4.3', _('4.3')

@@ -28,44 +28,70 @@
                        class="unlink">Back to Profile</a>
                 </button>
             </div>
-            <table class="table table-striped table-bordered my-4">
-                <tbody>
-                <th>Subject</th>
-                <th>Sent by</th>
-                <th>Date</th>
-                <th>Options</th>
-                {% for um in user_messages.results %}
-                    <tr>
-                        <td>
-                            {% if not um.is_read %}
-                                <em class="fa fa-fw fa-circle-dot"></em>
-                            {% endif %}
-                            {{ um.message_subject|truncatechars:60 }}
-                        </td>
-                        <td>{{ um.sent_by|id_to_display_name }}</td>
-                        <td>{{ um.sent_date|str_to_datetime }}</td>
-                        <td class="align-items-center">
-                            <div class="d-flex flex-row">
-                                <button class="message-btn btn btn-success"
-                                        style="float: right; margin-left: 10px; font-size: small; padding: 0">
-                                    <em class="fa fa-fw fa-check-circle"></em>
-                                    <a href="{% url 'user_message_detail' user_message_id=um.message_id %}"
-                                       class="unlink"> view </a>
-                                </button>
-                                <form action="#" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="message-btn btn btn-danger"
-                                            style="float: right; margin-left: 10px; font-size: small; padding: 0"
-                                            name="delete_user_message" value="{{ um.message_id }}">
-                                        <em class="fa fa-fw fa-xmark-circle"></em> delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            <hr>
+            <form id="manage-message-form" action="{% url 'user_message_list' %}" method="post">
+                {% csrf_token %}
+                
+                    <div id="message-action-btns" class="d-flex flex-row mt-2">
+                        <div class="flex-column border border-1 bg-body-tertiary p-2">
+                            <button id="delete_user_message" type="submit" form="manage-message-form" class="message-btn btn btn-danger disabled" name="delete_user_message" value="True">
+                                <em class="fa fa-fw fa-regular fa-trash-can"></em> Delete
+                            </button>
+                            <button id="mark_unread_user_message" type="submit" form="manage-message-form" class="message-btn btn btn-primary disabled" name="mark_unread_user_message" value="True">
+                                <em class="fa fa-fw fa-regular fa-envelope"></em> Mark Unread
+                            </button>
+                            <button id="mark_read_user_message" type="submit" form="manage-message-form" class="message-btn btn btn-primary disabled" name="mark_read_user_message" value="True">
+                                <em class="fa fa-fw fa-regular fa-envelope-open"></em> Mark Read
+                            </button>
+                        </div>
+                    </div>
+                
+                <table id="user-message-list-table" class="table table-striped table-bordered mb-4 mt-2">
+                    <tbody>
+                    <th colspan="1">                        
+                        <div class="dropdown">
+                            <button class="dropdown-toggle btn btn-primary btn-small" type="button" data-bs-toggle="dropdown" aria-expanded="false" unlink>
+                                <em id="icon-none-selected" class="fa fa-fw fa-square"></em>
+                                <em id="icon-some-selected" class="fa fa-fw fa-square-minus" style="display:none;"></em>
+                                <em id="icon-all-selected" class="fa fa-fw fa-square-check" style="display:none;"></em>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a id="select-all-messages" name="message-action-button" class="dropdown-item">All</a></li>
+                                <li><a id="select-unread-messages" name="message-action-button" class="dropdown-item">Unread</a></li>
+                                <li><a id="select-read-messages" name="message-action-button" class="dropdown-item">Read</a></li>
+                                <li><a id="select-none-messages" name="message-action-button" class="dropdown-item">None</a></li>
+                            </ul>
+                        </div>                                
+                    </th>
+                    <th>From</th>
+                    <th>Subject</th>
+                    <th>Date Recieved</th>
+                    {% for um in user_messages.results %}
+                        <tr data-message_id="{{um.message_id}}" data-isRead="{{um.is_read}}">
+                            <td>
+                                <div class="form-check">
+                                    <input name="message-checkbox" class="form-check-input" type="checkbox" value="{{um.message_id}}" id="{{um.message_id}}-check">
+                                </div>
+                            </td>
+                            <td>
+                                {{ um.sent_by|id_to_display_name }}
+                            </td>
+                            <td>
+                                <a href="{% url 'user_message_detail' user_message_id=um.message_id %}" class="">
+                                {% if not um.is_read %}
+                                    <em class="fa fa-fw fa-regular fa-envelope"></em>
+                                {% else %}
+                                    <em class="fa fa-fw fa-regular fa-envelope-open"></em>
+                                {% endif %}
+                                {{ um.message_subject|truncatechars:60 }}
+                                </a>
+                            </td>
+                            <td>{{ um.sent_date|str_to_datetime }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </form>
             <div class="d-flex flex-row align-items-center justify-content-between">
                 {% if prev_page %}
                     <button type="button" class="btn btn-secondary mr-2">
@@ -123,4 +149,8 @@
             <button class="message-btn btn btn-success">Login</button>
         </a>
     {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/user_message_list.js' %}?{% now 'U' %}"></script>
 {% endblock %}

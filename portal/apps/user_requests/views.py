@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.user_requests.user_requests import approve_user_role_request, deny_user_role_request
@@ -64,6 +65,7 @@ def user_role_reqeust_list(request):
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     prev_page = 1
             next_url = user_requests.get('next', None)
             if next_url:
@@ -72,6 +74,7 @@ def user_role_reqeust_list(request):
                     next_page = next_dict['page'][0]
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     next_page = 1
             count = int(user_requests.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -82,7 +85,8 @@ def user_role_reqeust_list(request):
             user_requests = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        message = exc
+        error = new_error(exc, request.user)
+        message = error.message
         user_requests = {}
         item_range = None
         next_page = None

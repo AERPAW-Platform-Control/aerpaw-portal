@@ -54,13 +54,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'import_export',
     'django_bootstrap5',  # django bootstrap
     'fontawesomefree',  # fontawesome free version
     'portal.apps.mixins',  # mixins
     'portal.apps.users',  # custom user model
     'portal.apps.profiles',  # custom user profile
+    'portal.apps.reports', # reports
     'portal.apps.resources',  # resources
     'portal.apps.projects',  # projects
+    'portal.apps.error_handling', # error handling
     'portal.apps.experiment_files',  # experiment files
     'portal.apps.experiment_info', # experiment form data
     'portal.apps.experiments',  # experiments
@@ -280,12 +283,43 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
+        'project_level_handler': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/project_level_log'
+        },
+        'apps_handler': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/apps_log'
+        },
+        'ssh_handler': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/ssh_log'
+        },
     },
     'loggers': {
         'mozilla_django_oidc': {
             'handlers': ['console'],
             'level': 'DEBUG'
         },
+        'django':{
+            'handlers':['project_level_handler'],
+            'level':'WARNING',
+            'propagate':True,
+        },
+        'apps_logger':{
+            'handlers':['apps_handler'],
+            'level':'INFO',
+            'propagate':True,
+        },
+        'ssh_logger':{
+            'handlers':['ssh_handler'],
+            'level': 'INFO',
+            'propagate': True,
+        }
+        
     },
 }
 

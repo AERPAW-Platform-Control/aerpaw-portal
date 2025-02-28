@@ -7,7 +7,7 @@
 
 {% block content %}
     {% if message %}
-        <div class="text-danger" style="font-size: large">{{ message }}</div>
+        <div class="text-danger" style="font-size: large">{{ message|safe }}</div>
     {% endif %}
     {% if user.is_authenticated %}
         <div class="container w-85">
@@ -26,9 +26,15 @@
                 </form>
                 {% if is_operator == True %}
                 <div class="dropdown">
+                    {% if buttons.no_actions == True %}
                     <button type="button" class="btn btn-success mr-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         Add Session
                     </button>
+                    {% else %}
+                    <button disabled type="button" class="btn btn-success mr-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Add Session
+                    </button>
+                    {% endif %}
                     <ul class="dropdown-menu">
                         <form id="new_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
                             {% csrf_token %}
@@ -228,11 +234,7 @@
               <form id="session_schedule_form" method="POST" action="">
                   <div class="mb-3">
                     <label for="session_date_start" class="form-label">Date</label>
-                    <input type="date" id="session_date_start" name="session_date" class="form-control" required>
-                  </div>
-                  <div class="mb-3">
-                      <label for="session_time_start" class="form-label">Time</label>
-                      <input type="time" id="session_time_start" name="session_time" class="form-control" required>
+                    <input type="datetime-local" id="session_date_start" name="session_datetime" class="form-control w-75 ms-2" required>
                   </div>
               </form>
             </div>
@@ -255,115 +257,211 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body bg-body-tertiary">
-              <form id="end_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
-                <div class="mb-3">
-                    <label for="end_session_explanation" class="fs-5 form-label">Why did this session end?</label>
-                    <hr class="w-75">
-                    <div class="border p-1 mb-1 rounded-3">
-                        <ul style="font-size: small;">
-                            <li>**Please note, this explanation will be saved and emailed to the experimenters</li>
-                            <li>Explain if and what kind of further development is needed by the experimenter</li>
-                            <li>Explain any other next steps</li>
-                        </ul>
-                    </div>
-                    <textarea id="end_session_explanation" name="session_description" class="form-control" rows="4" required></textarea>
-                </div>
-                {% if sessions.results.0.session_type == 'testbed' %}
-                <div class="mb-3">
-                    <p>Was this {{sessions.results.0.session_type}} session successful?</p>
-                    <hr class="w-75">
-                    <div class="row single-choice-checkbox-group">
-                        <div class="col text-center">
-                            <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="toggleGroup(this)" data-target="#initiateDevelopmentBtnGroup" autocomplete="off">
-                            <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
-                        </div>
-                        <div class="col text-center">
-                            <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="toggleGroup(this)" data-target="#rescheduleBtnGroup" autocomplete="off">
-                            <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
+                
+              
+                {% if sessions.results.0.session_type == 'testbed' %} <!-- Testbed sessions -->
+                <form id="end_testbed_session_form"  method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
+                    {% csrf_token %}
+                    <!-- Is the testbed session successfull -->
+                    <div class="mb-3">
+                        <p>Was this {{sessions.results.0.session_type}} session successful?</p>
+                        <hr class="w-75">
+                        <div class="row single-choice-checkbox-group">
+                            <div class="col text-center">
+                                <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="toggleGroup(this)" data-target="#initiateDevelopmentBtnGroup" autocomplete="off">
+                                <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
+                            </div>
+                            <div class="col text-center">
+                                <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="toggleGroup(this)" data-target="#rescheduleBtnGroup" autocomplete="off">
+                                <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div id="initiateDevelopmentBtnGroup" class="mb-3" style="display: none;">
-                    <p>Initiate a new Development Session?</p>
-                    <hr class="w-75">
-                    <div class="row single-choice-checkbox-group">
-                        <div class="col text-center">
-                            <input type="checkbox" class="btn-check single-check" id="yes-development-session-btn" name="new_development" autocomplete="off" value="{{experiment.id}}">
-                            <label class="btn btn-primary btn-lg" for="yes-development-session-btn">Yes</label>
+                    <!-- Initiate new development session -->
+                    <div id="initiateDevelopmentBtnGroup" class="mb-3" style="display: none;">
+                        <!-- field trip form -->
+                        <div class="mb-3"> 
+                                
+                            {% with field=end_testbed_session_form.visible_fields %}
+                            <div class="row row-cols-2">
+                                <!-- Number of Fixed Nodes -->
+                                <div class="col mb-1">
+                                    {{field.0.label}}
+                                    {{field.0}}
+                                </div>
+                                <!-- Number of Portable Nodes -->
+                                <div class="col mb-1">
+                                    {{field.1.label}}
+                                    {{field.1}}
+                                </div>
+                                <!-- Number of LAMs -->
+                                <div class="col mb-1">
+                                    {{field.2.label}}
+                                    {{field.2}}
+                                </div>
+                                <!-- Number of SAMs -->
+                                <div class="col mb-1">
+                                    {{field.3.label}}
+                                    {{field.3}}
+                                </div>
+                                <!-- Number of Rovers -->
+                                <div class="col mb-1">
+                                    {{field.4.label}}
+                                    {{field.4}}
+                                </div>
+                                <!-- Helikite -->
+                                <div class="col mb-1">
+                                    {{field.5.label}}
+                                    {{field.5}}
+                                </div>
+                            </div>
+                            <!-- Person Hours -->
+                            <div class="container mb-1">
+                                {{field.6.label}}
+                                {{field.6}}
+                            </div>
+                            <!-- Operators -->
+                            <div class="container mb-1">
+                                <label class="mb-1">{{field.7.label}}</label>
+                                <div class="form-control">
+                                    <div class="row row-cols-2 gy-2">
+                                        {% for operator in field.7 %}
+                                        <div class="col">{{operator}}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Date of Experiment -->
+                            <div class="col mb-1">
+                                {{field.8.label}}
+                                {{field.8}}
+                            </div>
+                            <div class="row">
+                                <!-- Time Start -->
+                                <div class="col mb-1">
+                                    {{field.9.label}}
+                                    {{field.9}}
+                                </div>
+                                <!-- Time End -->
+                                <div class="col mb-1">
+                                    {{field.10.label}}
+                                    {{field.10}}
+                                </div>
+                            </div>
+                            <!-- Fixed Nodes Used -->
+                            <div class="container mb-1">
+                                <label class="mb-1">{{field.11.label}}</label>
+                                <div class="form-control">
+                                    <div class="row row-cols-2 gy-2">
+                                        {% for fn in field.11 %}
+                                        <div class="col">{{fn}}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Experiment Radio Hardware -->
+                            <div class="container mb-1">
+                                {{field.12.label}}
+                                {{field.12}}
+                            </div>
+                            <!-- AERPAW Site -->
+                            <div class="container mb-1">
+                                <label class="mb-1">{{field.13.label}}</label>
+                                <div class="form-control">
+                                    <div class="row row-cols-3">
+                                        {% for fn in field.13 %}
+                                        <div class="col">{{fn}}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Comments -->
+                            <div class="container mb-1">
+                                {{field.14.label}}
+                                {{field.14}}
+                            </div>
+                            {% endwith %}
+                            
                         </div>
-                        <div class="col text-center">
-                            <input type="checkbox" class="btn-check single-check" id="no-development-session-btn" name="no_new_development" autocomplete="off" value="{{experiment.id}}">
-                            <label class="btn btn-primary btn-lg" for="no-development-session-btn">No</label>
+                        <div class="row single-choice-checkbox-group">
+                            <div class="col text-center">
+                                <button type="submit" form="end_testbed_session_form" class="btn btn-primary" id="end_testbed_initiate_dev" name="end_testbed_initiate_dev" autocomplete="off" value="{{experiment.id}}">Save &<br>Initiate Development</button>
+                            </div>
+                            <div class="col text-center">
+                                <button type="submit" form="end_testbed_session_form" class="btn btn-primary" id="end_testbed_only" name="end_testbed_only" autocomplete="off" value="{{experiment.id}}">Save<br>Only</button>
+                            </div>
+                            <div class="col text-center">
+                                <button type="button" class="btn btn-primary"  data-bs-dismiss="modal" autocomplete="off">Cancel</button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- Reschedule Testbed session -->
+                    <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
+                        <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
+                        <hr class="w-75">
+                        <div class="row single-choice-checkbox-group mb-3">
+                            <div class="col text-center">
+                                <input type="checkbox" class="btn-check single-check" id="yes-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="false" autocomplete="off" value="True">
+                                <label class="btn btn-primary btn-lg" for="yes-reschedule-session-btn">Yes</label>
+                            </div>
+                            <div class="col text-center">
+                                <input type="submit" class="btn-check single-check" id="no-reschedule-session-btn" name="end_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="true" autocomplete="off" value="{{experiment.id}}">
+                                <label class="btn btn-primary btn-lg" for="no-reschedule-session-btn">No</label>
+                            </div>
+                        </div>
+                        <div id="rescheduleDateTimeGroup" style="display: none;" class="mb-3">
+                            <div class="mb-3">
+                                <label for="session_date_reschedule_start" class="form-label">Reschedule date and time:</label>
+                                <hr class="w-75">
+                                <input type="datetime-local" id="session_date_reschedule_start" name="session_datetime" class="form-control w-75 ms-2">
+                            </div>
+                            <div class="container">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" form="end_testbed_session_form" name="end_session" class="btn btn-primary" value="{{ experiment.id }}">Reschedule</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
-                    <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
-                    <hr class="w-75">
-                    <div class="row single-choice-checkbox-group">
-                        <div class="col text-center">
-                            <input type="checkbox" class="btn-check single-check" id="yes-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="false" autocomplete="off" value="True">
-                            <label class="btn btn-primary btn-lg" for="yes-reschedule-session-btn">Yes</label>
-                        </div>
-                        <div class="col text-center">
-                            <input type="checkbox" class="btn-check single-check" id="no-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="true" autocomplete="off" value="False">
-                            <label class="btn btn-primary btn-lg" for="no-reschedule-session-btn">No</label>
-                        </div>
-                    </div>
-                    <div id="rescheduleDateTimeGroup" style="display: none;">
-                        <div class="mb-3">
-                            <label for="session_date_reschedule_start" class="form-label">Reschedule date and time:</label>
-                            <hr class="w-75">
-                            <input type="date" id="session_date_reschedule_start" name="session_date" class="form-control w-75 ms-2">
-                            <input type="time" id="session_time_reschedule_start" name="session_time" class="form-control w-75 ms-2">
+                </form>
+                {% else %}  <!-- Sandbox Sessions -->
+                <form id="end_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="end_session_explanation" class="fs-5 form-label">Why did this session end?</label>
+                        <hr class="w-75">
+                        <div class="border p-1 mb-1 rounded-3">
+                            <ul style="font-size: small;">
+                                <li>**Please note, this explanation will be saved and emailed to the experimenters</li>
+                                <li>Explain if and what kind of further development is needed by the experimenter</li>
+                                <li>Explain any other next steps</li>
+                            </ul>
                         </div>
                     </div>
-                </div>
-                {% else %}
-
-                <div class="mb-3">
-                    <p>Was this {{sessions.results.0.session_type}} session successful?</p>
-                    <hr class="w-75">
-                    <div class="row single-choice-checkbox-group">
-                        <div class="col text-center">
-                            <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="showNextGroup(this)" data-target="#rescheduleBtnGroup" data-hide="true" autocomplete="off">
-                            <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
+                    <div class="mb-3">
+                        <p>Was this {{sessions.results.0.session_type}} session successful?</p>
+                        <hr class="w-75">
+                        <div class="row single-choice-checkbox-group">
+                            <div class="col text-center">
+                                <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="showNextGroup(this)" data-target="#rescheduleBtnGroup" data-hide="true" autocomplete="off">
+                                <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
+                            </div>
+                            <div class="col text-center">
+                                <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="showNextGroup(this)" data-target="#rescheduleBtnGroup" data-hide="false" autocomplete="off">
+                                <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
+                            </div>
                         </div>
-                        <div class="col text-center">
-                            <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="showNextGroup(this)" data-target="#rescheduleBtnGroup" data-hide="false" autocomplete="off">
-                            <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div id="rescheduleBtnGroup" class="mb-3" style="display: none;">
-                    <p >Does this {{sessions.results.0.session_type}} session need to be rescheduled?</p>
-                    <hr class="w-75">
-                    <div class="row single-choice-checkbox-group">
-                        <div class="col text-center">
-                            <input type="checkbox" class="btn-check single-check" id="yes-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="false" autocomplete="off" value="True">
-                            <label class="btn btn-primary btn-lg" for="yes-reschedule-session-btn">Yes</label>
-                        </div>
-                        <div class="col text-center">
-                            <input type="checkbox" class="btn-check single-check" id="no-reschedule-session-btn" name="reschedule_session" onclick="showNextGroup(this)" data-target="#rescheduleDateTimeGroup" data-hide="true" autocomplete="off" value="False">
-                            <label class="btn btn-primary btn-lg" for="no-reschedule-session-btn">No</label>
+                        <div class="container">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" form="end_session_form" name="end_session" class="btn btn-primary" value="{{ experiment.id }}">Save</button>
                         </div>
                     </div>
-                    <div id="rescheduleDateTimeGroup" style="display: none;">
-                        <div class="mb-3">
-                            <label for="session_date_reschedule_start" class="form-label">Reschedule date and time:</label>
-                            <hr class="w-75">
-                            <input type="date" id="session_date_reschedule_start" name="session_date" class="form-control w-75 ms-2">
-                            <input type="time" id="session_time_reschedule_start" name="session_time" class="form-control w-75 ms-2">
-                        </div>
-                    </div>
-                </div> -->
+                </form>
                 {% endif %}
-              </form>
             </div>
-            <div class="modal-footer bg-body-tertiary">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <!-- <div class="modal-footer bg-body-tertiary">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" form="end_session_form" name="end_session" class="btn btn-primary" value="{{ experiment.id }}">Save</button>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

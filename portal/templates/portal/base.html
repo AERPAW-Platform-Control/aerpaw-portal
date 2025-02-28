@@ -19,6 +19,7 @@
     <script src="{% static 'rest_framework/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/custom_checkboxes.js' %}?{% now 'U' %}"></script>
     <script src="{% static 'js/bootstrap_tooltips.js' %}?{% now 'U' %}"></script>
+    <script src="{% static 'js/error_handling.js' %}?{% now 'U' %}"></script>
     
     <!-- other stylesheets / sources -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
@@ -33,6 +34,7 @@
 <body>
 {% include 'navbar.html' %}
 <main class="container">
+    <div id="aerpaw-messages"></div>
     {% block content %}
     {% endblock %}
     {% block extra_js %}

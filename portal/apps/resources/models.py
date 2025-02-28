@@ -36,6 +36,7 @@ class AerpawResource(BaseModel, AuditModelMixin, models.Model):
         TESTBED = 'testbed', _('Testbed')
 
     class ResourceType(models.TextChoices):
+        ACN = 'ACN', _('ACN')
         AFRN = 'AFRN', _('AFRN')
         APRN = 'APRN', _('APRN')
         UAV = 'UAV', _('UAV')
@@ -49,6 +50,7 @@ class AerpawResource(BaseModel, AuditModelMixin, models.Model):
     is_active = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
     location = models.TextField(blank=True, null=True)
+    map_url = models.URLField(blank=True, null=True)
     name = models.CharField(max_length=255, blank=False, null=False)
     ops_notes = models.TextField(blank=True, null=True)
     resource_class = models.CharField(

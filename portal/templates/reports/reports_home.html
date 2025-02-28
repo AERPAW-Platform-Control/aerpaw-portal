@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% load profiles_tags users_tags user_request_tags %}
+
+{% block title %}
+    Aerpaw Reports
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+{% if message %}
+    <div class="text-danger" style="font-size: large">{{ message }}</div>
+{% endif %}
+
+<div>
+    <div class="row">
+        <div class="col">
+            <h3>Aerpaw Reporting</h3>
+            <hr>
+        </div>
+    </div>
+    {% if user.is_authenticated %}
+    {% if is_operator == True %}
+        <div class="row mb-3">
+            <div class="col">
+                <button type="button" class="btn btn-primary"  data-bs-toggle="modal" data-bs-target="#report_date_modal">Generate a Report</button>
+                <span class="ms-3 float-end"><b>{{start_date}}</b> - <b>{{end_date}}</b> </span>
+            </div>
+        </div>
+        {% if institution_data %}
+        <div class="row mb-3">
+            <h4 class="text-success">Institution </h4>
+            <div class="container border rounded">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col"></th>
+                            {% for institution in institution_data.headings %}
+                            <th class="col text-end">{{institution}}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">NCSU</td>
+                            {% for num in institution_data.ncsu %}
+                            <td class="text-end">{{num}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Other</td>
+                            {% for num in institution_data.other %}
+                            <td class="text-end">{{num}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Total</td>
+                            {% for num in institution_data.total %}
+                            <td class="text-end">{{num}}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        {% if fixed_resource_data %}
+        <div class="row mb-3">
+            <h4 class="text-success">Resources</h4>
+            <div class="container border rounded">
+                {% if fixed_resource_data %}
+                <div class="container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="col">Fixed</th>
+                                {% for fn in fixed_resource_data.headings %}
+                                <th class="col text-end">{{fn}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">LW1</td>
+                                {% for num in fixed_resource_data.lw1 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LW2</td>
+                                {% for num in fixed_resource_data.lw2 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LW3</td>
+                                {% for num in fixed_resource_data.lw3 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LW4</td>
+                                {% for num in fixed_resource_data.lw4 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LW5</td>
+                                {% for num in fixed_resource_data.lw5 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">CC1</td>
+                                {% for num in fixed_resource_data.cc1 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">CC2</td>
+                                {% for num in fixed_resource_data.cc2 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">CC3</td>
+                                {% for num in fixed_resource_data.cc3 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                {% if portable_resource_data %}
+                <div class="container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="col">Portable</th>
+                                {% for pn in portable_resource_data.headings %}
+                                <th class="col text-end">{{pn}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">LPN1</td>
+                                {% for num in portable_resource_data.LPN1 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LPN2</td>
+                                {% for num in portable_resource_data.LPN2 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LPN3</td>
+                                {% for num in portable_resource_data.LPN3 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LPN4</td>
+                                {% for num in portable_resource_data.LPN4 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LPN5</td>
+                                {% for num in portable_resource_data.LPN5 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">LPN6</td>
+                                {% for num in portable_resource_data.LPN6 %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">SPN-Android</td>
+                                {% for num in portable_resource_data.SPN_Android %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">SPN-LoRa</td>
+                                {% for num in portable_resource_data.SPN_LoRa %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">SPN-Quectel</td>
+                                {% for num in portable_resource_data.SPN_Quectel %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                {% if cloud_resource_data %}
+                <div class="container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="col">Cloud</th>
+                                {% for acn in cloud_resource_data.headings %}
+                                <th class="col text-end">{{acn}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">ACN</td>
+                                {% for num in cloud_resource_data.acn %}
+                                <td class="text-end">{{num}}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% if lab_data %}
+        <div class="row mb-3">
+            <h4 class="text-success">Locations</h4>
+            <div class="container border rounded mb-3">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col"></th>
+                            {% for name in lab_data.headings %}
+                            <th class="col text-end">{{name}}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Lake Wheeler</td>
+                            {% for num in lab_data.lw %}
+                            <td class="text-end">{{num}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Centennial Campus</td>
+                            {% for num in lab_data.cc %}
+                            <td class="text-end">{{num}}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        {% if session_data %}
+        <div class="row mb-3">
+            <h4 class="text-success">Sessions</h4>
+            <div class="container border rounded mb-3">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th colspan="2"></th>
+                            {% for session in session_data.headings %}
+                            <th>{{session}}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="6" class="fw-bold align-middle">NCSU</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Development</td>
+                            {% for session in session_data.ncsu_development %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Sandbox</td>
+                            {% for session in session_data.ncsu_sandbox %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Emulation</td>
+                            {% for session in session_data.ncsu_emulation %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Testbed</td>
+                            {% for session in session_data.ncsu_testbed %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Total</td>
+                            {% for session in session_data.ncsu_totals %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td rowspan="6" class="fw-bold align-middle">Other Institutions</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Development</td>
+                            {% for session in session_data.other_development %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Sandbox</td>
+                            {% for session in session_data.other_sandbox %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Emulation</td>
+                            {% for session in session_data.other_emulation %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Testbed</td>
+                            {% for session in session_data.other_testbed %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Total</td>
+                            {% for session in session_data.other_totals %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td rowspan="6" class="fw-bold align-middle">All Sessions</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Development</td>
+                            {% for session in session_data.all_development %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Sandbox</td>
+                            {% for session in session_data.all_sandbox %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Emulation</td>
+                            {% for session in session_data.all_emulation %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Testbed</td>
+                            {% for session in session_data.all_testbed %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Total</td>
+                            {% for session in session_data.all_totals %}
+                            <td>{{session}}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="text-danger" style="font-size: large">You do not have access to the Aerpaw Reporting.  If you think this is a mistake please reach out to the aerpaw ops team at aerpawops@ncsu.edu.</div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="report_date_modal" tabindex="-1" aria-labelledby="report_date_modal_label" aria-label="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-light">
+          <h1 class="modal-title fs-5 text-light" id="report_date_modal_label">Select the date range for the report</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form id="report-form" method="POST" action="{% url 'reports_home' %}">
+                {% csrf_token %}
+                <div class="container">
+                    <label for="start_date">Begin Date</label>
+                    <input name="start_date" type="date" class="form-control">
+                </div>
+                <div class="container">
+                    <label for="end_date">End Date</label>
+                    <input name="end_date" type="date" class="form-control">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" form="report-form" class="btn btn-primary">Generate Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+        <p>You are not logged in</p>
+        <a href="{% url 'login' %}">
+            <button class="message-btn btn btn-success">Login</button>
+        </a>
+    {% endif %}
+{% endblock %}
