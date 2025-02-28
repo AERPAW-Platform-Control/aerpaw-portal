@@ -40,7 +40,7 @@ class ExperimentSerializerDetail(serializers.ModelSerializer):
         fields = ['canonical_number', 'created_date', 'description', 'experiment_creator', 'experiment_flags',
                   'experiment_id', 'experiment_uuid', 'experiment_membership', 'experiment_state', 'is_canonical',
                   'is_emulation_required', 'is_retired', 'last_modified_by', 'modified_date', 'name', 'project_id',
-                  'resources', 'resources_locked']
+                  'resources', 'resources_locked', 'members_locked']
 
 
 class ExperimentSerializerState(serializers.ModelSerializer):
@@ -143,7 +143,6 @@ class ScheduledSessionSerializerList(serializers.ModelSerializer):
                   'session_type', 'start_date_time', 'started_by']
 
 
-
 class ScheduledSessionSerializerDetail(serializers.ModelSerializer):
     created_time = serializers.DateTimeField(source='created')
     experiment_id = serializers.IntegerField(source='experiment.id')
@@ -156,6 +155,7 @@ class ScheduledSessionSerializerDetail(serializers.ModelSerializer):
                    'is_active', 'modified_by', 'modified_time', 'session_id',  
                    'session_type', 'start_date_time', 'started_by'
                     ]
+
 
 class CanonicalExperimentResourceSerializer(serializers.ModelSerializer):
     canonical_experiment_resource_id = serializers.IntegerField(source='id')

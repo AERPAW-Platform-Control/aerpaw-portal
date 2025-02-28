@@ -1,4 +1,7 @@
+import logging
 import paramiko
+from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.users.models import AerpawUser
 
 
 class AerpawSsh:
@@ -10,7 +13,7 @@ class AerpawSsh:
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.client.connect(hostname=hostname, username=username, pkey=self.key, banner_timeout=200)
 
-    def send_command(self, command, verbose: bool = False, mock: bool = False) -> (str, str):
+    def send_command(self, command, user: AerpawUser = None, verbose: bool = False, mock: bool = False, ) -> (str, str):
         response = ''
         exit_code = 1
         if mock:
@@ -31,6 +34,7 @@ class AerpawSsh:
                 stdin.close()
                 self.close()
             except Exception as exc:
+                new_error(exc, user)
                 response = exc
                 exit_code = 1
                 self.close()

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiments.api.serializers import ExperimentSerializerDetail
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.projects.api.serializers import ProjectSerializerDetail, ProjectSerializerList, UserProjectSerializer
@@ -105,8 +106,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /projects list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /projects list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -123,15 +127,21 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             # validate description
             description = request.data.get('description', None)
             if not description or len(description) < PROJECT_MIN_DESC_LEN:
-                raise ValidationError(
-                    detail="description:  must be at least {0} chars long".format(PROJECT_MIN_DESC_LEN))
+                try:
+                    raise ValidationError(
+                        detail="description:  must be at least {0} chars long".format(PROJECT_MIN_DESC_LEN))
+                except ValidationError as exc:
+                    new_error(exc, request.user)
             # validate is_pubic
             is_public = str(request.data.get('is_public')).casefold() == 'true'
             # validate name
             name = request.data.get('name', None)
             if not name or len(name) < PROJECT_MIN_NAME_LEN:
-                raise ValidationError(
-                    detail="name: must be at least {0} chars long".format(PROJECT_MIN_NAME_LEN))
+                try:
+                    raise ValidationError(
+                        detail="name: must be at least {0} chars long".format(PROJECT_MIN_NAME_LEN))
+                except ValidationError as exc:
+                    new_error(exc, request.user)
             # create project
             project = AerpawProject()
             project.created_by = user.username
@@ -151,8 +161,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             membership.save()
             return self.retrieve(request, pk=project.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to POST /projects")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to POST /projects")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -242,8 +255,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                 response_data = {}
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /projects/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /projects/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -262,8 +278,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             # check for description
             if request.data.get('description', None):
                 if len(request.data.get('description')) < PROJECT_MIN_DESC_LEN:
-                    raise ValidationError(
-                        detail="description:  must be at least {0} chars long".format(PROJECT_MIN_DESC_LEN))
+                    try:
+                        raise ValidationError(
+                            detail="description:  must be at least {0} chars long".format(PROJECT_MIN_DESC_LEN))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 project.description = request.data.get('description')
                 modified = True
             # check for is_public
@@ -274,8 +293,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             # check for name
             if request.data.get('name', None):
                 if len(request.data.get('name')) < PROJECT_MIN_NAME_LEN:
-                    raise ValidationError(
-                        detail="name: must be at least {0} chars long".format(PROJECT_MIN_NAME_LEN))
+                    try:
+                        raise ValidationError(
+                            detail="name: must be at least {0} chars long".format(PROJECT_MIN_NAME_LEN))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 project.name = request.data.get('name')
                 modified = True
             # save if modified
@@ -284,8 +306,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                 project.save()
             return self.retrieve(request, pk=project.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to PUT/PATCH /projects/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to PUT/PATCH /projects/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -315,8 +340,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             project.save()
             return Response(status=HTTP_204_NO_CONTENT)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to DELETE /projects/{0}".format(pk))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to DELETE /projects/{0}".format(pk))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get'])
     def experiments(self, request, *args, **kwargs):
@@ -362,8 +390,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
                 )
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /projects/{0}/experiments".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /projects/{0}/experiments".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def membership(self, request, *args, **kwargs):
@@ -464,8 +495,11 @@ class ProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateM
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET,PUT,PATCH /projects/{0}/membership".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET,PUT,PATCH /projects/{0}/membership".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
 
 class UserProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
@@ -535,8 +569,11 @@ class UserProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /user-project list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /user-project list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -571,8 +608,11 @@ class UserProjectViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /user-project/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /user-project/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """

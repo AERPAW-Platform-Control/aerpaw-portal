@@ -121,6 +121,7 @@ class Resource{
         this.location = $(button).data('location')
         this.targeted = $(button).prop('checked')
         this.unavailible = $(button).prop('disabled')
+        this.infoBtn = this.getInfoBtn()
         this.nodeType = this.setNodeType(button)
         this.groupMember = []
         this.notGroupMember = []
@@ -202,6 +203,46 @@ class Resource{
 
             })
         })
+    }
+
+    getInfoBtn(){
+        let resourceInfoBtn = ''
+        $('button[name="resource-info"]').each((i, infoBtn)=>{
+            let infoBtnResourceId = $(infoBtn).attr('id').split('-')[0]
+            if(infoBtnResourceId == this.id){
+
+                resourceInfoBtn = infoBtn
+            }
+        })
+        console.log(`resource info btn= ${resourceInfoBtn}`)
+        return resourceInfoBtn
+    }
+
+    getResourceInfo(){
+        let description = $(this.infoBtn).data('description')
+        let location = $(this.infoBtn).data('location')
+        let name = $(this.infoBtn).data('name')
+        Resource.manageResourceInfoModal(name, description, location)
+    }
+
+    static manageResourceInfoModal(name, description, location){
+        console.log(`name= ${name}`)
+        let nameElement = $('#resource-info-name')
+        $(nameElement).text(name) 
+        
+        let descriptionElement = $('#resource-info-description')
+        $(descriptionElement).text(description)
+
+        let locationElement = $('#resource-info-location')
+        console.log(`location ${location}`)
+        if(location.split('<br>').length > 1){
+            $(locationElement).empty()
+            $(locationElement).text(location.split('<br>')[0])
+            $(locationElement).append(`<br><a target="_blank" ${location.split('<br>')[1]}`)
+        }else{
+            $(locationElement).empty()
+            $(locationElement).text(location)
+        }
     }
 
     setNodeType(button){
@@ -625,14 +666,13 @@ function populateResourceGroups(resources){
 Resource.init()
 NodeNumberButton.init()
 populateResourceGroups(Resource.all())
-ResourceGroup.initAvailibility()
+/* ResourceGroup.initAvailibility() */
 
 Resource.all().forEach((resource)=>{
     
     resource.updateMemberResourceGroups()
     resource.notMemberResourceGroups()
     resource.manageMessages()
-
     $(resource.element).on('click', ()=> {
         resource.markTargeted()
         resource.manageMessages()
@@ -644,7 +684,7 @@ Resource.all().forEach((resource)=>{
             if( resource.targeted == true ){
                 resource.notGroupMember.forEach((resourceGroup) => {
                     if( resourceGroup.isFixed == true ){
-                        resourceGroup.markUnAvailble()
+                        /* resourceGroup.markUnAvailble() */
                     }
                 })
             }else if ( resource.targeted == false ){
@@ -665,6 +705,11 @@ Resource.all().forEach((resource)=>{
         }
         
     })
+
+    $(resource.infoBtn).on('click', ()=>{
+        console.log(`resource info btn clicked= ${resource.infoBtn}`)
+        resource.getResourceInfo()
+    })
 })
 
 
@@ -677,3 +722,5 @@ function changeNodeNumber(button){
         nodeBtn.markNumberUp()
     }
 }
+
+

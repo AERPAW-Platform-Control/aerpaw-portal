@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import QueryDict, Request
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.profiles.api.viewsets import UserProfileViewSet
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
@@ -27,6 +28,7 @@ def profile(request):
         user = AerpawUser.objects.get(pk=request.user.id)
     except Exception as exc:
         print(exc)
+        new_error(exc, request.user)
         return redirect('user_not_found')
     if request.method == 'POST':
         try:
@@ -73,7 +75,8 @@ def profile(request):
                     )
                     return response
                 except Exception as exc:
-                    message = exc
+                    error = new_error(exc, request.user)
+                    message = error.message
             if request.POST.get('delete_credential'):
                 c_api_request = Request(request=HttpRequest())
                 c = CredentialViewSet(request=c_api_request)
@@ -85,7 +88,8 @@ def profile(request):
                     response = download_db_user_tokens(user_id=user.id)
                     return response
                 except Exception as exc:
-                    message = exc
+                    error = new_error(exc, request.user)
+                    message = error.message
             if request.POST.get('request_role_experimenter'):
                 ur_api_request = Request(request=HttpRequest())
                 ur = UserRequestViewSet(request=ur_api_request)
@@ -107,32 +111,37 @@ def profile(request):
                      'request_note': '[{0}] - role request'.format(AerpawRolesEnum.PI.value)})
                 resp = ur.create(request=ur_api_request)
         except Exception as exc:
-            message = exc
-    # user data
-    api_request = Request(request=HttpRequest())
-    api_request.user = request.user
-    api_request.method = 'GET'
-    u = UserViewSet(request=api_request)
-    user_credentials = u.credentials(request=request, pk=request.user.id).data
-    user_data = u.retrieve(request=request, pk=request.user.id).data
-    user_tokens = u.tokens(request=api_request, pk=request.user.id).data
+            error = new_error(exc, request.user)
+            message = error.message
+    try:        
+        # user data
+        api_request = Request(request=HttpRequest())
+        api_request.user = request.user
+        api_request.method = 'GET'
+        u = UserViewSet(request=api_request)
+        user_credentials = u.credentials(request=request, pk=request.user.id).data
+        user_data = u.retrieve(request=request, pk=request.user.id).data
+        user_tokens = u.tokens(request=api_request, pk=request.user.id).data
 
-    # user profile
-    up = UserProfileViewSet(request=api_request)
-    user_profile = up.retrieve(request=request, pk=user.profile.id).data
+        # user profile
+        up = UserProfileViewSet(request=api_request)
+        user_profile = up.retrieve(request=request, pk=user.profile.id).data
 
-    # modify query_params to get requests and messages data
-    request.query_params = QueryDict('', mutable=True)
-    request.query_params.update({'user_id': user.id, 'show_read': False, 'show_deleted': False})
+        # modify query_params to get requests and messages data
+        request.query_params = QueryDict('', mutable=True)
+        request.query_params.update({'user_id': user.id, 'show_read': False, 'show_deleted': False})
 
-    # user requests data
-    ur = UserRequestViewSet(request=request)
-    user_requests = dict(ur.list(request=request).data)
+        # user requests data
+        ur = UserRequestViewSet(request=request)
+        user_requests = dict(ur.list(request=request).data)
 
-    # user messages data
-    um = UserMessageViewSet(request=request)
-    user_messages = dict(um.list(request=request).data)
-
+        # user messages data
+        um = UserMessageViewSet(request=request)
+        user_messages = dict(um.list(request=request).data)
+    except Exception as exc:
+        print('Exception found in profiles.views profile ', exc)
+        new_error(exc, request.user)
+        
     return render(request,
                   'profile.html',
                   {

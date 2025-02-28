@@ -12,6 +12,7 @@ from rest_framework.viewsets import GenericViewSet
 from portal.apps.credentials.api.serializers import CredentialSerializerDetail, CredentialSerializerList
 from portal.apps.credentials.api.utils import generate_rsa_2048_key
 from portal.apps.credentials.models import CREDENTIAL_EXPIRY_DAYS, PublicCredentials
+from portal.apps.error_handling.error_dashboard import new_error
 
 # constants
 PUBLIC_KEY_MIN_NAME_LEN = 5
@@ -88,8 +89,11 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /credentials list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /credentials list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -104,8 +108,11 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             # validate public_key_name
             public_key_name = request.data.get('public_key_name', None)
             if not public_key_name or len(public_key_name) < PUBLIC_KEY_MIN_NAME_LEN:
-                raise ValidationError(
-                    detail="public_key_name:  must be at least {0} chars long".format(PUBLIC_KEY_MIN_NAME_LEN))
+                try:
+                    raise ValidationError(
+                        detail="public_key_name:  must be at least {0} chars long".format(PUBLIC_KEY_MIN_NAME_LEN))
+                except ValidationError as exc:
+                    new_error(exc, request.user)
             # validate public_key_credential
             public_key_credential = request.data.get('public_key_credential', None)
             if not public_key_credential:
@@ -127,8 +134,11 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             else:
                 return self.retrieve(request, pk=pub_key.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to POST /credentials")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to POST /credentials")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -172,8 +182,11 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 response_data.update({'private_key_credential': new_key.get('private_key')})
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /credentials/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /credentials/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -189,8 +202,11 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             # check for public_key_name
             if request.data.get('public_key_name', None):
                 if len(request.data.get('public_key_name')) < PUBLIC_KEY_MIN_NAME_LEN:
-                    raise ValidationError(
-                        detail="public_key_name:  must be at least {0} chars long".format(PUBLIC_KEY_MIN_NAME_LEN))
+                    try:
+                        raise ValidationError(
+                            detail="public_key_name:  must be at least {0} chars long".format(PUBLIC_KEY_MIN_NAME_LEN))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 pub_key.name = request.data.get('public_key_name')
                 modified = True
             # save if modified
@@ -199,8 +215,11 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 pub_key.save()
             return self.retrieve(request, pk=pub_key.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to PUT/PATCH /credentials/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to PUT/PATCH /credentials/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -230,5 +249,8 @@ class CredentialViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             pub_key.save()
             return Response(status=HTTP_204_NO_CONTENT)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to DELETE /credentials/{0}".format(pk))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to DELETE /credentials/{0}".format(pk))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)

@@ -2,6 +2,7 @@ from datetime import datetime, timezone, timedelta
 from django.utils import timezone as tz
 from uuid import uuid4
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, ScheduledSession
 from portal.apps.users.models import AerpawUser
 
@@ -45,6 +46,7 @@ def start_experiment_session(session: OnDemandSession, user: AerpawUser) -> bool
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -58,6 +60,7 @@ def stop_experiment_session(session: OnDemandSession, user: AerpawUser) -> bool:
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -71,6 +74,7 @@ def cancel_experiment_session(session: OnDemandSession, user: AerpawUser) -> boo
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -157,6 +161,7 @@ def schedule_experiment_scheduled_session(request, session: ScheduledSession, us
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -171,6 +176,7 @@ def start_scheduled_session(session: ScheduledSession, user: AerpawUser) -> bool
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -187,6 +193,7 @@ def end_scheduled_session(request, session: ScheduledSession, user: AerpawUser) 
         return True
     except Exception as exc:
         print('SESSIONS exc',exc)
+        new_error(exc, user)
         return False
 
 
@@ -203,6 +210,7 @@ def cancel_scheduled_session(request, session: ScheduledSession, user: AerpawUse
         return True
     except Exception as exc:
         print('SESSIONS exc',exc)
+        new_error(exc, user)
         return False
 
 

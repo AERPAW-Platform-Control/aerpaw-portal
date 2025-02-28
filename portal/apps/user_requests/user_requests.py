@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.users.models import AerpawRolesEnum
 
@@ -29,6 +30,7 @@ def approve_user_role_request(request_id: int) -> bool:
                 return False
         except Exception as exc:
             print(exc)
+            new_error(exc, user_request.requested_by)
             return False
     else:
         return False
@@ -59,6 +61,7 @@ def deny_user_role_request(request_id: int) -> bool:
                 return False
         except Exception as exc:
             print(exc)
+            new_error(exc, user_request.requested_by)
             return False
     else:
         return False

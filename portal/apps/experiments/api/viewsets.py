@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiment_files.api.serializers import ExperimentFileSerializerDetail
 from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.experiments.api.experiment_states import is_valid_transition, transition_experiment_state
@@ -123,8 +124,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiments list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiments list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user) 
 
     def create(self, request):
         """
@@ -152,24 +156,32 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         try:
             project_id = request.data.get('project_id', None)
             if not project_id:
-                raise ValidationError(
-                    detail="project_id: must provide project_id")
+                try:
+                    raise ValidationError(
+                        detail="project_id: must provide project_id")
+                except ValidationError as exc:
+                    new_error(exc, request.user)
             project = get_object_or_404(AerpawProject.objects.all(), pk=int(project_id))
             user = get_object_or_404(AerpawUser.objects.all(), pk=request.user.id)
-        except Exception as exc:
-            raise ValidationError(
-                detail="ValidationError: {0}".format(exc))
+        except ValidationError as exc:
+            new_error(exc, request.user)
         if user.is_experimenter() and (project.is_creator(user) or project.is_member(user) or project.is_owner(user)):
             # validate description
             description = request.data.get('description', None)
             if not description or len(description) < EXPERIMENT_MIN_DESC_LEN:
-                raise ValidationError(
-                    detail="description:  must be at least {0} chars long".format(EXPERIMENT_MIN_DESC_LEN))
+                try:
+                    raise ValidationError(
+                        detail="description:  must be at least {0} chars long".format(EXPERIMENT_MIN_DESC_LEN))
+                except ValidationError as exc:
+                    new_error(exc, request.user)
             # validate name
             name = request.data.get('name', None)
             if not name or len(name) < EXPERIMENT_MIN_NAME_LEN:
-                raise ValidationError(
-                    detail="name: must be at least {0} chars long".format(EXPERIMENT_MIN_NAME_LEN))
+                try:
+                    raise ValidationError(
+                        detail="name: must be at least {0} chars long".format(EXPERIMENT_MIN_NAME_LEN))
+                except ValidationError as exc:
+                    new_error(exc, request.user)
             # create experiment
             experiment = AerpawExperiment()
             experiment.created_by = user.username
@@ -194,8 +206,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             membership.save()
             return self.retrieve(request, pk=experiment.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to POST /experiments")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to POST /experiments")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -217,6 +232,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         - project_id             - int
         - resources              - array of int
         - resources_locked       - boolean
+        - members_locked         - boolean
 
         Permission:
         - user is_creator OR
@@ -281,14 +297,18 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 'name': du.get('name'),
                 'project_id': du.get('project_id'),
                 'resources': du.get('resources'),
-                'resources_locked': du.get('resources_locked')
+                'resources_locked': du.get('resources_locked'),
+                'members_locked': du.get('members_locked')
             }
             if experiment.is_deleted:
                 response_data['is_deleted'] = du.get('is_deleted')
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiments/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiments/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -305,15 +325,21 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         if not experiment.is_deleted and \
                 (request.user is experiment.experiment_creator or experiment.is_member(request.user)):
             if experiment.is_retired:
-                raise PermissionDenied(
-                    detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /experiments/{0} details".format(
-                        kwargs.get('pk')))
+                try:
+                    raise PermissionDenied(
+                        detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /experiments/{0} details".format(
+                            kwargs.get('pk')))
+                except PermissionDenied as exc:
+                    new_error(exc, request.user)
             modified = False
             # check for description
             if request.data.get('description', None):
                 if len(request.data.get('description')) < EXPERIMENT_MIN_DESC_LEN:
-                    raise ValidationError(
-                        detail="description:  must be at least {0} chars long".format(EXPERIMENT_MIN_DESC_LEN))
+                    try:
+                        raise ValidationError(
+                            detail="description:  must be at least {0} chars long".format(EXPERIMENT_MIN_DESC_LEN))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 experiment.description = request.data.get('description')
                 modified = True
             # check for is_retired
@@ -324,8 +350,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             # check for name
             if request.data.get('name', None):
                 if len(request.data.get('name')) < EXPERIMENT_MIN_NAME_LEN:
-                    raise ValidationError(
-                        detail="name: must be at least {0} chars long".format(EXPERIMENT_MIN_NAME_LEN))
+                    try:
+                        raise ValidationError(
+                            detail="name: must be at least {0} chars long".format(EXPERIMENT_MIN_NAME_LEN))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 experiment.name = request.data.get('name')
                 modified = True
             # save if modified
@@ -334,8 +363,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 experiment.save()
             return self.retrieve(request, pk=experiment.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to PUT/PATCH /experiments/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to PUT/PATCH /experiments/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -363,16 +395,22 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         experiment = get_object_or_404(self.queryset, pk=pk)
         if experiment.is_creator(request.user) or experiment.is_member(request.user):
             if experiment.is_retired:
-                raise PermissionDenied(
-                    detail="PermissionDenied: IS_RETIRED - unable to DELETE /experiments/{0}".format(pk))
+                try:
+                    raise PermissionDenied(
+                        detail="PermissionDenied: IS_RETIRED - unable to DELETE /experiments/{0}".format(pk))
+                except PermissionDenied as exc:
+                    new_error(exc, request.user)
             experiment.is_deleted = True
             experiment.is_retired = True
             experiment.modified_by = request.user.username
             experiment.save()
             return Response(status=HTTP_204_NO_CONTENT)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to DELETE /experiments/{0}".format(pk))
+            try: 
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to DELETE /experiments/{0}".format(pk))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def resources(self, request, *args, **kwargs):
@@ -390,13 +428,19 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 if request.data.get('experiment_resources') or isinstance(request.data.get('experiment_resources'),
                                                                           list):
                     if experiment.is_retired:
-                        raise PermissionDenied(
-                            detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/resources".format(
-                                kwargs.get('pk')))
+                        try:
+                            raise PermissionDenied(
+                                detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/resources".format(
+                                    kwargs.get('pk')))
+                        except PermissionDenied as exc:
+                            new_error(exc, request.user)
                     if experiment.resources_locked:
-                        raise PermissionDenied(
-                            detail="PermissionDenied: RESOURCES_LOCKED - unable to PUT,PATCH /experiments/{0}/resources".format(
-                                kwargs.get('pk')))
+                        try:
+                            raise PermissionDenied(
+                                detail="PermissionDenied: RESOURCES_LOCKED - unable to PUT,PATCH /experiments/{0}/resources".format(
+                                    kwargs.get('pk')))
+                        except PermissionDenied as exc:
+                            new_error(exc, request.user)
                     resource_ids = request.data.get('experiment_resources')
                     if isinstance(resource_ids, list) and all([isinstance(item, int) for item in resource_ids]):
                         resources_orig = list(set(experiment.resources.all().values_list('id', flat=True)))
@@ -421,8 +465,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                     if resource.resource_type == AerpawResource.ResourceType.AFRN:
                                         canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.AFRN
                                         canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
-                                    else:
-                                        canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.APRN
+                                    elif resource.resource_type == AerpawResource.ResourceType.APRN:
+                                        canonical_experiment_resource.node_type == CanonicalExperimentResource.NodeType.APRN
                                         if resource.resource_type == AerpawResource.ResourceType.UAV:
                                             canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_UAV
                                         if resource.resource_type == AerpawResource.ResourceType.UGV:
@@ -431,11 +475,18 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                             canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_OTHER
                                         if resource.resource_type == AerpawResource.ResourceType.THREE_PBBE:
                                             canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
+                                    elif resource.resource_type == AerpawResource.ResourceType.ACN:
+                                        canonical_experiment_resource.node_type == CanonicalExperimentResource.NodeType.ACN
+                                        canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
                                     canonical_experiment_resource.save()
                                 else:
-                                    raise ValidationError(
-                                        detail="ValidationError: ALLOW_CANONICAL /experiments/{0}/resources".format(
-                                            kwargs.get('pk')))
+                                    try:
+                                        raise ValidationError(
+                                            detail="ValidationError: ALLOW_CANONICAL /experiments/{0}/resources".format(
+                                                kwargs.get('pk')))
+                                    except ValidationError as exc:
+                                        new_error(exc, request.user)
+
                         for pk in resources_removed:
                             resource = AerpawResource.objects.get(pk=pk)
                             # remove/delete canonical-experiment-resource if resource is_canonical
@@ -463,9 +514,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                             cer.save()
                             enn += 1
                 else:
-                    raise ValidationError(
-                        detail="ValidationError: invalid resource_id or node_uhd /experiments/{0}/resources".format(
-                            kwargs.get('pk')))
+                    try:
+                        raise ValidationError(
+                            detail="ValidationError: invalid resource_id or node_uhd /experiments/{0}/resources".format(
+                                kwargs.get('pk')))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 experiment.save()
             # End of PUT, PATCH section - All reqeust types return resources
             serializer = ResourceSerializerDetail(experiment.resources, many=True)
@@ -487,8 +541,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             response_data = {'experiment_resources': resources}
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/resources".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/resources".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def membership(self, request, *args, **kwargs):
@@ -505,9 +562,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             if str(request.method).casefold() in ['put', 'patch', 'post']:
                 if request.data.get('experiment_members') or isinstance(request.data.get('experiment_members'), list):
                     if experiment.is_retired:
-                        raise PermissionDenied(
-                            detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/membership".format(
-                                kwargs.get('pk')))
+                        try:
+                            raise PermissionDenied(
+                                detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/membership".format(
+                                    kwargs.get('pk')))
+                        except PermissionDenied as exc:
+                            new_error(exc, request.user)
                     experiment_members = request.data.get('experiment_members')
                     if isinstance(experiment_members, list) and all(
                             [isinstance(item, int) for item in experiment_members]):
@@ -556,12 +616,14 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/membership".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/membership".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def state(self, request, *args, **kwargs):
-        print('VIEWSETS state')
         """
         GET, PUT, PATCH: retrieve / update experiment state
         - experiment_state     - string
@@ -574,9 +636,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
         experiment = get_object_or_404(self.get_queryset(), pk=kwargs.get('pk'))
         # check if experiment is retired
         if experiment.is_retired:
-            raise PermissionDenied(
-                detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/state".format(
-                    kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/state".format(
+                        kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
         # check if user is experimenter or operator
         if experiment.is_creator(request.user) or experiment.is_member(request.user) or request.user.is_operator():
             if str(request.method).casefold() in ['put', 'patch']:
@@ -585,9 +650,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                 if is_valid_transition(experiment=experiment, next_state=next_state, user=request.user):
                     transition_experiment_state(request=request, experiment=experiment, next_state=next_state)
                 else:
-                    raise ValidationError(
-                        detail="ValidationError: invalid role or transition '{0}' --> '{1}' for /experiments/{2}/state".format(
-                            experiment.state(), next_state, kwargs.get('pk')))
+                    try:
+                        raise ValidationError(
+                            detail="ValidationError: invalid role or transition '{0}' --> '{1}' for /experiments/{2}/state".format(
+                                experiment.state(), next_state, kwargs.get('pk')))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
             # End of PUT, PATCH section - All reqeust types return experiment state
             serializer = ExperimentSerializerState(experiment)
             du = dict(serializer.data)
@@ -599,8 +667,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/state".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/state".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def files(self, request, *args, **kwargs):
@@ -618,9 +689,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             if str(request.method).casefold() in ['put', 'patch']:
                 if request.data.get('experiment_files') or isinstance(request.data.get('experiment_files'), list):
                     if experiment.is_retired:
-                        raise PermissionDenied(
-                            detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/files".format(
-                                kwargs.get('pk')))
+                        try:
+                            raise PermissionDenied(
+                                detail="PermissionDenied: IS_RETIRED - unable to GET,PUT,PATCH /experiments/{0}/files".format(
+                                    kwargs.get('pk')))
+                        except PermissionDenied as exc:
+                            new_error(exc, request.user)
                     experiment_files = request.data.get('experiment_files')
                     if isinstance(experiment_files, list) and all(
                             [isinstance(item, int) for item in experiment_files]):
@@ -637,13 +711,19 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                     experiment.experiment_files.add(linked_file)
                                     experiment.save()
                                 else:
-                                    raise PermissionDenied(
-                                        detail="PermissionDenied: non-operator or deleted file - unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
-                                            kwargs.get('pk'), pk))
+                                    try:
+                                        raise PermissionDenied(
+                                            detail="PermissionDenied: non-operator or deleted file - unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
+                                                kwargs.get('pk'), pk))
+                                    except PermissionDenied as exc:
+                                        new_error(exc, request.user)
                             else:
-                                raise NotFound(
-                                    detail="NotFound: unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
-                                        kwargs.get('pk'), pk))
+                                try:
+                                    raise NotFound(
+                                        detail="NotFound: unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
+                                            kwargs.get('pk'), pk))
+                                except NotFound as exc:
+                                    new_error(exc, request.user)
                         for pk in experiment_files_removed:
                             # limited to operator
                             if request.user.is_operator:
@@ -651,9 +731,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                 experiment.experiment_files.remove(linked_file)
                                 experiment.save()
                             else:
-                                raise PermissionDenied(
-                                    detail="PermissionDenied: non-operator - unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
-                                        kwargs.get('pk'), pk))
+                                try:
+                                    raise PermissionDenied(
+                                        detail="PermissionDenied: non-operator - unable to PUT,PATCH /experiments/{0}/files - file_id: {1}".format(
+                                            kwargs.get('pk'), pk))
+                                except PermissionDenied as exc:
+                                    new_error(exc, request.user)
                         # End of PUT, PATCH section - All reqeust types return linked files
             serializer = ExperimentFileSerializerDetail(experiment.experiment_files, many=True)
             experiment_files = []
@@ -672,9 +755,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             response_data = {'experiment_files': experiment_files}
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/files".format(
-                    kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/files".format(
+                        kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     @action(detail=True, methods=['get', 'put', 'patch'])
     def sessions(self, request, *args, **kwargs):
@@ -698,11 +784,13 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                     created_by = AerpawUser.objects.get(username=du.get('created_by')).id
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     created_by = None
                 try:
                     modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     modified_by = None
                 experiment_sessions.append(
                     {
@@ -723,9 +811,12 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             response_data = {'experiment_sessions': experiment_sessions}
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/sessions".format(
-                    kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET,PUT,PATCH /experiments/{0}/sessions".format(
+                        kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
 
 class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
@@ -793,14 +884,20 @@ class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /user-experiment list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /user-experiment list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
         POST: user-experiment cannot be created via the API
         """
-        raise MethodNotAllowed(method="POST: /user-experiment")
+        try:
+            raise MethodNotAllowed(method="POST: /user-experiment")
+        except MethodNotAllowed as exc:
+            new_error(exc, request.user)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -827,8 +924,11 @@ class UserExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /user-experiment/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /user-experiment/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -931,8 +1031,11 @@ class OnDemandSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiment-session list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiment-session list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -979,6 +1082,7 @@ class OnDemandSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)
         except Exception as exc:
+            new_error(exc, request.user)
             is_experiment_creator = False
             is_experiment_member = False
 
@@ -988,16 +1092,12 @@ class OnDemandSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             try:
                 created_by = AerpawUser.objects.get(username=du.get('created_by')).id
             except Exception as exc:
-                print(f'EXCEPTION IN: OnDemandSessionViewSet.retrieve')
-                print(f'TRY: created_by = AerpawUser.objects.get(username=du.get("created_by")).id')
-                print(f'EXCEPT: {exc}')
+                new_error(exc, request.user)
                 created_by = None
             try:
                 modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
             except Exception as exc:
-                print(f'EXCEPTION IN: OnDemandSessionViewSet.retrieve')
-                print(f'TRY: modified_by = AerpawUser.objects.get(username=du.get("modified_by")).id')
-                print(f'EXCEPT: {exc}')
+                new_error(exc, request.user)
                 modified_by = None
             response_data = {
                 'created_by': created_by,
@@ -1015,8 +1115,11 @@ class OnDemandSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiment-session/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiment-session/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -1103,6 +1206,7 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)
         except Exception as exc:
+            new_error(exc, request.user)
             is_experiment_creator = False
             is_experiment_member = False
 
@@ -1134,8 +1238,11 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiment-session list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiment-session list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
         
     def sessions_list(self, request,  *args, **kwargs):
         try:
@@ -1143,6 +1250,7 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)
         except Exception as exc:
+            new_error(exc, request.user)
             is_experiment_creator = False
             is_experiment_member = False
 
@@ -1179,8 +1287,11 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiment-session list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiment-session list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -1209,6 +1320,7 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             is_experiment_creator = experiment.is_creator(request.user)
             is_experiment_member = experiment.is_member(request.user)
         except Exception as exc:
+            new_error(exc, request.user)
             is_experiment_creator = False
             is_experiment_member = False
 
@@ -1218,16 +1330,12 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             try:
                 created_by = AerpawUser.objects.get(username=du.get('created_by')).id
             except Exception as exc:
-                print(f'EXCEPTION IN: ScheduledSessionViewSet.retrieve')
-                print(f'TRY: created_by = AerpawUser.objects.get(username=du.get("created_by")).id')
-                print(f'EXCEPT: {exc}')
+                new_error(exc, request.user)
                 created_by = None
             try:
                 modified_by = AerpawUser.objects.get(username=du.get('modified_by')).id
             except Exception as exc:
-                print(f'EXCEPTION IN: ScheduledSessionViewSet.retrieve')
-                print(f'TRY: modified_by = AerpawUser.objects.get(username=du.get("modified_by")).id')
-                print(f'EXCEPT: {exc}')
+                new_error(exc, request.user)
                 modified_by = None
             response_data = {
                 'created_by': created_by,
@@ -1248,8 +1356,11 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /experiment-session/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /experiment-session/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
 
 class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):
@@ -1305,6 +1416,7 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                 is_experimenter = False
         except Exception as exc:
             print(exc)
+            new_error(exc, request.user)
             is_experimenter = False
         if request.user.is_operator() or is_experimenter:
             page = self.paginate_queryset(self.get_queryset())
@@ -1337,8 +1449,11 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /canonical-experiment-resource list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /canonical-experiment-resource list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -1379,6 +1494,7 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                 is_experimenter = False
         except Exception as exc:
             print(exc)
+            new_error(exc, request.user)
             is_experimenter = False
         if request.user.is_operator() or is_experimenter:
             serializer = CanonicalExperimentResourceSerializer(canonical_experiment_resource)
@@ -1395,9 +1511,12 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /canonical-experiment-resource/{0} details".format(
-                    kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /canonical-experiment-resource/{0} details".format(
+                        kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -1416,9 +1535,12 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
         cer = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
         if cer.experiment.is_creator(request.user) or cer.experiment.is_member(request.user):
             if cer.experiment.is_retired:
-                raise PermissionDenied(
-                    detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(
-                        kwargs.get('pk')))
+                try:
+                    raise PermissionDenied(
+                        detail="PermissionDenied: IS_RETIRED - unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(
+                            kwargs.get('pk')))
+                except PermissionDenied as exc:
+                    new_error(exc, request.user)
             modified = False
             # check node_display_name
             if request.data.get('node_display_name', None):
@@ -1427,29 +1549,41 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
             # check node_uhd
             if request.data.get('node_uhd', None):
                 if request.data.get('node_uhd') not in [c[0] for c in CanonicalExperimentResource.NodeUhd.choices]:
-                    raise ValidationError(
-                        detail="node_uhd:  valid choices are {0}".format(
-                            [c[0] for c in CanonicalExperimentResource.NodeUhd.choices]))
+                    try:
+                        raise ValidationError(
+                            detail="node_uhd:  valid choices are {0}".format(
+                                [c[0] for c in CanonicalExperimentResource.NodeUhd.choices]))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 cer.node_uhd = request.data.get('node_uhd')
                 modified = True
             # check node_vehicle
             if request.data.get('node_vehicle', None):
                 node_vehicle = request.data.get('node_vehicle')
                 if node_vehicle not in [c[0] for c in CanonicalExperimentResource.NodeVehicle.choices]:
-                    raise ValidationError(
-                        detail="node_vehicle:  valid choices are {0}".format(
-                            [c[0] for c in CanonicalExperimentResource.NodeVehicle.choices]))
+                    try:
+                        raise ValidationError(
+                            detail="node_vehicle:  valid choices are {0}".format(
+                                [c[0] for c in CanonicalExperimentResource.NodeVehicle.choices]))
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 # AFRN must be vehicle_none
                 if cer.resource.resource_type == AerpawResource.ResourceType.AFRN and node_vehicle != CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE:
-                    raise ValidationError(
-                        detail="node_vehicle: resource type AFRN must be vehicle_none")
+                    try:
+                        raise ValidationError(
+                            detail="node_vehicle: resource type AFRN must be vehicle_none")
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 # APRN must be in [vehicle_uav, vehicle_ugv, vehicle_none]
                 if cer.resource.resource_type == AerpawResource.ResourceType.APRN and node_vehicle not in [
                     CanonicalExperimentResource.NodeVehicle.VEHICLE_UAV,
                     CanonicalExperimentResource.NodeVehicle.VEHICLE_UGV,
                     CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE]:
-                    raise ValidationError(
-                        detail="node_vehicle: resource type APRN must be in [vehicle_uav, vehicle_ugv, vehicle_none]")
+                    try:
+                        raise ValidationError(
+                            detail="node_vehicle: resource type APRN must be in [vehicle_uav, vehicle_ugv, vehicle_none]")
+                    except ValidationError as exc:
+                        new_error(exc, request.user)
                 # TODO: other checks for UAV, UGV, 3PBBE, Other
                 cer.node_vehicle = request.data.get('node_vehicle')
                 modified = True
@@ -1459,9 +1593,12 @@ class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, Lis
                 cer.save()
             return self.retrieve(request, pk=cer.id)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(
-                    kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to PUT/PATCH /canonical-experiment-resource/{0} details".format(
+                        kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def partial_update(self, request, *args, **kwargs):
         """

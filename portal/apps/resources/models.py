@@ -36,6 +36,7 @@ class AerpawResource(BaseModel, AuditModelMixin, models.Model):
         TESTBED = 'testbed', _('Testbed')
 
     class ResourceType(models.TextChoices):
+        ACN = 'ACN', _('ACN')
         AFRN = 'AFRN', _('AFRN')
         APRN = 'APRN', _('APRN')
         UAV = 'UAV', _('UAV')

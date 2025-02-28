@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_messages.models import AerpawUserMessage
 from portal.server.settings import DEBUG, REST_FRAMEWORK
@@ -50,6 +51,7 @@ def user_message_list(request):
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     prev_page = 1
             next_url = user_messages.get('next', None)
             if next_url:
@@ -58,6 +60,7 @@ def user_message_list(request):
                     next_page = next_dict['page'][0]
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     next_page = 1
             count = int(user_messages.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -68,7 +71,8 @@ def user_message_list(request):
             user_messages = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        message = exc
+        error = new_error(exc, request.user)
+        message = error.message
         user_messages = {}
         item_range = None
         next_page = None
@@ -102,7 +106,8 @@ def user_message_detail(request, user_message_id):
         um = UserMessageViewSet(request=request)
         user_message = um.retrieve(request=request, pk=user_message_id).data
     except Exception as exc:
-        message = exc
+        error = new_error(exc, request.user)
+        message = error.message
         user_message = None
     return render(request,
                   'user_message_detail.html',

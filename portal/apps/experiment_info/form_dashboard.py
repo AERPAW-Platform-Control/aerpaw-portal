@@ -3,7 +3,9 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from rest_framework.request import Request
+
 from portal.apps.projects.views import project_detail
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiment_info.models import ExperimentFormData
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
@@ -47,10 +49,14 @@ def create_canonical_experiment(request, project_id):
         return exp
     
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard create_canonical_experiment: {exc}')
 
 def save_non_canonical_experiment_info(request, project_id):
     print('Creating new non-canonical experiment')
+
+    
+
     try:
         exp_info = ExperimentFormData()
         exp_info.experiment_type = ExperimentFormData.ExperimentType.NON_CANONICAL
@@ -75,6 +81,7 @@ def save_non_canonical_experiment_info(request, project_id):
         return {'success':True, 'experiment_info':exp_info}
     
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard save_non_canonical_experiment_info: {exc}')
 
 def save_custom_experiment_info(request, project_id):
@@ -96,6 +103,7 @@ def save_custom_experiment_info(request, project_id):
         exp_info.save()
         return {'success':True, 'experiment_info':exp_info}
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard save_custom_experiment_info: {exc}')
 
 def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
@@ -103,6 +111,7 @@ def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     try:
         lead_experimenter_id = AerpawUser.objects.filter(email=experiment_info.lead_email)
     except Exception as exc:
+        new_error(exc, request.user)
         print(f'Exception in portal.apps.experiment_info.form_dashboard notify_aerpaw_ops: {exc}')
 
     recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # aerpaw_ops?

@@ -3,6 +3,7 @@ from django.http import HttpRequest
 from rest_framework.request import Request
 
 from portal.apps.credentials.models import PublicCredentials
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, ScheduledSession
 from portal.apps.users.models import AerpawUser
@@ -209,6 +210,7 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
 
     except Exception as exc:
         print(exc)
+        new_error(exc, request.user)
         return buttons
 
 
@@ -283,6 +285,7 @@ def evaluate_dashboard_action(request):
 
     except Exception as exc:
         print(f'Evaluate Dashbord Actions Exception= {exc}')
+        new_error(exc, request.user)
 
 
 def evaluate_session_dashboard_action(request):
@@ -448,6 +451,7 @@ def get_session_dashboard_buttons(request, session_id: int) -> dict:
 
     except Exception as exc:
         print(exc)
+        new_error(exc, request.user)
         buttons['no_actions'] = True
         return buttons
     

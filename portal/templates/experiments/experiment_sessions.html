@@ -7,7 +7,7 @@
 
 {% block content %}
     {% if message %}
-        <div class="text-danger" style="font-size: large">{{ message }}</div>
+        <div class="text-danger" style="font-size: large">{{ message|safe }}</div>
     {% endif %}
     {% if user.is_authenticated %}
         <div class="container w-85">
@@ -26,9 +26,15 @@
                 </form>
                 {% if is_operator == True %}
                 <div class="dropdown">
+                    {% if buttons.no_actions == True %}
                     <button type="button" class="btn btn-success mr-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         Add Session
                     </button>
+                    {% else %}
+                    <button disabled type="button" class="btn btn-success mr-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Add Session
+                    </button>
+                    {% endif %}
                     <ul class="dropdown-menu">
                         <form id="new_session_form" method="POST" action="{% url 'experiment_sessions' experiment_id=experiment.id %}">
                             {% csrf_token %}

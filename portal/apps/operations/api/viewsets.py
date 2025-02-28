@@ -6,6 +6,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateMode
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.operations.api.serializers import CanonicalNumberSerializerDetail, CanonicalNumberSerializerList
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, set_current_canonical_number
 
@@ -60,8 +61,11 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /canonical-number list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /canonical-number list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -98,8 +102,11 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /canonical-number/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /canonical-number/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
@@ -135,11 +142,17 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
                 response_data = {'current_canonical_number': int(get_current_canonical_number())}
                 return Response(response_data)
             else:
-                raise PermissionDenied(
-                    detail="PermissionDenied: unable to PUT/PATCH /canonical-number")
+                try:
+                    raise PermissionDenied(
+                        detail="PermissionDenied: unable to PUT/PATCH /canonical-number")
+                except PermissionDenied as exc:
+                    new_error(exc, request.user)
         if request.user.is_active:
             response_data = {'current_canonical_number': int(get_current_canonical_number())}
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /canonical-number/current")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /canonical-number/current")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
