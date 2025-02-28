@@ -113,7 +113,7 @@ def profile(request):
         except Exception as exc:
             error = new_error(exc, request.user)
             message = error.message
-    try:        
+    try:
         # user data
         api_request = Request(request=HttpRequest())
         api_request.user = request.user

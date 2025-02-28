@@ -840,7 +840,7 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
             except NotFound as exc:
                 new_error(exc, request.user)
         started = start_scheduled_session(session = ops_session, user=request.user)
-        
+
     else:
         # get active session and start
 
@@ -951,8 +951,8 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
     is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
     if is_ops_session == True:
         ops_session = ScheduledSession.objects.filter(
-                experiment=experiment, 
-                session_type=ScheduledSession.SessionType.EMULATION, 
+                experiment=experiment,
+                session_type=ScheduledSession.SessionType.EMULATION,
                 is_active=True
             ).first()
         if not ops_session:
