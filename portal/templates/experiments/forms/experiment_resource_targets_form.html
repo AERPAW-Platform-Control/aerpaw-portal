@@ -55,13 +55,13 @@
                                                 {% if resource in experiment_resources %}
                                                 <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc" checked>
                                                 <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
-                                                <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
+                                                <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
                                                     <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
                                                 </button>
                                                 {% else %}
                                                 <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc">
                                                 <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
-                                                <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
+                                                <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
                                                     <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
                                                 </button>
                                                 {% endif %}
@@ -83,13 +83,13 @@
                                             {% if resource in experiment_resources %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw" checked>
                                             <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
-                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
                                                 <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
                                             </button>
                                             {% else %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw">
                                             <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
-                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
                                                 <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
                                             </button>
                                             {% endif %}
@@ -191,7 +191,7 @@
                                     <div class="form-check form-switch">
                                             {% if resource in experiment_resources %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cn" checked>
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
                                             <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
                                                 <i class="fa-solid fa-circle-info fa-lg" style="color: #0089f3;"></i>
                                             </button>
@@ -269,7 +269,8 @@
             <hr>
             <h5 class="fw-bold ms-2">Location:</h5>
           <p id="resource-info-location" class="ms-4"></p>
-          <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary float-end ms-2" data-bs-dismiss="modal">Close</button>
+          <a id="resource-map-button" class="btn btn-success float-end" href="" target="_blank">Open Map</a>
         </div>
       </div>
     </div>

@@ -16,12 +16,16 @@
                       <div class="ms-2 mt-2 single-choice-checkbox-group">
                         <div class="list-group list-group-horizontal">
                             <li class="list-group-item border border-0">
-                                <input type="checkbox" class="btn-check single-check" id="expTypeCan" onclick="showNextGroup(this)" data-target="#non-canonicalInfo" data-hide="true" autocomplete="off">
-                                <label class="btn btn-primary" for="expTypeCan">Canonical</label>
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input single-check" role="switch" id="expTypeCan" onclick="showNextGroup(this)" data-target="#non-canonicalInfo" data-hide="true" autocomplete="off">
+                                    <label class="form-check-label" for="expTypeCan">Canonical</label>
+                                </div>
                             </li>
                             <li class="list-group-item border border-0">    
-                                <input type="checkbox" class="btn-check single-check" id="expTypeNon" onclick="showNextGroup(this)" data-target="#non-canonicalInfo" data-hide="false" autocomplete="off">
-                                <label class="btn btn-primary" for="expTypeNon">Non-Canonical</label>
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input single-check" role="switch" id="expTypeNon" onclick="showNextGroup(this)" data-target="#non-canonicalInfo" data-hide="false" autocomplete="off">
+                                    <label class="form-check-label" for="expTypeNon">Non-Canonical</label>
+                                </div>
                             </li>
                         </div>
                       </div>
@@ -52,12 +56,16 @@
                 <div class="ms-2 mt-2 single-choice-checkbox-group">
                     <div class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
-                            <input type="checkbox" class="btn-check single-check" id="grantNumberYes" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="false" autocomplete="off">
-                            <label class="btn btn-primary" for="grantNumberYes">Yes</label>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input single-check" id="grantNumberYes" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="false" autocomplete="off">
+                                <label class="form-check-label" for="grantNumberYes">Yes</label>
+                            </div>
                         </li>
-                        <li class="list-group-item border border-0">    
-                            <input type="checkbox" class="btn-check single-check" id="grantNumberNo" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="true" autocomplete="off">
-                            <label class="btn btn-primary" for="grantNumberNo">No</label>
+                        <li class="list-group-item border border-0">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input single-check" id="grantNumberNo" onclick="showNextGroup(this)" data-target="#grantNumber" data-hide="true" autocomplete="off">
+                                <label class="form-check-label" for="grantNumberNo">No</label>
+                            </div>
                         </li>
                     </div>
                 </div>
@@ -129,12 +137,16 @@
                 <div class="ms-2 mt-2 single-choice-checkbox-group">
                     <ul class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
-                            <input name="urgency" type="checkbox" class="btn-check single-check" id="urgentYes" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="false" autocomplete="off" value="True">
-                            <label class="btn btn-primary" for="urgentYes">Yes</label>
+                            <div class="form-check form-switch">
+                                <input name="urgency" type="checkbox" class="form-check-input single-check" id="urgentYes" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="false" autocomplete="off" value="True">
+                                <label class="form-check-label" for="urgentYes">Yes</label>
+                            </div>
                         </li>
                         <li class="list-group-item border border-0">
-                            <input name="urgency" type="checkbox" class="btn-check single-check" id="urgentNo" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="true" autocomplete="off" value="False">
-                            <label class="btn btn-primary" for="urgentNo">No</label>
+                            <div class="form-check form-switch">
+                                <input name="urgency" type="checkbox" class="form-check-input single-check" id="urgentNo" onclick="showNextGroup(this)" data-target="#urgencyFollowUp" data-hide="true" autocomplete="off" value="False">
+                                <label class="form-check-label" for="urgentNo">No</label>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -147,16 +159,22 @@
                 <div class="ms-2 mt-2 single-choice-checkbox-group">
                     <div class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
-                            <input type="checkbox" class="btn-check single-check" id="shareYes" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="false" autocomplete="off">
-                            <label class="btn btn-primary" for="shareYes">Yes</label>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input single-check" id="shareYes" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="false" autocomplete="off">
+                                <label class="form-check-label" for="shareYes">Yes</label>
+                            </div>
+                        </li>
+                        <li class="list-group-item border border-0">  
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input single-check" id="shareNo" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
+                                <label class="form-check-label" for="shareNo">No</label>
+                            </div>
                         </li>
                         <li class="list-group-item border border-0">    
-                            <input type="checkbox" class="btn-check single-check" id="shareNo" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
-                            <label class="btn btn-primary" for="shareNo">No</label>
-                        </li>
-                        <li class="list-group-item border border-0">    
-                            <input type="checkbox" class="btn-check single-check" id="shareNotSure" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
-                            <label class="btn btn-primary" for="shareNotSure">Not Sure</label>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input single-check" id="shareNotSure" onclick="showNextGroup(this)" data-target="#sharedUrlFollowUp" data-hide="true" autocomplete="off">
+                                <label class="form-check-label" for="shareNotSure">Not Sure</label>
+                            </div>
                         </li>
                     </div>
                 </div>

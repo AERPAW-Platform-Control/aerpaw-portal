@@ -228,7 +228,7 @@ class ScheduledSession(OnDemandSession, models.Model):
     description = models.TextField(blank=True)
     is_success = models.BooleanField(default=False)
     scheduled_start = models.DateTimeField(blank=True, null=True) # The date the session will turn active
-    scheduled_end = models.DateTimeField(blank=True, null=True) # The date the session will turn active
+    scheduled_end = models.DateTimeField(blank=True, null=True) # The date the session will turn inactive
     scheduled_by = models.ForeignKey(
         AerpawUser,
         related_name='session_scheduled_by',

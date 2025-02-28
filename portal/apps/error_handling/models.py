@@ -73,7 +73,7 @@ class AerpawThread(BaseModel, models.Model):
         message = ''
         if self.is_error == True:
             error_numbers = [str(error.id) for error in self.error.all()]
-            message = f'Error# {self.id}:<br><p class="text-danger">An error has occured and {self.get_action_display()} could not be completed! <br>If this error persists, please contact the Aerpaw Ops Team.<br> <a class="btn btn-sm btn-outline-danger" href="mailto:cjr47@cornell.edu?subject=Error#%20{self.id}%20in%20{self.get_action_display()}"><i class="fas fa-envelope-square"></i></a></p><hr class="w-50 text-danger">'
+            message = f'Error# {self.id}:<p class="text-danger">An error has occured and {self.get_action_display()} could not be completed! <br>If this error persists, please <a class="btn btn-sm btn-outline-danger" href="mailto:cjr47@cornell.edu?subject=Error#%20{self.id}%20in%20{self.get_action_display()}">click here to email the Aerpaw Ops Team <i class="fa fa-paper-plane"></i></a></p><hr class="w-50 text-danger">'
         elif self.is_error != True and self.thread_end != None:
             message = f'{self.get_action_display()} is successful!'
         self.message = message

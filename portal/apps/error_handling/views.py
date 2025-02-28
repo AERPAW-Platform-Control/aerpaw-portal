@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from .error_dashboard import new_error, reduce_stored_errors
 from portal.apps.error_handling.models import AerpawThread, AerpawError
+from portal.apps.experiment_info.form_dashboard import upload_old_form_data
 from portal.apps.users.models import AerpawUser
 
 # Create your views here.
@@ -100,6 +101,7 @@ class AerpawSSHErrorHandling(View):
 class ErrorDashboardView(View):
     def get(self, request):
         message = None
+        #upload_old_form_data()
         is_operator = request.user.is_operator()
         if is_operator == True:
             context={

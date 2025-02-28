@@ -48,7 +48,7 @@ def aerpaw_error_message(exc: Exception, user: AerpawUser, error: AerpawError, m
             else:
                 message = f'Error #: {error.id}<br>{exc}<hr class="w-50 text-danger">'
         else:
-            message = f'An Error has occured! Id# {error.id}<br> If this error persists, please contact the Aerpaw Ops Team.<br><a class="btn btn-sm btn-outline-danger" href="mailto:cjr47@cornell.edu?subject=Error#%20{error.id}"><i class="fas fa-envelope-square"></i></a><hr class="w-50 text-danger">'
+            message = f'Error# {error.id}: An Error has occured!<br> If this error persists, please <a class="btn btn-sm btn-outline-danger" href="mailto:cjr47@cornell.edu?subject=Error#%20{error.id}">click here to email the Aerpaw Ops Team <i class="fa fa-paper-plane"></i></a><hr class="w-50 text-danger">'
 
     message_components = {
         'message_body': message, 

@@ -16,6 +16,7 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 @csrf_exempt
 @login_required
 def user_message_list(request):
+    print(f'user message list rquest= {request.POST}')
     message = None
     try:
         # check for query parameters
@@ -27,7 +28,22 @@ def user_message_list(request):
                 um_api_request.user = request.user
                 um_api_request.method = 'DELETE'
                 um = UserMessageViewSet(request=um_api_request)
-                um.destroy(request=um_api_request, pk=request.POST.get('delete_user_message'))
+                for user_message_id in request.POST.getlist('message-checkbox'):
+                    um.destroy(request=um_api_request, pk=int(user_message_id))
+
+            if request.POST.get('mark_unread_user_message'):
+                for user_message_id in request.POST.getlist('message-checkbox'):
+                    user_message_obj = get_object_or_404(AerpawUserMessage, pk=int(user_message_id))
+                    user_message_obj.is_read = False
+                    user_message_obj.modified_by = request.user.username
+                    user_message_obj.save()
+            if request.POST.get('mark_read_user_message'):
+                for user_message_id in request.POST.getlist('message-checkbox'):
+                    user_message_obj = get_object_or_404(AerpawUserMessage, pk=int(user_message_id))
+                    user_message_obj.is_read = True
+                    user_message_obj.read_date = datetime.now(timezone.utc)
+                    user_message_obj.modified_by = request.user.username
+                    user_message_obj.save()
         data_dict = {'user_id': request.user.id, 'show_read': True}
         if request.GET.get('page'):
             data_dict['page'] = request.GET.get('page')

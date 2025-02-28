@@ -138,6 +138,8 @@ def profile(request):
         # user messages data
         um = UserMessageViewSet(request=request)
         user_messages = dict(um.list(request=request).data)
+        unread_message_count = um.unread_message_count(request=request)
+        
     except Exception as exc:
         print('Exception found in profiles.views profile ', exc)
         new_error(exc, request.user)
@@ -152,6 +154,7 @@ def profile(request):
                       'user_credentials': user_credentials,
                       'user_messages': user_messages,
                       'user_requests': user_requests,
+                      'unread_message_count': unread_message_count,
                       'message': message,
                       'debug': DEBUG
                   })

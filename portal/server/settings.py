@@ -54,11 +54,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'import_export',
     'django_bootstrap5',  # django bootstrap
     'fontawesomefree',  # fontawesome free version
     'portal.apps.mixins',  # mixins
     'portal.apps.users',  # custom user model
     'portal.apps.profiles',  # custom user profile
+    'portal.apps.reports', # reports
     'portal.apps.resources',  # resources
     'portal.apps.projects',  # projects
     'portal.apps.error_handling', # error handling

@@ -179,7 +179,7 @@
                                             type="button"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#sandboxScheduleModal">
-                                        Submit to Sandbox
+                                        Schedule Sandbox
                                     </button>
                                 {% else %}           
                                     <span   
@@ -189,13 +189,13 @@
                                         data-bs-title="Submit to Sandbox is disabled because:"
                                         data-bs-content="The experiment is currently in a Sandbox Session OR is in another session type OR the experiment has more than 2 portable nodes AND/OR more than 2 fixed nodes.">
                                         <button class="btn btn-secondary mr-2" type="button"  disabled>
-                                            Submit to Sandbox
+                                            Schedule Sandbox
                                         </button>
                                     </span>
                                     
                                 {% endif %}
                             </td>
-                            {% if user.is_operator %}
+                            {% if user.is_operator %} 
                             <td style="text-align: center">
                                 {% if buttons.b_emu_submit %}
                                     <button class="btn btn-success mr-2 thread"

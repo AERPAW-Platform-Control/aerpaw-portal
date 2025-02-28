@@ -1361,6 +1361,7 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
                     detail="PermissionDenied: unable to GET /experiment-session/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
                 new_error(exc, request.user)
+            return None
 
 
 class CanonicalExperimentResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateModelMixin):

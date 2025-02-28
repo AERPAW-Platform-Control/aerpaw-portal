@@ -222,10 +222,11 @@ class Resource{
         let description = $(this.infoBtn).data('description')
         let location = $(this.infoBtn).data('location')
         let name = $(this.infoBtn).data('name')
-        Resource.manageResourceInfoModal(name, description, location)
+        let url = $(this.infoBtn).data('map_url')
+        Resource.manageResourceInfoModal(name, description, location, url)
     }
 
-    static manageResourceInfoModal(name, description, location){
+    static manageResourceInfoModal(name, description, location, url=null){
         console.log(`name= ${name}`)
         let nameElement = $('#resource-info-name')
         $(nameElement).text(name) 
@@ -235,13 +236,15 @@ class Resource{
 
         let locationElement = $('#resource-info-location')
         console.log(`location ${location}`)
-        if(location.split('<br>').length > 1){
+        if(url != null){
             $(locationElement).empty()
-            $(locationElement).text(location.split('<br>')[0])
-            $(locationElement).append(`<br><a target="_blank" ${location.split('<br>')[1]}`)
+            $(locationElement).append(`${location}`)
+            $('#resource-map-button').attr({'href':url})
+            $('#resource-map-button').show()
         }else{
             $(locationElement).empty()
             $(locationElement).text(location)
+            $('#resource-map-button').hide()
         }
     }
 
@@ -275,21 +278,21 @@ class Resource{
         console.log(`this.nodeType: ${this.nodeType}`)
         switch(this.nodeType){
             case 'fixed':
-                if( nodeTypeCount > 2){
+                if( nodeTypeCount > 4){
                     fnTotalLimitMessage.appendMessage()
                 }else{
                     fnTotalLimitMessage.removeMessage()
                 }
                 break
             case 'smallPortable':
-                if( nodeTypeCount > 1){
+                if( nodeTypeCount > 2){
                     smPNTotalLimitMessage.appendMessage()
                 }else{
                     smPNTotalLimitMessage.removeMessage()
                 }
                 break
             case 'largePortable':
-                if( nodeTypeCount > 1){
+                if( nodeTypeCount > 2){
                     lgPNTotalLimitMessage.appendMessage()
                 }else{
                     lgPNTotalLimitMessage.removeMessage()
@@ -565,9 +568,9 @@ const expResources = new ResourceGroup(id='#exp_resources')
 const allResources = new ResourceGroup(id='#all_resources')
 const fnLimitMessage = new Messages(id='#fixedNodeLmit', message= `<li id="fixedNodeLmit" class="list-group-item">
                                     <div>
-                                        More than 2 fixed nodes selected
+                                        More than 4 fixed nodes selected
                                         <div class="ms-2 mt-1 text-secondary fs-6">
-                                            **If you plan on using more than 2 fixed
+                                            **If you plan on using more than 4 fixed
                                             nodes, please refer to the <a href="">Aerpaw User manual</a>
                                             for more detailed information on the Sandbox Environment nodes. 
                                             If you are not planning on using the Sandbox Environment, please disregard 
@@ -577,9 +580,9 @@ const fnLimitMessage = new Messages(id='#fixedNodeLmit', message= `<li id="fixed
                                 </li>` )
 const smPNLimitMessage = new Messages(id='#smPortableNodeLimit', message=`<li id="smPortableNodeLimit" class="list-group-item fs-6">
                                         <div>
-                                            More than 1 small portable node selected
+                                            More than 2 small portable node selected
                                             <div class="ms-2 text-secondary">
-                                                **If you are planning on using more than 1 small portable 
+                                                **If you are planning on using more than 2 small portable 
                                                 node, please refer to the <a href="">Aerpaw User manual</a>
                                                 for more detailed information on the Sandbox Environment nodes. 
                                                 If you are not planning on using the Sandbox Environment, please disregard 
@@ -589,9 +592,9 @@ const smPNLimitMessage = new Messages(id='#smPortableNodeLimit', message=`<li id
                                     </li>`)
 const lgPNLimitMessage = new Messages(id='#lgPortableNodeLimit', message=`<li id="lgPortableNodeLimit" class="list-group-item fs-6">
                                         <div>
-                                            More than 1 large portable node selected
+                                            More than 2 large portable node selected
                                             <div class="ms-2 text-secondary">
-                                                **If you plan on using more than 1 large portable 
+                                                **If you plan on using more than 2 large portable 
                                                 node, please refer to the <a href="">Aerpaw User manual</a>
                                                 for more detailed information on the Sandbox Environment nodes. 
                                                 If you are not planning on using the Sandbox Environment, please disregard 
@@ -607,8 +610,8 @@ const fnTotalLimitMessage = new Messages(
                     Fixed Node Limit Reached for Sandbox Environment! 
                     <div class="ms-2 text-secondary">
                         **The Sandbox Environment is not setup to handle a total of more 
-                        than 2 fixed nodes. It will be unavailible for this experiment 
-                        unless 2 or fewer fixed nodes are selected.
+                        than 4 fixed nodes. It will be unavailible for this experiment 
+                        unless 4 or fewer fixed nodes are selected.
                     </div>
                 </div>
             </li>`)
@@ -620,8 +623,8 @@ const smPNTotalLimitMessage = new Messages(
                     Small Portable Node Limit Reached for Sandbox Environment! 
                     <div class="ms-2 text-secondary">
                         **The Sandbox Environment is not setup to handle a total of more 
-                        than 1 small portable nodes. It will be unavailible for this 
-                        experiment unless 1 or fewer small portable nodes are selected.
+                        than 2 small portable nodes. It will be unavailible for this 
+                        experiment unless 2 or fewer small portable nodes are selected.
                     </div>
                 </div>
             </li>`)
@@ -633,8 +636,8 @@ const lgPNTotalLimitMessage = new Messages(
                     Large Portable Node Limit Reached for Sandbox Environment! 
                     <div class="ms-2 text-secondary">
                         **The Sandbox Environment is not setup to handle a total of more 
-                        than 1 large portable nodes. It will be unavailible for this 
-                        experiment unless 1 or fewer large portable nodes are selected.
+                        than 2 large portable nodes. It will be unavailible for this 
+                        experiment unless 2 or fewer large portable nodes are selected.
                     </div>
                 </div>
             </li>`)

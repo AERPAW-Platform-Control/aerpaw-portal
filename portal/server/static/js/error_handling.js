@@ -273,8 +273,6 @@ class AerpawError{
             }else{
                 console.log(`There are no errors that are marked displayed`)
             }
-        }else{
-            console.log(`Woohoo! There are currently no errors!`)
         }
     }
 
@@ -282,7 +280,6 @@ class AerpawError{
         let count = 0
         errorInterval = setInterval(() => {
             count += 1
-            console.log(count)
             AerpawError.getErrors()
         }, 2000)
     }
