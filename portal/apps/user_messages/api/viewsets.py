@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from rest_framework import permissions
 from rest_framework.exceptions import MethodNotAllowed, PermissionDenied
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.resources.api.serializers import ResourceSerializerDetail
 from portal.apps.user_messages.api.serializers import UserMessageSerializerDetail, UserMessageSerializerList
 from portal.apps.user_messages.models import AerpawUserMessage
@@ -77,10 +79,14 @@ class UserMessageViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 user = get_object_or_404(AerpawUser, pk=user_id)
                 # user must be site admin or be the user themselves
                 if not request.user.is_site_admin() and user.id != request.user.id:
-                    raise PermissionDenied(
-                        detail="PermissionDenied: unable to GET /requests list?user_id=...")
+                    try:
+                        raise PermissionDenied(
+                            detail="PermissionDenied: unable to GET /requests list?user_id=...")
+                    except PermissionDenied as exc:
+                        new_error(exc, request.user)
             # fetch response
             page = self.paginate_queryset(self.get_queryset())
+            
             if page:
                 serializer = UserMessageSerializerList(page, many=True)
             else:
@@ -99,13 +105,17 @@ class UserMessageViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         'sent_date': str(du.get('sent_date')) if du.get('sent_date') else None
                     }
                 )
+                
             if page:
                 return self.get_paginated_response(response_data)
             else:
                 return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /messages list")
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /messages list")
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
 
     def create(self, request):
         """
@@ -153,15 +163,26 @@ class UserMessageViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
             }
             return Response(response_data)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to GET /messages/{0} details".format(kwargs.get('pk')))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to GET /messages/{0} details".format(kwargs.get('pk')))
+            except PermissionDenied as exc:
+                        new_error(exc, request.user)
 
     def update(self, request, *args, **kwargs):
         """
         PUT: update existing message
         """
-        raise MethodNotAllowed(method="PUT,PATCH: /messages/{0}".format(kwargs.get('pk')))
-
+        user_message = get_object_or_404(self.queryset, pk=kwargs.get('pk'))
+        if user_message:
+            if str(request.data.get('is_read')).casefold() in ['true', 'false']:
+                is_read = str(request.data.get('is_read')).casefold() == 'true'
+                user_message.is_read = is_read
+                modified = True
+            if modified == True:
+                user_message.modified_by = request.user.email
+                user_message.save()
+            
     def partial_update(self, request, *args, **kwargs):
         """
         PATCH: update existing message
@@ -186,5 +207,19 @@ class UserMessageViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
             user_message.save()
             return Response(status=HTTP_204_NO_CONTENT)
         else:
-            raise PermissionDenied(
-                detail="PermissionDenied: unable to DELETE /messages/{0} - user is not the owner".format(pk))
+            try:
+                raise PermissionDenied(
+                    detail="PermissionDenied: unable to DELETE /messages/{0} - user is not the owner".format(pk))
+            except PermissionDenied as exc:
+                new_error(exc, request.user)
+
+    @action(detail=True, methods=['get', 'put', 'patch'])
+    def unread_message_count(self, request, *args, **kwargs):
+        unread_message_count = 0
+        um_queryset = self.get_queryset()
+        for message in um_queryset:
+            if message.is_read == False:
+                unread_message_count +=1
+        
+        return unread_message_count
+

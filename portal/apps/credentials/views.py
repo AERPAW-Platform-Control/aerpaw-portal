@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from portal.apps.credentials.api.viewsets import CredentialViewSet
 from portal.apps.credentials.forms import CredentialAddForm, CredentialGenerateForm
 from portal.server.download_utils import download_db_credential_private_key, download_db_credential_public_key
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.server.settings import DEBUG
 
 
@@ -36,7 +37,8 @@ def credential_create(request):
                                       'debug': DEBUG
                                   })
                 except Exception as exc:
-                    message = exc
+                    error = new_error(exc, request.user)
+                    message = error.message
         else:
             form = CredentialGenerateForm()
         if request.POST.get('private_key_credential'):
@@ -46,7 +48,8 @@ def credential_create(request):
                 )
                 return response
             except Exception as exc:
-                message = exc
+                error = new_error(exc, request.user)
+                message = error.message
         if request.POST.get('public_key_credential'):
             try:
                 response = download_db_credential_public_key(
@@ -54,7 +57,8 @@ def credential_create(request):
                 )
                 return response
             except Exception as exc:
-                message = exc
+                error = new_error(exc, request.user)
+                message = error.message
     else:
         form = CredentialGenerateForm()
     return render(request,
@@ -87,7 +91,8 @@ def credential_add(request):
 
                 return redirect('profile')
             except Exception as exc:
-                message = exc
+                error = new_error(exc, request.user)
+                message = error.message
     else:
         form = CredentialAddForm()
     return render(request,

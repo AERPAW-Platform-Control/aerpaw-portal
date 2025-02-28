@@ -7,7 +7,7 @@
 
 {% block content %}
     {% if message %}
-        <div class="text-danger" style="font-size: large">{{ message }}</div>
+        <div class="text-danger" style="font-size: large">{{ message|escape }}</div>
     {% endif %}
     {% if user.is_authenticated and experiment %}
         <div class="container w-85">
@@ -38,12 +38,12 @@
                                    class="unlink">Edit</a>
                             </button>
                         {% endif %}
-                        <form action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
+                        <form id="retire-exp-form" action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
                               method="POST">
                             {% csrf_token %}
                             {% if experiment.membership.is_experiment_creator and not experiment.is_retired %}
                                 {% if experiment.experiment_state == 'saved' or experiment.experiment_state == 'wait_development_deploy' or experiment.experiment_state == 'active_development' or experiment.experiment_state == 'saving_development' %}
-                                <button class="btn btn-danger mr-2" type="submit" style="margin-left: 10px"
+                                <button class="btn btn-danger mr-2" type="submit" form="retire-exp-form" style="margin-left: 10px"
                                         name="retire_experiment" value="true">
                                     <a onclick="return confirm('Are you sure you want to retire this experiment?')">Retire</a>
                                 </button>
@@ -131,7 +131,7 @@
                 </div>
                 {% if not experiment.resources_locked %}
                     <div class="text-danger" style="font-size: large">
-                        Targeted resource modification will be locked following the first attempt to "Initiate
+                        Targeted resource modification and memberships will be locked following the first attempt to "Initiate
                         Development"
                     </div>
                 {% endif %}
@@ -152,7 +152,7 @@
                             <td>Saved</td>
                             {% if buttons.b_dev_init %}
                                 <td style="text-align: center">
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_dev_init"
                                             value="{{ experiment.experiment_id }}">
@@ -179,7 +179,7 @@
                                             type="button"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#sandboxScheduleModal">
-                                        Submit to Sandbox
+                                        Schedule Sandbox
                                     </button>
                                 {% else %}           
                                     <span   
@@ -189,16 +189,16 @@
                                         data-bs-title="Submit to Sandbox is disabled because:"
                                         data-bs-content="The experiment is currently in a Sandbox Session OR is in another session type OR the experiment has more than 2 portable nodes AND/OR more than 2 fixed nodes.">
                                         <button class="btn btn-secondary mr-2" type="button"  disabled>
-                                            Submit to Sandbox
+                                            Schedule Sandbox
                                         </button>
                                     </span>
                                     
                                 {% endif %}
                             </td>
-                            {% if user.is_operator %}
+                            {% if user.is_operator %} 
                             <td style="text-align: center">
                                 {% if buttons.b_emu_submit %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_emu_submit"
                                             value="{{ experiment.experiment_id }}">
@@ -220,7 +220,7 @@
                             {% endif %}
                             <td style="text-align: center">
                                 {% if buttons.b_testbed_submit %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_testbed_submit"
                                             value="{{ experiment.experiment_id }}">
@@ -245,7 +245,7 @@
                             <td style="text-align: center"></td>
                             <td style="text-align: center">
                                 {% if buttons.b_sandbox_cancel %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_sandbox_cancel"
                                             value="{{ experiment.experiment_id }}">
@@ -260,7 +260,7 @@
                             {% if user.is_operator %}
                             <td style="text-align: center">
                                 {% if buttons.b_emu_cancel %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_emu_cancel"
                                             value="{{ experiment.experiment_id }}">
@@ -275,7 +275,7 @@
                             {% endif %}
                             <td style="text-align: center">
                                 {% if buttons.b_testbed_cancel %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_testbed_cancel"
                                             value="{{ experiment.experiment_id }}">
@@ -292,7 +292,7 @@
                             <td>Active</td>
                             <td style="text-align: center">
                                 {% if buttons.b_dev_save %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_dev_save"
                                             value="{{ experiment.experiment_id }}">
@@ -304,7 +304,7 @@
                                     </button>
                                 {% endif %}
                                 {% if buttons.b_dev_save_exit %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_dev_save_exit"
                                             value="{{ experiment.experiment_id }}">
@@ -318,7 +318,7 @@
                             </td>
                             <td style="text-align: center">
                                 {% if buttons.b_sandbox_save %}
-                                    <button class="btn btn-success mr-2"
+                                    <button class="btn btn-success mr-2 thread"
                                             type="submit"
                                             name="b_sandbox_save"
                                             value="{{ experiment.experiment_id }}">
@@ -331,7 +331,7 @@
                                 {% endif %}
                                 <div style="display: none;"> <!-- The save and exit button is hidden because this process will be automated when the sandbox becomes availible -->
                                     {% if buttons.b_sandbox_save_exit %}
-                                        <button class="btn btn-success mr-2"
+                                        <button class="btn btn-success mr-2 thread"
                                                 type="submit"
                                                 name="b_sandbox_save_exit"
                                                 value="{{ experiment.experiment_id }}">
@@ -416,8 +416,8 @@
                         <td style="width: 25%">
                             Members
                             {% if not experiment.is_retired %}
-                                {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
-                                    {% if experiment.experiment_state == 'saved' %}
+                            {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
+                                {% if experiment.members_locked == False %}
                                         <button class="btn btn-primary mr-2" style="float: right">
                                             <a href="{% url 'experiment_members' experiment_id=experiment.experiment_id %}"
                                             class="unlink">Update</a>
@@ -428,7 +428,7 @@
                                             data-bs-trigger="hover focus"
                                             data-bs-placement="top"
                                             data-bs-title="Unable to update members!"
-                                            data-bs-content="The experiment is currently in an active session. To update members, either wait for the session to end or save & exit the session.">
+                                            data-bs-content="The experiment has been initiated and its memberships can no longer be modified">
                                             <button class="btn btn-secondary mr-2" type="button" style="float: right" disabled>
                                                 Update
                                             </button>
@@ -699,4 +699,8 @@
           </div>
         </div>
       </div>
+{% endblock %}
+
+{% block extra_js %}
+
 {% endblock %}

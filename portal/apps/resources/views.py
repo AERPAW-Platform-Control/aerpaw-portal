@@ -5,6 +5,7 @@ from django.http import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.resources.api.viewsets import ResourceViewSet
 from portal.apps.resources.forms import ResourceCreateForm
 from portal.apps.resources.models import AerpawResource
@@ -45,6 +46,7 @@ def resource_list(request):
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     prev_page = 1
             next_url = resources.get('next', None)
             if next_url:
@@ -53,6 +55,7 @@ def resource_list(request):
                     next_page = next_dict['page'][0]
                 except Exception as exc:
                     print(exc)
+                    new_error(exc, request.user)
                     next_page = 1
             count = int(resources.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -63,7 +66,8 @@ def resource_list(request):
             resources = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        message = exc
+        error = new_error(exc, request.user)
+        message = error.message
         resources = {}
         item_range = None
         next_page = None
@@ -97,7 +101,8 @@ def resource_detail(request, resource_id):
                 return redirect('resource_list')
         resource = r.retrieve(request=request, pk=resource_id).data
     except Exception as exc:
-        message = exc
+        error = new_error(exc, request.user)
+        message = error.message
         resource = None
     return render(request,
                   'resource_detail.html',
@@ -129,7 +134,8 @@ def resource_create(request):
                 resource = r.create(request=request).data
                 return redirect('resource_detail', resource_id=resource.get('resource_id', 9999))
             except Exception as exc:
-                message = exc
+                error = new_error(exc, request.user)
+                message = error.message
     else:
         form = ResourceCreateForm()
     return render(request,
@@ -160,7 +166,8 @@ def resource_edit(request, resource_id):
                 resource = r.partial_update(request=request, pk=resource_id)
                 return redirect('resource_detail', resource_id=resource_id)
             except Exception as exc:
-                message = exc
+                error = new_error(exc, request.user)
+                message = error.message
     else:
         resource = get_object_or_404(AerpawResource, id=resource_id)
         form = ResourceCreateForm(instance=resource)

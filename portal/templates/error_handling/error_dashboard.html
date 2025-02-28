@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load profiles_tags users_tags user_request_tags %}
+
+{% block title %}
+    Aerpaw Errors
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+{% if message %}
+    <div class="text-danger" style="font-size: large">{{ message }}</div>
+{% endif %}
+{% if is_operator == True %}
+<form id="get-error-form" method="post" action="{% url 'error_dashboard' %}">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col">
+            <div class="bg-secondary p-2 rounded">
+                <div class="card">
+                    <div class="card-header">
+                        Search for a specific error
+                    </div>
+                    <div class="card-body">
+                        <div class="form-floating mb-3">
+                            <input id="error-by-id" name="error-by-id" class="form-control w-50" type="number">
+                            <label for="error-by-id" >Enter Id Number</label>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button name="get_error_by_id" type="submit" form="get-error-form" class="btn btn-success float-end">Search</button>
+                        <button name="reduce_stored_errors" type="submit" form="get-error-form" class="btn btn-success float-end">Reduce Errors</button>
+                    </div>
+                </div> 
+            </div>
+        </div>
+        <div class="col">
+            <div class="bg-secondary p-2 rounded">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Filter all errors</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-floating mb-3">
+                            <select name="error-by-type" class="form-select" id="error-by-type">
+                                <option value="null" selected>----</option>
+                                <option value="ValidationError">ValidationError</option>
+                                <option value="PermissionDenied">PermissionDenied</option>
+                                <option value="NotFound">NotFound</option>
+                                <option value="MethodNotAllowed">MethodNotAllowed</option>
+                                <option value="TimeoutError">TimeoutError</option>
+                            </select>
+                            <label for="error-by-type">Type</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <select name="error-by-user" class="form-select" id="error-by-user">
+                                <option value="null" selected>----</option>
+                                {% for user in users %}
+                                <option value="{{user.id}}">{{user.email}}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="error-by-user">User</label>
+                        </div>
+                        <div class="row">
+                            <h6>Date range</h6>
+                            <div class="col">
+                                <div class="form-floating mb-3 mt-auto mb-auto">
+                                    <input id="error-by-daterange-start" name="error-by-daterange-start" class="form-control" type="date">
+                                    <label for="error-by-daterange-start">Start Range</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-floating mb-3 mt-auto mb-auto">
+                                    <input id="error-by-daterange-end" name="error-by-daterange-end" class="form-control" type="date">
+                                    <label for="error-by-daterange-end">End Range</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button name="get_error_by_filter" type="submit" form="get-error-form" class="btn btn-success float-end">Filter</button>
+                    </div>
+                </div>
+            </div>        
+        </div>
+    </div>
+</form>
+<div id="error-container" class="container">
+    {% if errors %}
+    <ul>
+        {% for error in errors %}
+        <hr>
+        <li><b>Error#: {{error.id}}</b>
+            <ul class="list-group list-group-horizontal">
+                <li class="list-group-item border border-0"><u>Date:</u><br> {{error.datetime}}</li>
+                <li class="list-group-item border border-0"><u>User:</u><br> {{error.user.email}}</li>
+                <li class="list-group-item border border-0"><u>Type:</u><br> {{error.type}}</li>
+            </ul>
+            <ul class="list-group">
+                <li class="list-group-item border border-0"><u>User Message:</u><br> {{error.message|safe}}</li>
+                <li class="list-group-item border border-0"><u>Traceback:</u><br> {{error.traceback}}</li>
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div id="error-notice-container">
+        <h4>{{notice|safe}}</h4>
+    </div>
+</div>
+{% else %}
+<div class="text-danger" style="font-size: large">You do not have access to the errors.  If you think this is a mistake please reach out to the aerpaw ops team at aerpawops@ncsu.edu.</div>
+{% endif %}
+{% endblock %}

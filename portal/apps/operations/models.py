@@ -25,48 +25,59 @@ def _read_current_canonical_number() -> int:
             return int(file_dict.get('current_canonical_number'))
     except Exception as exc:
         print(exc)
-
     return 0
 
 
 def _write_current_canonical_number(canonical_number: int):
     print('### write_current_canonical_number()')
-    file_path = os.path.join(BASE_DIR, CANONICAL_NUMBER_JSON)
-    file_dict = {
-        "current_canonical_number": canonical_number,
-        "timestamp": int(round(datetime.now(timezone.utc).timestamp()))
-    }
-    file_json = json.dumps(file_dict, indent=4)
-    with open(file_path, "w") as file:
-        file.write(file_json)
+    try:
+        file_path = os.path.join(BASE_DIR, CANONICAL_NUMBER_JSON)
+        file_dict = {
+            "current_canonical_number": canonical_number,
+            "timestamp": int(round(datetime.now(timezone.utc).timestamp()))
+        }
+        file_json = json.dumps(file_dict, indent=4)
+        with open(file_path, "w") as file:
+            file.write(file_json)
+    except Exception as exc:
+        print(exc)
 
 
 def get_current_canonical_number() -> int:
-    global current_canonical_number
-    current_canonical_number = _read_current_canonical_number()
-    if CanonicalNumber.objects.filter(canonical_number=current_canonical_number, is_deleted=False).exists() or \
-            int(current_canonical_number) < 1 or int(current_canonical_number) > 9999:
-        return increment_current_canonical_number()
-    _write_current_canonical_number(current_canonical_number)
-    return current_canonical_number
+    try:
+        global current_canonical_number
+        current_canonical_number = _read_current_canonical_number()
+        if CanonicalNumber.objects.filter(canonical_number=current_canonical_number, is_deleted=False).exists() or \
+                int(current_canonical_number) < 1 or int(current_canonical_number) > 9999:
+            return increment_current_canonical_number()
+        _write_current_canonical_number(current_canonical_number)
+        return current_canonical_number
+    except Exception as exc:
+        print(exc)
 
 
 def set_current_canonical_number(new_number: int = None) -> int:
-    global current_canonical_number
-    current_canonical_number = int(new_number)
-    _write_current_canonical_number(current_canonical_number)
-    return current_canonical_number
+    try:
+        global current_canonical_number
+        current_canonical_number = int(new_number)
+        _write_current_canonical_number(current_canonical_number)
+        return current_canonical_number
+    except Exception as exc:
+        print(exc)
 
 
 def increment_current_canonical_number() -> int:
-    global current_canonical_number
-    current_canonical_number += 1
-    if current_canonical_number < 1 or current_canonical_number > 9999:
-        current_canonical_number = 1
-    while CanonicalNumber.objects.filter(canonical_number=current_canonical_number, is_deleted=False).exists():
+    try:
+        global current_canonical_number
         current_canonical_number += 1
-    _write_current_canonical_number(current_canonical_number)
-    return current_canonical_number
+        if current_canonical_number < 1 or current_canonical_number > 9999:
+            current_canonical_number = 1
+        while CanonicalNumber.objects.filter(canonical_number=current_canonical_number, is_deleted=False).exists():
+            current_canonical_number += 1
+        _write_current_canonical_number(current_canonical_number)
+        return current_canonical_number
+    except Exception as exc:
+        print(exc)
 
 
 class CanonicalNumber(BaseModel, BaseTimestampModel, models.Model):

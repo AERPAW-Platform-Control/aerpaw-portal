@@ -36,7 +36,7 @@
     </div>
 </div>
 <div class="row mb-3">
-    <div class="col">
+    <div class="col-5">
         <div class="card">
             <div class="card-header bg-secondary text-light">
                 <h5>Fixed Resources</h5>
@@ -52,15 +52,19 @@
                                 {% for resource in cc_resources %}
                                 <li class="list-group-item ">
                                         <div class="form-check form-switch">
-                                            <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
                                                 {% if resource in experiment_resources %}
                                                 <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc" checked>
-                                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                                <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                                <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
+                                                    <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
+                                                </button>
                                                 {% else %}
                                                 <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cc">
-                                                <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                                <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                                <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
+                                                    <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
+                                                </button>
                                                 {% endif %}
-                                            </a>
                                         </div>
                                     </li>
                                 {% endfor %}
@@ -76,15 +80,19 @@
                                 {% for resource in lw_resources %}
                                 <li class="list-group-item ">
                                     <div class="form-check form-switch">
-                                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
                                             {% if resource in experiment_resources %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw" checked>
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
+                                                <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
+                                            </button>
                                             {% else %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="lw">
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}" data-map_url="{{resource.map_url}}">
+                                                <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
+                                            </button>
                                             {% endif %}
-                                        </a>
                                     </div>
                                 </li>
                                 {% endfor %}
@@ -96,7 +104,7 @@
         </div>
     </div>
 
-    <div class="col">
+    <div class="col-5">
         <div class="card">
             <div class="card-header bg-secondary text-light">
                 <h5>Portable Resources</h5>
@@ -112,15 +120,19 @@
                                 {% for resource in lpn_resources %}
                                 <li class="list-group-item ">
                                     <div class="form-check form-switch">
-                                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
                                             {% if resource in experiment_resources %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="Not Applicable">
+                                                <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
+                                            </button>
                                             {% else %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="Not Applicable">
+                                                <i class="fa-solid fa-circle-info fa-lg float-end" style="color: #0089f3;"></i>
+                                            </button>
                                             {% endif %}
-                                        </a>
                                     </div>
                                 </li>
                                 {% endfor %}
@@ -136,15 +148,61 @@
                                 {% for resource in spn_resources %}
                                 <li class="list-group-item ">
                                     <div class="form-check form-switch">
-                                        <a href="#" class="text-dark" data-bs-toggle="tooltip" data-bs-title="{{resource.description}}" data-bs-placement="right">
                                             {% if resource in experiment_resources %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn" checked>
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="Not Applicable">
+                                                <i class="fa-solid fa-circle-info fa-lg" style="color: #0089f3;"></i>
+                                            </button>
                                             {% else %}
                                             <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="pn">
-                                            <label for="{{resource.id}}" class="form-check-label stretched-link">{{resource.name}}</label>
+                                            <label for="{{resource.id}}" class="form-check-label ">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="Not Applicable">
+                                                <i class="fa-solid fa-circle-info fa-lg" style="color: #0089f3;"></i>
+                                            </button>
                                             {% endif %}
-                                        </a>
+                                        
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-2">
+        <div class="card">
+            <div class="card-header bg-secondary text-light">
+                <h5>Cloud Resources</h5>
+            </div>
+            <div class="card-body bg-secondary-subtle">
+                <div class="row">
+                    <div class="col">
+                        <div id="cn_resources">
+                            <ul class="list-group shadow">
+                                <li class="list-group-item bg-primary text-light">
+                                    <h5 name="resourceListHeading">Cloud Nodes</h5>
+                                </li>
+                                {% for resource in acn_resources %}
+                                <li class="list-group-item ">
+                                    <div class="form-check form-switch">
+                                            {% if resource in experiment_resources %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cn" checked>
+                                            <label for="{{resource.id}}" class="form-check-label">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
+                                                <i class="fa-solid fa-circle-info fa-lg" style="color: #0089f3;"></i>
+                                            </button>
+                                            {% else %}
+                                            <input id="{{resource.id}}" name="resourceBtn" type="checkbox" class="form-check-input" value="{{resource.id}}" data-location="cn">
+                                            <label for="{{resource.id}}" class="form-check-label ">{{resource.name}}</label>
+                                            <button id="{{resource.id}}-resource-info" name="resource-info" type="button" class="btn float-end" data-bs-toggle="modal" data-bs-target="#target-information-modal" data-name="{{resource.name}}" data-description="{{resource.description}}" data-location="{{resource.location}}">
+                                                <i class="fa-solid fa-circle-info fa-lg" style="color: #0089f3;"></i>
+                                            </button>
+                                            {% endif %}
+                                        
                                     </div>
                                 </li>
                                 {% endfor %}
@@ -195,6 +253,26 @@
                 </ul>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="target-information-modal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-light">
+
+            <h4 id="resource-info-name" class="modal-title fw-bold"></h4>
+        </div>
+        <div class="modal-body">
+            <h5 class="fw-bold ms-2">Description:</h5>
+            <p id="resource-info-description" class="ms-4"></p>
+            <hr>
+            <h5 class="fw-bold ms-2">Location:</h5>
+          <p id="resource-info-location" class="ms-4"></p>
+          <button type="button" class="btn btn-secondary float-end ms-2" data-bs-dismiss="modal">Close</button>
+          <a id="resource-map-button" class="btn btn-success float-end" href="" target="_blank">Open Map</a>
+        </div>
+      </div>
     </div>
 </div>
 

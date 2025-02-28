@@ -28,3 +28,4 @@ def refresh_access_token_for_user(user) -> None:
     profile.access_token = str(access)
     profile.save()
     print(access)
+

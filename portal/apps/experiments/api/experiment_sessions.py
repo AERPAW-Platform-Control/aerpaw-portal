@@ -2,6 +2,7 @@ from datetime import datetime, timezone, timedelta
 from django.utils import timezone as tz
 from uuid import uuid4
 
+from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, ScheduledSession
 from portal.apps.users.models import AerpawUser
 
@@ -45,6 +46,7 @@ def start_experiment_session(session: OnDemandSession, user: AerpawUser) -> bool
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -58,6 +60,7 @@ def stop_experiment_session(session: OnDemandSession, user: AerpawUser) -> bool:
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -71,6 +74,7 @@ def cancel_experiment_session(session: OnDemandSession, user: AerpawUser) -> boo
         return True
     except Exception as exc:
         print(exc)
+        new_error(exc, user)
     return False
 
 
@@ -145,11 +149,11 @@ def create_experiment_scheduled_session(session_type: str, experiment: AerpawExp
 
 def schedule_experiment_scheduled_session(request, session: ScheduledSession, user: AerpawUser) -> bool:
     try:
-        # need to save scheduled_by 
-        scheduled_date_time = datetime.strptime(f'{request.data["session_date"]}T{request.data["session_time"]}:00.000001', '%Y-%m-%dT%H:%M:%S.%f')
-        scheduled_date_time = tz.make_aware(scheduled_date_time)
-        print(f'scheduled_date_time= {scheduled_date_time}')
-        session.scheduled_start = scheduled_date_time
+        scheduled_active_date = None
+        if request.data.get("session_datetime"):
+            datetime_from_input = datetime.strptime(f'{request.data.get("session_datetime")}:00.000001', "%Y-%m-%dT%H:%M:%S.%f")
+            scheduled_active_date = tz.make_aware(datetime_from_input, tz.get_current_timezone())
+        session.scheduled_start = scheduled_active_date
         session.scheduled_created_on = tz.now()
         session.scheduled_by = user
         session.session_state = ScheduledSession.SessionStateChoices.SCHEDULED
@@ -157,7 +161,8 @@ def schedule_experiment_scheduled_session(request, session: ScheduledSession, us
         return True
     except Exception as exc:
         print(exc)
-    return False
+        new_error(exc, user)
+        return False
 
 
 def start_scheduled_session(session: ScheduledSession, user: AerpawUser) -> bool:
@@ -171,7 +176,8 @@ def start_scheduled_session(session: ScheduledSession, user: AerpawUser) -> bool
         return True
     except Exception as exc:
         print(exc)
-    return False
+        new_error(exc, user)
+        return False
 
 
 def end_scheduled_session(request, session: ScheduledSession, user: AerpawUser) -> bool:
@@ -181,12 +187,13 @@ def end_scheduled_session(request, session: ScheduledSession, user: AerpawUser) 
         session.end_date_time = datetime.now(timezone.utc)
         session.ended_by = user
         session.session_state = ScheduledSession.SessionStateChoices.COMPLETED
-        session.description = request.data['session_description']
-        session.is_success = request.data['is_success'] if request.data['is_success'] else False
+        session.description = request.data.get('session_description') if request.data.get('session_description') else 'None'
+        session.is_success = request.data.get('is_success') if request.data.get('is_success') else False
         session.save()
         return True
     except Exception as exc:
         print('SESSIONS exc',exc)
+        new_error(exc, user)
         return False
 
 
@@ -197,12 +204,13 @@ def cancel_scheduled_session(request, session: ScheduledSession, user: AerpawUse
         session.end_date_time = datetime.now(timezone.utc)
         session.ended_by = user
         session.session_state = ScheduledSession.SessionStateChoices.CANCELED
-        session.description = request.data['session_description']
-        session.is_success = request.data['is_success'] if request.data['is_success'] else False
+        session.description = request.data.get('session_description') if request.data.get('session_description') else 'None'
+        session.is_success = request.data.get('is_success') if request.data.get('is_success') else False
         session.save()
         return True
     except Exception as exc:
         print('SESSIONS exc',exc)
+        new_error(exc, user)
         return False
 
 

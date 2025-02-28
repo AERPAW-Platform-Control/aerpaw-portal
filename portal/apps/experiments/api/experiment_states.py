@@ -107,10 +107,9 @@ def is_valid_transition(experiment: AerpawExperiment, next_state: str, user: Aer
 
 
 def transition_experiment_state(request, experiment: AerpawExperiment, next_state: str = None):
-    print('STATES transition_experiment_state')
     """
     Transition experiment state with actions
-    - ACTIVE_DEVELOPMENT --> SAVING_DEVELOPMENT - save development session
+    - ACTIVE_DEVELOPMENT --> RETIRED - end development session - retire experiment
     - ACTIVE_EMULATION --> SAVED - emulation complete - Flags 100 or 101 - is_emulation_required was False
     - ACTIVE_EMULATION --> WAIT_TESTBED_DEPLOY - is_emulation_required is True and passed_emulation is True
     - ACTIVE_SANDBOX --> SAVING_SANDBOX - save sandbox session
@@ -225,3 +224,4 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     else:
         # TODO: placeholder for same state update options
         same_to_same(request=request, experiment=experiment)
+    

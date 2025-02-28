@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static profiles_tags users_tags user_request_tags %}
+
+{% block title %}
+    Aerpaw Reports
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+    {% if message %}
+        <div class="text-danger" style="font-size: large">{{ message }}</div>
+    {% endif %}
+    <div>
+        <div class="row">
+            <div class="col">
+                <h3>Aerpaw Experiment Form Responses</h3>
+                <hr>
+            </div>
+        </div>
+        {% if is_operator == True %}
+            {% if user.is_authenticated %}
+                <div class="row">
+                    <div class="col-2">
+                        
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <table class="table">
+                            <thead>
+                                <tr class="border-bottom border-black">
+                                    <th>Old Form Row Number</th>
+                                    <th>Experiment Id</th>
+                                    <th>Title</th>
+                                    <th>Keywords</th>
+                                    <th>Host Institution</th>
+                                    <th>Lead Experimenter</th>
+                                    <th>Created Date</th>
+                                    <th></th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody class="">
+                                {% for fd in experiment_fds %}
+                                <tr class="border border-bottom-0 border-black">
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">
+                                        {% if fd.old_form_row_number != None %}
+                                        {{fd.old_form_row_number}}
+                                        {% else %}
+                                        ---
+                                        {% endif %}
+                                    </td>
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">
+                                        {% if fd.experiment != None %}
+                                        {{fd.experiment.id}}
+                                        {% else %}
+                                        ---
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">{{fd.title}}</td>
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">{{fd.keywords}}</td>
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">{{fd.host_institution}}</td>
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">{{fd.lead_experimenter}}</td>
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">{{fd.created}}</td>
+                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %} align-middle">
+                                        <button class="btn btn-primary btn-sm shadow" type="button" name="expFormDataModal-button" data-bs-toggle="modal" data-bs-target="#expFormDataModal" value="{{fd.id}}">
+                                             <i class="fa fa-info-circle"></i> Details
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Experiment Form Data Detail Modal -->
+                <div class="modal fade" id="expFormDataModal" tabindex="-1" aria-labelledby="expFormDataModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header bg-dark text-light">
+                        <h1 class="modal-title fs-5 text-light" id="expFormDataModalLabel">Experiment Details</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container">
+                                <div class="row row-cols-2">
+                                    <div class="col p-1">
+                                        <div class="container border rounded">
+                                            <h4 class="">General Information</h4>
+                                            <hr>
+                                            <div class="row row-cols-3">
+                                                <div class="col mb-1">
+                                                    <b>Experiment Type:</b> 
+                                                    <p id="modal-experiment_type" name="expFormDataModal-p"></p>
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>Is Urgent:</b> 
+                                                    <p id="modal-is_urgent" name="expFormDataModal-p"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col p-1">
+                                        <div class="container border rounded">
+                                            <h4 class="">Experimenter Details</h4>
+                                            <hr>
+                                            <div class="row row-cols-3">
+                                                <div class="col mb-1">
+                                                    <b>Lead Experimenter</b> 
+                                                    <p id="modal-lead_experimenter" name="expFormDataModal-p"></p>
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>Lead Email</b> 
+                                                    <b<p id="modal-lead_email" name="expFormDataModal-p"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col p-1">
+                                        <div class="container border rounded">
+                                            <h4 class="">Institution Details</h4>
+                                            <hr>
+                                            <div class="row row-cols-3">
+                                                <div class="col mb-2">
+                                                    <b>Host Institution:</b> 
+                                                    <p id="modal-host_institution" name="expFormDataModal-p"></p>
+                                                </div>
+                                                <div class="col mb-2">
+                                                    <b>Sponsored Project:</b> 
+                                                    <p id="modal-sponsored_project" name="expFormDataModal-p"></p>
+                                                </div>
+                                                <div class="col mb-2">
+                                                    <b>Grant Number:</b> 
+                                                    <p id="modal-grant_number" name="expFormDataModal-p"></p>
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>Data May be Shared:</b> 
+                                                    <p id="modal-is_shared" name="expFormDataModal-p"></p>
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>Public URL for Data:</b> 
+                                                    <p id="modal-public_url" name="expFormDataModal-p"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col p-1">
+                                        <div class="container border rounded">
+                                            <h4 class="">Experiment Description</h4>
+                                            <hr>
+                                            <div class="row row-cols-3">
+                                                <div class="col mb-2">
+                                                    <b>Location:</b> 
+                                                    <p id="modal-location" name="expFormDataModal-p"></p>
+                                                    <br>{{fd.location}}
+                                                </div>
+                                                <div class="col mb-2">
+                                                    <b>Keywords:</b> 
+                                                    <p id="modal-keywords" name="expFormDataModal-p"></p>
+                                                    <br>{{fd.keywords}}
+                                                </div>
+                                                <div class="col mb-2">
+                                                    <b>Goal:</b> 
+                                                    <p id="modal-goal" name="expFormDataModal-p"></p>
+                                                    <br>{{fd.goal}}
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>Description:</b> 
+                                                    <p id="modal-description" name="expFormDataModal-p"></p>
+                                                    <br>{{fd.description}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col p-1">
+                                        <div class="container border rounded">
+                                            <h4 class="">Equipment</h4>
+                                            <hr>
+                                            <div class="row row-cols-1">
+                                                <div class="col mb-1">
+                                                    <b>Vehicle Behavior:</b> 
+                                                    <p id="modal-vehicle_behavior" name="expFormDataModal-p"></p>
+                                                    <br>{{fd.vehicle_behavior}}
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>BYOD Hardware:</b> 
+                                                    <p id="modal-byod_hardware" name="expFormDataModal-p"></p>
+                                                    <br>{% if fd.byod_hardware %}{{fd.byod_hardware}}{% else %}None{% endif %}
+                                                </div>
+                                                <div class="col mb-1">
+                                                    <b>BYOD Software:</b> 
+                                                    <p id="modal-byod_software" name="expFormDataModal-p"></p>
+                                                    <br>{% if fd.byod_software %}{{fd.byod_software}}{% else %}None{% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col p-1">
+                                        <div class="container border rounded">
+                                            <h4 class="">Questions</h4>
+                                            <hr>
+                                            <div class="row row-cols-1">
+                                                <div class="col mb-1">
+                                                    <b>Questions for Aerpaw Ops:</b> 
+                                                    <p id="modal-questions" name="expFormDataModal-p"></p>
+                                                    <br>{% if fd.questions %}{{fd.questions}}{% else %}None{% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+  
+
+            {% else %}
+            <p>You are not logged in</p>
+                <a href="{% url 'login' %}">
+                    <button class="message-btn btn btn-success">Login</button>
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/experiment_form_responses.js' %}?{% now 'U' %}"></script>
+{% endblock %}
