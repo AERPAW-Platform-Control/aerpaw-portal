@@ -622,6 +622,7 @@ def experiment_sessions(request, experiment_id):
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
     user = request.user
     is_operator = False
+    dashboard_buttons = None
     if user.groups.filter(name='operator').exists():
         try:
             is_operator = True
@@ -651,7 +652,7 @@ def experiment_sessions(request, experiment_id):
 
         # Combines and retrieves data for ScheduledSessions and OnDemandSessions
         all_sessions = scheduled_e.sessions_list(request=request, many=True, ops_sessions=scheduled_sessions, sessions=sessions)
-
+        
 
 
 
@@ -663,6 +664,7 @@ def experiment_sessions(request, experiment_id):
         max_range = 0
         if all_sessions.data:
             all_sessions = dict(all_sessions.data)
+            dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
             results = all_sessions['results']
             all_sessions['results'] = sorted(results, key=lambda x: x['session_id'], reverse=True)
             prev_url = all_sessions.get('previous', None)
@@ -692,7 +694,7 @@ def experiment_sessions(request, experiment_id):
         else:
             all_sessions = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
-        dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
+        dashboard_buttons = get_session_dashboard_buttons(request, session_id=None)
         
     except Exception as exc:
         error = new_error(exc, request.user)

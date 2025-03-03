@@ -2,7 +2,9 @@
 
 APPS_LIST=(
     "credentials"
+    "error_handling"
     "experiment_files"
+    "experiment_info"
     "experiments"
     "operations"
     "profiles"
