@@ -36,8 +36,8 @@ class AerpawSsh:
             return 'mock: {0}'.format(command), 0 """
         if self.client:
             try:
-                full_command = f"echo {PASSWORD} | sudo -S {command}"
-                stdin, stdout, stderr = self.client.exec_command(full_command, get_pty=True)
+               # full_command = f"echo {PASSWORD} | sudo -S {command}"
+                stdin, stdout, stderr = self.client.exec_command(command, get_pty=True)
                 if verbose:
                     response = bytes()
                     while not stdout.channel.exit_status_ready():
