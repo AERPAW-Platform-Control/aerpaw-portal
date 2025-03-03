@@ -466,7 +466,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                         canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.AFRN
                                         canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
                                     elif resource.resource_type == AerpawResource.ResourceType.APRN:
-                                        canonical_experiment_resource.node_type == CanonicalExperimentResource.NodeType.APRN
+                                        canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.APRN
                                         if resource.resource_type == AerpawResource.ResourceType.UAV:
                                             canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_UAV
                                         if resource.resource_type == AerpawResource.ResourceType.UGV:
