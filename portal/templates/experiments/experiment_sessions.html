@@ -268,12 +268,12 @@
                         <hr class="w-75">
                         <div class="row single-choice-checkbox-group">
                             <div class="col text-center">
-                                <input name="session_success" type="checkbox" class="btn-check single-check" id="success-session-btn" value="True" onclick="toggleGroup(this)" data-target="#initiateDevelopmentBtnGroup" autocomplete="off">
-                                <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
+                                    <input name="session_success" type="checkbox" class="btn-check single-check" role="switch" id="success-session-btn" value="True" onclick="toggleGroup(this)" data-target="#initiateDevelopmentBtnGroup" autocomplete="off">
+                                    <label class="btn btn-primary btn-lg" for="success-session-btn">Yes</label>
                             </div>
                             <div class="col text-center">
-                                <input name="session_success" type="checkbox" class="btn-check single-check" id="fail-session-btn" value="False" onclick="toggleGroup(this)" data-target="#rescheduleBtnGroup" autocomplete="off">
-                                <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
+                                    <input name="session_success" type="checkbox" class="btn-check single-check" role="switch" id="fail-session-btn" value="False" onclick="toggleGroup(this)" data-target="#rescheduleBtnGroup" autocomplete="off">
+                                    <label class="btn btn-primary btn-lg" for="fail-session-btn">No</label>
                             </div>
                         </div>
                     </div>
@@ -286,46 +286,46 @@
                             <div class="row row-cols-2">
                                 <!-- Number of Fixed Nodes -->
                                 <div class="col mb-1">
-                                    {{field.0.label}}
-                                    {{field.0}}
-                                </div>
-                                <!-- Number of Portable Nodes -->
-                                <div class="col mb-1">
                                     {{field.1.label}}
                                     {{field.1}}
                                 </div>
-                                <!-- Number of LAMs -->
+                                <!-- Number of Portable Nodes -->
                                 <div class="col mb-1">
                                     {{field.2.label}}
                                     {{field.2}}
                                 </div>
-                                <!-- Number of SAMs -->
+                                <!-- Number of LAMs -->
                                 <div class="col mb-1">
                                     {{field.3.label}}
                                     {{field.3}}
                                 </div>
-                                <!-- Number of Rovers -->
+                                <!-- Number of SAMs -->
                                 <div class="col mb-1">
                                     {{field.4.label}}
                                     {{field.4}}
                                 </div>
-                                <!-- Helikite -->
+                                <!-- Number of Rovers -->
                                 <div class="col mb-1">
                                     {{field.5.label}}
                                     {{field.5}}
                                 </div>
+                                <!-- Helikite -->
+                                <div class="col mb-1">
+                                    {{field.6.label}}
+                                    {{field.6}}
+                                </div>
                             </div>
                             <!-- Person Hours -->
                             <div class="container mb-1">
-                                {{field.6.label}}
-                                {{field.6}}
+                                {{field.7.label}}
+                                {{field.7}}
                             </div>
                             <!-- Operators -->
                             <div class="container mb-1">
-                                <label class="mb-1">{{field.7.label}}</label>
+                                <label class="mb-1">{{field.8.label}}</label>
                                 <div class="form-control">
                                     <div class="row row-cols-2 gy-2">
-                                        {% for operator in field.7 %}
+                                        {% for operator in field.8 %}
                                         <div class="col">{{operator}}</div>
                                         {% endfor %}
                                     </div>
@@ -333,27 +333,27 @@
                             </div>
                             <!-- Date of Experiment -->
                             <div class="col mb-1">
-                                {{field.8.label}}
-                                {{field.8}}
+                                {{field.9.label}}
+                                {{field.9}}
                             </div>
                             <div class="row">
                                 <!-- Time Start -->
                                 <div class="col mb-1">
-                                    {{field.9.label}}
-                                    {{field.9}}
+                                    {{field.10.label}}
+                                    {{field.10}}
                                 </div>
                                 <!-- Time End -->
                                 <div class="col mb-1">
-                                    {{field.10.label}}
-                                    {{field.10}}
+                                    {{field.11.label}}
+                                    {{field.11}}
                                 </div>
                             </div>
                             <!-- Fixed Nodes Used -->
                             <div class="container mb-1">
-                                <label class="mb-1">{{field.11.label}}</label>
+                                <label class="mb-1">{{field.12.label}}</label>
                                 <div class="form-control">
                                     <div class="row row-cols-2 gy-2">
-                                        {% for fn in field.11 %}
+                                        {% for fn in field.12 %}
                                         <div class="col">{{fn}}</div>
                                         {% endfor %}
                                     </div>
@@ -361,15 +361,15 @@
                             </div>
                             <!-- Experiment Radio Hardware -->
                             <div class="container mb-1">
-                                {{field.12.label}}
-                                {{field.12}}
+                                {{field.13.label}}
+                                {{field.13}}
                             </div>
                             <!-- AERPAW Site -->
                             <div class="container mb-1">
-                                <label class="mb-1">{{field.13.label}}</label>
+                                <label class="mb-1">{{field.14.label}}</label>
                                 <div class="form-control">
                                     <div class="row row-cols-3">
-                                        {% for fn in field.13 %}
+                                        {% for fn in field.14 %}
                                         <div class="col">{{fn}}</div>
                                         {% endfor %}
                                     </div>
@@ -377,8 +377,8 @@
                             </div>
                             <!-- Comments -->
                             <div class="container mb-1">
-                                {{field.14.label}}
-                                {{field.14}}
+                                {{field.15.label}}
+                                {{field.15}}
                             </div>
                             {% endwith %}
                             
