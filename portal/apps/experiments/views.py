@@ -1,5 +1,4 @@
 import calendar, traceback, sys, re
-
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
@@ -174,6 +173,7 @@ def experiment_detail(request, experiment_id):
                 except Exception as exc:
                     new_error(exc, request.user)
             elif request.POST.get('retire_experiment') == "true":
+                print('VIEWS.py Retiring Experiment: ', experiment)
                 request.data = QueryDict('', mutable=True)
                 request.data.update({'is_retired': 'true'})
                 e = ExperimentViewSet(request=request)
@@ -268,6 +268,7 @@ def experiment_create(request):
         except Exception as exc:
             new_error(exc, request.user)
     else:
+        print('GET request', request.GET)
         project_id = request.GET.get('project_id')
         p = ProjectViewSet()
         project = p.retrieve(request=request, pk=project_id).data

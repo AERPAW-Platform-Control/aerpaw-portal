@@ -370,6 +370,7 @@ def upload_old_form_data():
                 vehicle_behavior=ser.iloc[13] if not pd.isna(ser.iloc[13]) else 'None provided'
             )
             
+<<<<<<< Updated upstream
             exp_fd.save()        
     upload_fieldtrips()
 
@@ -477,6 +478,7 @@ def field_trip_form(experiment_id):
     if experiment_form_data:
         form = FieldTripForm(initial={'experiment_form':experiment_form_data})
     else:
+<<<<<<< Updated upstream
         form = FieldTripForm()
     return form        
         
