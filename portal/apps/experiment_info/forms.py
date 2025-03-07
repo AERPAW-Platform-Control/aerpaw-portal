@@ -29,6 +29,10 @@ class FieldTripForm(forms.ModelForm):
         label='Experiment Form',
         widget=forms.NumberInput(attrs={'class':'form-control'})
     )
+    experiment = forms.IntegerField(
+        label='Experiment',
+        widget=forms.NumberInput(attrs={'class':'form-control'})
+    )
     number_of_fixed_nodes = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
         required=False,
@@ -111,7 +115,7 @@ class FieldTripForm(forms.ModelForm):
 
     class Meta:
         model = FieldTrip
-        fields = ['experiment_form', 'number_of_fixed_nodes', 'number_of_portable_nodes', 'LAMs', 'SAMs', 
+        fields = ['experiment_form', 'experiment', 'number_of_fixed_nodes', 'number_of_portable_nodes', 'LAMs', 'SAMs', 
                   'rovers', 'helikite', 'person_hours', 'operators', 'experiment_date', 'start_time', 
                   'end_time', 'fixed_nodes_used', 'radio_hardware', 'site', 'comments',]
 
@@ -146,6 +150,12 @@ class MultipleExpFieldTripForm(forms.ModelForm):
 
     experiment_form = forms.ModelMultipleChoiceField(
         queryset=ExperimentFormData.objects.filter(experiment__in=TestbedExperiments.active_tb_exp),
+        widget=forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'}),
+        required=True,
+        label='Select Experiment(s)',
+    )
+    experiment = forms.ModelMultipleChoiceField(
+        queryset=TestbedExperiments.active_tb_exp,
         widget=forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'}),
         required=True,
         label='Select Experiment(s)',
@@ -232,7 +242,7 @@ class MultipleExpFieldTripForm(forms.ModelForm):
 
     class Meta:
         model = FieldTrip
-        fields = ['experiment_form', 'number_of_fixed_nodes', 'number_of_portable_nodes', 'LAMs', 'SAMs', 
+        fields = ['experiment_form', 'experiment', 'number_of_fixed_nodes', 'number_of_portable_nodes', 'LAMs', 'SAMs', 
                   'rovers', 'helikite', 'person_hours', 'operators', 'experiment_date', 'start_time', 
                   'end_time', 'fixed_nodes_used', 'radio_hardware', 'site', 'comments',]
 

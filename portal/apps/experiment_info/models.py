@@ -70,6 +70,7 @@ class FieldTrip(BaseModel, BaseTimestampModel):
         OTHER = 'OTHER', _('Other')
 
     experiment_form = models.ManyToManyField(ExperimentFormData)
+    experiment = models.ManyToManyField(AerpawExperiment)
     number_of_fixed_nodes = models.SmallIntegerField(default=0)
     number_of_portable_nodes = models.SmallIntegerField(default=0)
     LAMs = models.SmallIntegerField(default=0)
@@ -78,7 +79,7 @@ class FieldTrip(BaseModel, BaseTimestampModel):
     helikite = models.SmallIntegerField(default=0)
     person_hours = models.FloatField(default=0)
     list_of_operators = models.CharField(max_length=255, blank=True, null=True)
-    operators = models.ManyToManyField(AerpawUser, limit_choices_to={'username__endswith':'@ncsu.edu'})
+    ap_operators = models.ManyToManyField(AerpawUser, limit_choices_to={'username__endswith':'@ncsu.edu'})
     experiment_date = models.DateField(blank=True, null=True)
     start_time = models.TimeField(blank=True, null=True)
     end_time = models.TimeField(blank=True, null=True)

@@ -461,7 +461,7 @@ def evaluate_session_dashboard_action(request):
         
 
 def get_session_dashboard_buttons(request, session_id: int) -> dict:
-
+    print(f'session id = {session_id}')
     buttons = {
         'start': False,
         'end': False,
@@ -470,6 +470,7 @@ def get_session_dashboard_buttons(request, session_id: int) -> dict:
     }
 
     if not session_id:
+        buttons['no_actions'] = True
         return buttons
     else:
         try:

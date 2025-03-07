@@ -664,6 +664,7 @@ def experiment_sessions(request, experiment_id):
         max_range = 0
         if all_sessions.data:
             all_sessions = dict(all_sessions.data)
+            print(f'all sessions= {all_sessions}')
             dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
             results = all_sessions['results']
             all_sessions['results'] = sorted(results, key=lambda x: x['session_id'], reverse=True)
@@ -693,8 +694,8 @@ def experiment_sessions(request, experiment_id):
                 max_range = count
         else:
             all_sessions = {}
+            dashboard_buttons = get_session_dashboard_buttons(request, session_id=None)
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
-        dashboard_buttons = get_session_dashboard_buttons(request, session_id=None)
         
     except Exception as exc:
         error = new_error(exc, request.user)
