@@ -24,7 +24,7 @@ from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, Sc
 from portal.apps.user_messages.user_messages import generate_user_messages_for_development, generate_user_messages_for_sandbox,\
     generate_user_messages_for_emulation, generate_user_messages_for_testbed
 from portal.server.ops_ssh_utils import AerpawSsh
-from portal.server.settings import MOCK_OPS
+from portal.server.settings import MOCK_OPS, TUT_SERVER, DEV_SERVER
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
@@ -76,25 +76,40 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     # PORTAL CF: saving_development
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-ops-saveexit-ve-exp.py
-
+    
+    mock = False
     if MOCK_OPS:
         # DEVELOPMENT - always pass
-        mock = False
+        mock = True
+
+    # DEVELOPMENT SERVER commands
+    if DEV_SERVER:
         if exit_development:
             command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_cfdev.py {0} save-and-exit".format(
                 experiment.id)
         else:
             command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_cfdev.py {0} save".format(
                 experiment.id)
+            
+    # TUTORIAL SERVER commands
+    elif TUT_SERVER:
+        if exit_development:
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_tut.py {0} save-and-exit".format(
+                experiment.id)
+        else:
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_tut.py {0} save".format(
+                experiment.id)
+    
+    # PRODUCTION SERVER commands
     else:
-        # PRODUCTION
-        mock = False
         if exit_development:
             command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
                 experiment.id)
         else:
             command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
                 experiment.id)
+        
+    
     try:
         aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
         ssh_thread = threading.Thread(target=saving_development,
@@ -579,16 +594,26 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
-        experiment.id)
-    if MOCK_OPS:
+    
+    mock = False
+    if MOCK_OPS:     
         # DEVELOPMENT - always pass
         mock = False
+    
+    # DEVELOPMENT SERVER command
+    if DEV_SERVER:
         command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp_cfdev.py {0}".format(
             experiment.id)
+    
+    # TUTORIAL SERVER command
+    elif TUT_SERVER:    
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp_tut.py {0}".format(
+            experiment.id)
+    
+    # PRODUCTION SERVER command
     else:
-        # PRODUCTION
-        mock = False
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
+            experiment.id)
         
     print('mock= ', mock)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_DEV)
@@ -626,17 +651,25 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     generate_user_messages_for_sandbox(request, experiment=experiment)
 
     # PORTAL CF: wait_sandbox_deploy
-    # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox.py {0}".format(
-        experiment.id)
+    mock = False
     if MOCK_OPS:
-        # DEVELOPMENT - always pass
         mock = True
+    
+    # DEVELOPMENT SERVER command
+    if DEV_SERVER:
         command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox_cfdev.py {0}".format(
             experiment.id)
+    
+    # TUTORIAL SERVER command
+    elif TUT_SERVER:
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox_tut.py {0}".format(
+            experiment.id)
+    
+    # PRODUCTION SERVER command
     else:
-        # PRODUCTION
-        mock = False
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox.py {0}".format(
+            experiment.id)
+        
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_SB)
     ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()
@@ -723,17 +756,28 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
 
     # PORTAL CF: wait_testbed_schedule
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # aerpaw ops: ap-cf-submit-to-tbed.py
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
-            experiment.id)
+    # aerpaw ops: ap-cf-ops-submit-to-tbed.py
+    
+    mock = False
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = False
+
+    # DEVELOPMENT SERVER command
+    if DEV_SERVER:
         command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed_cfdev.py {0}".format(
             experiment.id)
+    
+    # TUTORIAL SERVER command
+    elif TUT_SERVER:
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed_tut.py {0}".format(
+            experiment.id)
+        
+    # PRODUCTION SERVER command
     else:
-        # PRODUCTION
-        mock = False
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
+                experiment.id)
+        
         
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_TB)
     ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock, aerpaw_thread))
@@ -1023,12 +1067,24 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
     experiment.save()
 
     user = experiment.created_by
-    command = ''
     mock = False
-
     if MOCK_OPS:
-        command = ''
-        mock = True
+        # DEVELOPMENT - always pass
+        mock = False
+
+    # DEVELOPMENT SERVER command
+    if DEV_SERVER:
+        command = ""
+    
+    # TUTORIAL SERVER command
+    elif TUT_SERVER:
+        command = ""
+        
+    # PRODUCTION SERVER command
+    else:
+        command = ""
+
+
 
     aerpaw_thread = start_aerpaw_thread(user, experiment, AerpawThread.ThreadActions.INITIATE_SB)
     ssh_thread = threading.Thread(target=active_sandbox, args=(experiment, command, mock, aerpaw_thread))
@@ -1379,7 +1435,6 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
 
-<<<<<<< Updated upstream
 def wait_development_deploy(request, experiment: AerpawExperiment, command: str, mock: bool, aerpaw_thread: AerpawThread) -> None:
     
     exit_code = 0
@@ -1653,15 +1708,25 @@ def to_retired(request, experiment: AerpawExperiment):
         experiment.save()
 
     # Invoke retire script to cleanup all experiment files
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id)
+    mock = False
     if MOCK_OPS:
         # DEVELOPMENT - always pass
-        mock = False
+        mock = True
+    
+    # DEVELOPMENT SERVER command
+    if DEV_SERVER:
         command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp_cfdev.py {0}".format(
            experiment.id)
+        
+    # TUTORIAL SERVER command
+    elif TUT_SERVER:
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp_tut.py {0}".format(
+           experiment.id)
+        
+    # PRODUCTION SERVER command
     else:
-        # PRODUCTION
-        mock = False
+        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id)
+        
     print('command = ', command)
     print('Mock = ', mock)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
