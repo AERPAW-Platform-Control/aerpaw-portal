@@ -4,7 +4,7 @@ from django.views import View
 from django.utils import timezone
 
 from portal.apps.users.models import AerpawUser
-from portal.apps.user_requests.views import list_group_members
+from portal.apps.google_group.views import list_group_members
 from portal.apps.reports.report_dashboard import report_by_institution, resource_usage_report, lab_usage_report, session_use_report, fixed_resource_usage_report, portable_resource_usage_report, cloud_resource_usage_report
 
 # Create your views here.

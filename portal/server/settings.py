@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'portal.apps.experiment_files',  # experiment files
     'portal.apps.experiment_info', # experiment form data
     'portal.apps.experiments',  # experiments
+    'portal.apps.google_group', # google group
     'portal.apps.operations',  # operations
     'portal.apps.credentials',  # credentials
     'portal.apps.user_messages',  # user messages
@@ -151,6 +152,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'templates/credentials'),
             os.path.join(BASE_DIR, 'templates/experiment_files'),
             os.path.join(BASE_DIR, 'templates/experiments'),
+            os.path.join(BASE_DIR, 'templates/google_group'),
             os.path.join(BASE_DIR, 'templates/portal'),
             os.path.join(BASE_DIR, 'templates/profiles'),
             os.path.join(BASE_DIR, 'templates/projects'),
