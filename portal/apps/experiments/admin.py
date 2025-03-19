@@ -10,7 +10,6 @@ class AerpawExperimentResource(resources.ModelResource):
         model = AerpawExperiment
 class AerpawExperimentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     resource_class = AerpawExperimentResource
-    list_display = ["name", "id"]
 
 admin.site.register(AerpawExperiment, AerpawExperimentAdmin)
 admin.site.register(UserExperiment)

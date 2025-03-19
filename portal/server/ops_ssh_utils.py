@@ -35,6 +35,7 @@ class AerpawSsh:
         full_command = command
         if mock:
             full_command = f"echo {PASSWORD} | sudo -S {command}"
+            print(f'Mock Ops: full command= {full_command}')
             return 'mock: {0}'.format(command), 0
         if self.client:
             try:

@@ -60,6 +60,7 @@ if [[ "${MAKE_MIGRATIONS}" -eq 1 ]]; then
         "profiles"
         "resources"
         "projects"
+        "error_handling"
         "experiment_files"
         "experiments"
         "operations"
@@ -78,6 +79,7 @@ if [[ "${LOAD_FIXTURES}" -eq 1 ]]; then
     FIXTURES_LIST=(
         "aerpaw_roles"
         "resources"
+        "error_handling"
         "experiment_files"
         "operations"
         "profiles"

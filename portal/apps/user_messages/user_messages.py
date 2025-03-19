@@ -75,10 +75,6 @@ def user_message_create(request, *args, **kwargs) -> bool:
         return False
 
 
-
-
-
-
 def generate_user_messages_from_user_request(request, user_request: dict):
     """
     Example UserRequest - project join request
@@ -599,7 +595,7 @@ Experiment UUID: {2}
         received_by_all = received_by_all + [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]
         message_subject = '[AERPAW] Update for request to submit to emulation for Experiment: {0}'.format(experiment.name)
         message_body = """
-Your experiment {0} has been scheduled and is now awaiting execution in Emulation.
+Your experiment {0} has been provisionally scheduled and is now awaiting execution in Emulation.
 
 When the Emulation Execution has started, you will receive another email.
 
@@ -711,7 +707,7 @@ Experiment UUID: {2}
         message_subject = '[AERPAW] Update for request to submit to testbed for Experiment: {0}'.format(
             experiment.name)
         message_body = """
-Your experiment {0} has been scheduled and is now awaiting execution on the Testbed.
+Your experiment {0} has been provisionally scheduled and is now awaiting execution on the Testbed.
 
 When the Testbed Execution is complete, you will receive another email. 
 As noted in the AERPAW User Manual, this can take a variable amount of time, typically several days.

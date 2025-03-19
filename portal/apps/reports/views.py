@@ -4,6 +4,7 @@ from django.views import View
 from django.utils import timezone
 
 from portal.apps.users.models import AerpawUser
+from portal.apps.user_requests.views import list_group_members
 from portal.apps.reports.report_dashboard import report_by_institution, resource_usage_report, lab_usage_report, session_use_report, fixed_resource_usage_report, portable_resource_usage_report, cloud_resource_usage_report
 
 # Create your views here.
@@ -37,6 +38,9 @@ class ReportView(View):
         cloud_resource_data, cloud_resource_usage = cloud_resource_usage_report(start_date, end_date)
         session_data, session_use = session_use_report(start_date, end_date)
 
+        google_group_members = list_group_members(request)
+
+
         context = {
             'user':user,
             'is_operator':is_operator,
@@ -47,6 +51,7 @@ class ReportView(View):
             'portable_resource_data':portable_resource_data,
             'cloud_resource_data': cloud_resource_data,
             'session_data':session_data,
+            'google_group_members':google_group_members
         }
 
         return render(request, 'reports/reports_home.html', context)
