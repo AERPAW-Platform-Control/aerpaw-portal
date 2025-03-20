@@ -5,6 +5,8 @@ from django.shortcuts import render, redirect
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+
+from .forms import UserGoogleGroupConsentForm
 from portal.apps.google_group.group_dashboard import credentials_to_dict
 
 SCOPES = ["https://www.googleapis.com/auth/admin.directory.group.member", "https://www.googleapis.com/auth/admin.directory.group", 'https://www.googleapis.com/auth/apps.groups.settings']
@@ -94,3 +96,14 @@ def list_group_members(request):
         print(f"Member= {member['preferredMemberKey']['id']}")
     return response.get("memberships", [])
 
+def user_consent(request):
+    form = UserGoogleGroupConsentForm()
+
+    if request.method == 'POST':
+        pass
+
+
+    context = {
+        'form':form
+    }
+    pass
