@@ -26,6 +26,7 @@ class ExperimentFormData(BaseModel, BaseTimestampModel, models.Model):
         CENTENNIAL_CAMPUS = 'centennial_campus', _('Centennial Campus')
         EMULATION = 'emulation', _('Emulation')
         SANDBOX = 'sandbox', _('Sandbox')
+        DEVELOPMENT = 'development', _('Development')
         TEST_BED = 'test_bed', _('Both LW and CC')
         OTHER = 'other', _('Other')
 
