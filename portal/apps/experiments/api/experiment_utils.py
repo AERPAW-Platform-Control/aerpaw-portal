@@ -92,13 +92,13 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
             command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_cfdev.py {0} save".format(
                 experiment.id)
     else:
-        # PRODUCTION
+        # Tutorial Server
         mock = False
         if exit_development:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_tut.py {0} save-and-exit".format(
                 experiment.id)
         else:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
+            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_tut.py {0} save".format(
                 experiment.id)
     try:
         aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
@@ -585,7 +585,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-deploy-ve-exp.py
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp_tut.py {0}".format(
         experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -633,7 +633,7 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF: wait_sandbox_deploy
     # TODO: aerpaw ops: <SCRIPT> - placeholder for anticipated call
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox.py {0}".format(
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox_tut.py {0}".format(
         experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -729,7 +729,7 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     # PORTAL CF: wait_testbed_schedule
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-submit-to-tbed.py
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed_tut.py {0}".format(
             experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -1660,7 +1660,7 @@ def to_retired(request, experiment: AerpawExperiment):
         experiment.save()
 
     # Invoke retire script to cleanup all experiment files
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp_tut.py {0}".format(
            experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
