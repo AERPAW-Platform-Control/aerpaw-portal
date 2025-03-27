@@ -30,10 +30,6 @@ aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
-print(f'aerpaw_ops_host: {aerpaw_ops_host}')
-print(f'aerpaw_ops_port: {aerpaw_ops_port}')
-print(f'aerpaw_ops_user: {aerpaw_ops_user}')
-print(f'aerpaw_ops_key_file: {aerpaw_ops_key_file}')
 _TMP_FILE_PATH = '/tmp/aerpaw_files'
 
 

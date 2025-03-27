@@ -7,18 +7,10 @@ from portal.apps.google_group.models import GoogleGroupMembership
 @login_required
 def home_view(request):
     user = request.user
-    google_group = GoogleGroupMembership.objects.filter(user=user).first()
-    ask_consent = False
-    current_members = list_group_members(request)
-    is_member = user.email in current_members
-    print(f'is member= {is_member}')
-    if not google_group:
-        google_group = GoogleGroupMembership(
-            user=user,
-            consent_asked=False,
-            consent_given=False,
-            member=user.email in current_members
-        )
+    google_group, created = GoogleGroupMembership.objects.get_or_create(user=user)
+    is_member = user.email in list_group_members(request)
+    if created:
+        google_group.member=is_member
         google_group.save()
 
     if google_group.member == False and google_group.consent_asked == False:

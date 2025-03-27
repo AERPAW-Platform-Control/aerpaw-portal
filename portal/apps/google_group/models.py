@@ -19,6 +19,6 @@ class GoogleGroupMembership(BaseModel, BaseTimestampModel, models.Model):
 
     """
     user = models.ForeignKey(AerpawUser, on_delete=models.CASCADE)
-    consent_asked = models.BooleanField()
-    consent_given = models.BooleanField()
-    member = models.BooleanField()
+    consent_asked = models.BooleanField(default=False)
+    consent_given = models.BooleanField(default=False)
+    member = models.BooleanField(default=False)

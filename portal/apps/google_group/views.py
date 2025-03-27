@@ -63,6 +63,7 @@ def user_consent_view(request):
     print(f'request.POST= {request.POST}')
     if request.method == 'POST':
             if 'join_group' in request.POST:
+                print(f'user email= {request.user.email}')
                 user_gave_consent(request)
                 webbrowser.open('https://groups.google.com/a/ncsu.edu/g/group-aerpaw-users/', new=2)
                 return redirect('home')

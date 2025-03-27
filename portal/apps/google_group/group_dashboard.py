@@ -25,7 +25,7 @@ def add_user_to_group(request):
         print('Cannot add user to group! Credentials not found')
         
     service = build('cloudidentity', 'v1', credentials=credentials)
-    user_email = "robertschristopher5060@gmail.com"
+    user_email = request.user.email
 
     group_membership = {
         'preferredMemberKey': {'id': user_email},
