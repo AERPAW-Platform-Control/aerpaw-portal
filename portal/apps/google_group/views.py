@@ -1,4 +1,4 @@
-import os, json
+import os, json, webbrowser
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -6,8 +6,9 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
-from .forms import UserGoogleGroupConsentForm
-from portal.apps.google_group.group_dashboard import credentials_to_dict
+from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.google_group.models import GoogleGroupMembership
+from portal.apps.google_group.group_dashboard import credentials_to_dict, user_gave_consent, user_declined_group, list_group_members
 
 SCOPES = ["https://www.googleapis.com/auth/admin.directory.group.member", "https://www.googleapis.com/auth/admin.directory.group", 'https://www.googleapis.com/auth/apps.groups.settings']
 SERVICE_ACCOUNT_KEY = 'service_account_key.json'
@@ -56,54 +57,44 @@ def oauth2_callback(request):
         print(f'oauth2_callback exc= {exc}')
     return redirect('profile')
 
-def add_user_to_group(request):
-    print('Adding user to group')
-    credentials = Credentials.from_authorized_user_file(TOKEN_FILE, ['https://www.googleapis.com/auth/cloud-identity.groups'])
-    print(f'Got Credentials: {credentials}')
-    if not credentials:
-        print('Cannot add user to group! Credentials not found')
-        return redirect('/google-login/')  # Redirect to login if not authenticated
-
-    service = build('cloudidentity', 'v1', credentials=credentials)
-    print(f'Built service: {service}')
-    user_email = "robertschristopher5060@gmail.com"
-
-    group_membership = {
-        'preferredMemberKey': {'id': user_email},
-        'roles': [{'name': 'MEMBER'}]
-    }
-
-    try:
-        request = service.groups().memberships().create(
-            parent=GROUP_NAME,
-            body=group_membership
-        )
-        print(f'Created request: {request}')
-        response = request.execute()
-        print(f'User added! Response= {response}\n')
-        return JsonResponse({"message": f"Added user {user_email}.", "response": response})
-    except Exception as e:
-        return f"Error: {str(e)}"
-    
-def list_group_members(request):
-    credentials = Credentials.from_authorized_user_file(TOKEN_FILE, ['https://www.googleapis.com/auth/cloud-identity.groups'])
-    service = build('cloudidentity', 'v1', credentials=credentials)
-    
-    request = service.groups().memberships().list(parent=GROUP_NAME)
-    response = request.execute()
-    print(f'Response= {response.keys()}')
-    for member in response.get("memberships"):
-        print(f"Member= {member['preferredMemberKey']['id']}")
-    return response.get("memberships", [])
-
-def user_consent(request):
-    form = UserGoogleGroupConsentForm()
-
+@login_required
+def user_consent_view(request):
+    print('user consent view')
+    print(f'request.POST= {request.POST}')
     if request.method == 'POST':
-        pass
+            if 'join_group' in request.POST:
+                user_gave_consent(request)
+                webbrowser.open('https://groups.google.com/a/ncsu.edu/g/group-aerpaw-users/', new=2)
+                return redirect('home')
+            if 'decline_group' in request.POST:
+                user_declined_group(request)
+                return redirect('home')
 
+@login_required
+def google_group_forum(request):
+    prevent_navigation = False
+    try:
+        
 
+        google_group = GoogleGroupMembership.objects.get(user=request.user)
+        if google_group.member == True:
+            return redirect('https://groups.google.com/a/ncsu.edu/g/group-aerpaw-users/')
+        if google_group.consent_given == False:
+            ask_consent = True
+
+        if google_group.consent_asked == False:
+            prevent_navigation = True
+            print(f'prevent navigation= {prevent_navigation}')
+    except Exception as exc:
+        new_error(exc, request.user)
+        ask_consent = '<p>There was a problem signing up for the forum. Please directly visit the <a href="https://groups.google.com/a/ncsu.edu/g/group-aerpaw-users">forum</a> to sign up.</p>'
+        
+        
     context = {
-        'form':form
+        'ask_consent':ask_consent,
+        'prevent_navigation': prevent_navigation,
     }
-    pass
+    return render(request, 'google_group_consent.html', context)
+        
+
+

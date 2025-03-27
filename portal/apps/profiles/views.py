@@ -6,6 +6,7 @@ from rest_framework.request import QueryDict, Request
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.google_group.api.viewsets import GoogleGroupMembershipViewSet
 from portal.apps.profiles.api.viewsets import UserProfileViewSet
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet

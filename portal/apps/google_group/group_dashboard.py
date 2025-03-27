@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
+from .models import GoogleGroupMembership
 from portal.apps.error_handling.error_dashboard import new_error
 
 TOKEN_FILE = 'oauth2_user_token.json'
@@ -19,15 +20,11 @@ def credentials_to_dict(credentials):
     }
 
 def add_user_to_group(request):
-    print('Adding user to group')
     credentials = Credentials.from_authorized_user_file(TOKEN_FILE, ['https://www.googleapis.com/auth/cloud-identity.groups'])
-    print(f'Got Credentials: {credentials}')
     if not credentials:
         print('Cannot add user to group! Credentials not found')
         
-
     service = build('cloudidentity', 'v1', credentials=credentials)
-    print(f'Built service: {service}')
     user_email = "robertschristopher5060@gmail.com"
 
     group_membership = {
@@ -40,9 +37,39 @@ def add_user_to_group(request):
             parent=GROUP_NAME,
             body=group_membership
         )
-        print(f'Created request: {request}')
         response = request.execute()
-        print(f'User added! Response= {response}\n')
-        return JsonResponse({"message": f"Added user {user_email}.", "response": response})
-    except Exception as e:
-        return f"Error: {str(e)}"
+        return True
+    except Exception as exc:
+        error = new_error(exc, request.user)
+        print(f'{error.traceback}')
+        return False
+    
+def user_gave_consent(request):
+    try:
+        user_google_group = GoogleGroupMembership.objects.get(user=request.user)
+        user_google_group.consent_asked = True
+        user_google_group.consent_given = True
+        user_google_group.member = add_user_to_group(request)
+        user_google_group.save()
+    except Exception as exc:
+        error = new_error(exc, request.user)
+        print(f'{error.traceback}')
+
+def user_declined_group(request):
+    try:
+        user_google_group = GoogleGroupMembership.objects.get(user=request.user)
+        user_google_group.consent_asked = True
+        user_google_group.consent_given = False
+        user_google_group.member = False
+        user_google_group.save()
+    except Exception as exc:
+        error = new_error(exc, request.user)
+        print(f'{error.traceback}')
+
+def list_group_members(request):
+    credentials = Credentials.from_authorized_user_file(TOKEN_FILE, ['https://www.googleapis.com/auth/cloud-identity.groups'])
+    service = build('cloudidentity', 'v1', credentials=credentials)    
+    request = service.groups().memberships().list(parent=GROUP_NAME)
+    response = request.execute()
+    member_emails = [member['preferredMemberKey']['id'] for member in response.get("memberships")]
+    return member_emails
