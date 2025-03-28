@@ -17,6 +17,7 @@ from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.resources.models import AerpawResource
 from portal.apps.users.models import AerpawUser, AerpawRolesEnum
 from portal.apps.user_messages.user_messages import send_portal_mail_from_message
+from portal.server.settings import MOCK_OPS
 
 def create_canonical_experiment(request, project_id):
     print('creating new general availibility experiment')
@@ -113,10 +114,12 @@ def save_custom_experiment_info(request, project_id):
 def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     print('sending message to aerpaw-ops')
 
-    #recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # operators
-    recieved_by = [316]
-    """ recieved_by.append(lead_experimenter_id)
-    recieved_by.append(request.user.id) """
+    recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # all users with operator status 
+    recieved_by.append(request.user.id)
+    
+    if MOCK_OPS:
+        recieved_by = [u.id for u in AerpawUser.objects.filter(email='cjrober5@ncsu.edu')] # developer email for testing so that all the operators do not get their email's spammed
+    
 
     message_subject = ''
     message_body = ''
