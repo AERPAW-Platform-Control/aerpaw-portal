@@ -1,7 +1,7 @@
 {% load static %}
 
 <div>
-    <div class="mb-3">
+   <!--  <div class="mb-3">
         <div class="">
             <div class="list-group ">
                 <li class="list-group-item border border-0">
@@ -12,7 +12,7 @@
                 </li>
             </div>
         </div>
-    </div>
+    </div> -->
         <div>
             <div id="experimentTypeContainer" class="mb-3">
                 <div class="">
@@ -133,13 +133,13 @@
                       Emulation Only (No testbed execution planned)
                     </label>
                   </div>
-                  <div class="form-check ms-2">
+                  <!-- <div class="form-check ms-2">
                       <span class="text-dark"> - Sandbox Environment Coming Soon! - </span>
                       <input disabled name="location" class="form-check-input single-check" type="checkbox" value="sandbox" id="experimentLocation-Sandbox">
                       <label class="form-check-label" for="experimentLocation-Sandbox">
                           Sandbox Only (No testbed execution planned)
                         </label>
-                    </div>
+                    </div> -->
                     <div class="form-check ms-2">
                       <input name="location" class="form-check-input single-check" type="checkbox" value="development" id="experimentLocation-Development">
                       <label class="form-check-label" for="experimentLocation-Development">
@@ -258,7 +258,7 @@
                 </a>
             </button>
             <div name="create-exp-messages">
-                <p id="type-message" name="type-message" class="text-danger">*Please select an experiment type to create an experiment</p>
+                <p id="type-message" name="type-message" class="text-danger">*These buttons are inactive because an experiment type needs to be selected</p>
             </div>
         </div>
     
