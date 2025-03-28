@@ -49,7 +49,7 @@ def create_canonical_experiment(request, project_id):
         exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else None
-        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else None
+        exp_info.vehicle_behavior = None
         exp_info.uuid = uuid4()
         exp_info.save()
         return exp
@@ -60,8 +60,6 @@ def create_canonical_experiment(request, project_id):
 
 def save_non_canonical_experiment_info(request, project_id):
     print('Creating new non-canonical experiment')
-
-    
 
     try:
         exp_info = ExperimentFormData()
@@ -78,7 +76,7 @@ def save_non_canonical_experiment_info(request, project_id):
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else None
         exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') != 'null' else None
-        exp_info.description = request.POST.get('description') if request.POST.get('description') else None
+        exp_info.description = None
         exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') != 'null' else None
         exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') != 'null' else None
         exp_info.questions = request.POST.get('questions') if request.POST.get('questions') != 'null' else None
@@ -114,13 +112,9 @@ def save_custom_experiment_info(request, project_id):
 
 def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     print('sending message to aerpaw-ops')
-    try:
-        lead_experimenter_id = AerpawUser.objects.filter(email=experiment_info.lead_email)
-    except Exception as exc:
-        new_error(exc, request.user)
-        print(f'Exception in portal.apps.experiment_info.form_dashboard notify_aerpaw_ops: {exc}')
 
-    recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # aerpaw_ops?
+    #recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # operators
+    recieved_by = [316]
     """ recieved_by.append(lead_experimenter_id)
     recieved_by.append(request.user.id) """
 

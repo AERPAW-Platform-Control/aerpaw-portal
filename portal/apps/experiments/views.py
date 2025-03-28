@@ -3,16 +3,16 @@ import calendar, traceback, sys, re
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.http import HttpRequest, QueryDict, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
+
 from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard, field_trip_form
-
 from portal.apps.experiments.api.experiment_utils import to_retired
-
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
     ExperimentViewSet, ScheduledSessionViewSet
 from portal.apps.experiments.calendar import SandboxCalendar
@@ -255,8 +255,17 @@ def experiment_detail(request, experiment_id):
 @csrf_exempt
 @login_required
 def experiment_create(request):
+    print('4 ',Group.objects.get(id=4))
+    print('3 ',Group.objects.get(id=3))
+    print('2 ',Group.objects.get(id=2))
+    print('1 ',Group.objects.get(id=1))
     message = None
     project = None
+    form = None
+    project_id = request.GET.get('project_id')
+    p = ProjectViewSet()
+    project = p.retrieve(request=request, pk=project_id).data
+    
     if request.method == "POST":
         try:
             project_id = request.GET.get('project_id')
@@ -270,11 +279,6 @@ def experiment_create(request):
         except Exception as exc:
             new_error(exc, request.user)
     else:
-        project_id = request.GET.get('project_id')
-        p = ProjectViewSet()
-        project = p.retrieve(request=request, pk=project_id).data
-        #form = ExperimentCreateForm(initial={'project_id': project_id})
-
         form = new_experiment_form_dashboard(request, project_id)
         form = form['template']
     return render(request,

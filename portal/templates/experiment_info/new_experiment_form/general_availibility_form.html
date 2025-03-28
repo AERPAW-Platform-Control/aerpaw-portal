@@ -16,7 +16,7 @@
         <div>
             <div id="experimentTypeContainer" class="mb-3">
                 <div class="">
-                    <div class="form-label">What type of experiment is this?<span class="text-danger fs-6 fw-light">*</span></div>
+                    <div class="form-label">What type of experiment is this?<span class="text-danger fs-4">*</span></div>
                     <div class="ms-3">
                         <p class="text-body-secondary">
                             To help decide what type of experiment to create, refer to the <a
@@ -45,25 +45,25 @@
         </div>
         <div class="">
             <div class=" mb-3">
-                <label for="experimentTitle" class="form-label">Short experiment title (must be at least 5 characters)<span class="text-danger fs-6 fw-light">*</span></label>
-                <input name="title" type="text" class="form-control ms-2" id="experimentTitle" data-five-chars="true" required>
+                <label for="experimentTitle" class="form-label">Short experiment title<span class="text-danger fs-4">*</span></label>
+                <input name="title" type="text" class="form-control ms-2" id="experimentTitle" data-five-chars="true" placeholder="Your answer must contain at least 5 characters." required>
             </div>
         </div>
         <div class="">
             <div class="mb-3">
-                <label for="hostInstitution" class="form-label">Provide the name of your host institution<span class="text-danger fs-6 fw-light">*</span></label>
+                <label for="hostInstitution" class="form-label">Provide the name of your host institution<span class="text-danger fs-4">*</span></label>
                 <input name="host_institution" type="text" class="form-control ms-2" id="hostInstitution" required>
             </div>
         </div>
         <div id="experimentSponsoredProjectContainer" class="">
             <div class="mb-3">
-                <label for="sponsoredProject" class="form-label">Provide the title of your sponsored project under which you are carrying this experiment.<span class="text-danger fs-6 fw-light">*</span></label>
-                <input name="sponsored_project" type="text" class="form-control ms-2" id="sponsoredProject" required>
+                <label for="sponsoredProject" class="form-label">Provide the title of your sponsored project under which you are carrying this experiment.</label>
+                <input name="sponsored_project" type="text" class="form-control ms-2" id="sponsoredProject" data-validate="false">
             </div>
         </div>
         <div id="experimentGrantNumberContainer" class="mb-3">
             <div class="mb-3">
-                <div class="">Is there a grant number for the project?<span class="text-danger fs-6 fw-light">*</span></div>
+                <div class="">Is there a grant number for the project?<span class="text-danger fs-4">*</span></div>
                 <div id="isGrantNumber" class="ms-2 mt-2 single-choice-checkbox-group" name="checkbox-container">
                     <div class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
@@ -83,38 +83,32 @@
             </div>
            <div id="grantNumberContainer" style="display: none;">
                <div class="mb-3 ms-3">
-                   <label for="grantNumber" class="form-label">What is the grant number?<span class="text-danger fs-6 fw-light">*</span></label>
+                   <label for="grantNumber" class="form-label">What is the grant number?<span class="text-danger fs-4">*</span></label>
                    <input name="grant_number" type="text" class="form-control ms-2 w-75" id="grantNumber" data-validate="false">
                </div>
            </div>
         </div>
         <div class="">
             <div class="mb-3">
-                <label for="leadExperimenterName" class="form-label">Name of the lead experimenter<span class="text-danger fs-6 fw-light">*</span></label>
-                <input name="lead_experimenter" type="text" class="form-control ms-2" id="leadExperimenterName" required>
+                <label for="leadExperimenterName" class="form-label">Name of the lead experimenter</label>
+                <input name="lead_experimenter" type="text" class="form-control ms-2" id="leadExperimenterName" data-validate="false">
             </div>
         </div>
         <div class="">
             <div class="mb-3">
-                <label for="leadExperimenterEmail" class="form-label">Contact email of the lead experimenter<span class="text-danger fs-6 fw-light">*</span></label>
-                <input name="lead_email" type="email" class="form-control ms-2" id="leadExperimenterEmail" required>
+                <label for="leadExperimenterEmail" class="form-label">Contact email of the lead experimenter</label>
+                <input name="lead_email" type="email" class="form-control ms-2" id="leadExperimenterEmail" data-validate="false">
             </div>
         </div>
         <div class="">
             <div class="mb-3">
-                <label for="keywords" class="form-label">Provide 3 to 5 keywords that describes your experiment<span class="text-danger fs-6 fw-light">*</span></label>
-                <input name="keywords" type="text" class="form-control ms-2" id="keywords" required>
-            </div>
-        </div>
-        <div class="">
-            <div class="mb-3">
-                <label for="goal" class="form-label">In a few sentences, please describe the goal of your intended experiment. (Answer must be at least 5 characters)<span class="text-danger fs-6 fw-light">*</span></label>
-                <textarea name="goal" type="text" class="form-control ms-2" id="goal" data-five-chars="true" style="height: 100px;" required></textarea>
+                <label for="keywords" class="form-label">Provide 3 to 5 keywords that describes your experiment</label>
+                <input name="keywords" type="text" class="form-control ms-2" id="keywords" data-validate="false">
             </div>
         </div>
         <div id="experimentLocationContainer" class="mb-3">
+            <div class="mb-1">Identify the ultimate end destination for the experiment. You may only select one.<span class="text-danger fs-4">*</span></div>
             <div id="location" class="single-choice-checkbox-group"  name="checkbox-container">
-                <label class="form-label">Identify the ultimate end destination for the experiment. You may only select one.<span class="text-danger fs-6 fw-light">*</span></label>
                   <div class="form-check ms-2">
                     <input name="location" class="form-check-input single-check" type="checkbox" value="lake_wheeler" id="experimentLocation-LakeWheeler">
                     <label class="form-check-label" for="experimentLocation-LakeWheeler">
@@ -151,7 +145,7 @@
         <!-- is_urgent -->
         <div id="experimentUrgencyContainer" class="mb-3">
             <div class="mb-3">
-                <div class="">Do you have any urgency for carrying out the over-the-air testbed experiments?<span class="text-danger fs-6 fw-light">*</span></div>
+                <div class="">Do you have any urgency for carrying out the over-the-air testbed experiments?<span class="text-danger fs-4">*</span></div>
                 <div id="isUrgent" class="ms-2 mt-2 single-choice-checkbox-group" name="checkbox-container">
                     <ul class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
@@ -173,7 +167,7 @@
         
         <div id="experimentIsSharedContainer" class="mb-3">
             <div class="mb-3">
-                <div class="">Can the data collected from the experiment be shared publicly?<span class="text-danger fs-6 fw-light">*</span></div>
+                <div class="">Can the data collected from the experiment be shared publicly?<span class="text-danger fs-4">*</span></div>
                 <div id="isShared" class="ms-2 mt-2 single-choice-checkbox-group" name="checkbox-container">
                     <div class="list-group list-group-horizontal">
                         <li class="list-group-item border border-0">
@@ -206,9 +200,9 @@
         </div>
         <div class="mb-3">
             <div class="mb-3">
-                <label for="vehicleBehavior" class="form-label">Please specify the expected behavior of the vehicles (if any) in your experiment.<span class="text-danger fs-6 fw-light">*</span></label>
-                <div class="form-text ms-2" id="vehicleBehaviorExample"> For example, you could specify, "Predetermined trajectory within the Phase 1 geofence", or "The rover will drive to a random point on the field and the drone will perform a gradient descent for the strongest RF signal coming from the rover."</div>
-                <textarea name="vehicle_behavior" type="text" class="form-control ms-2" id="vehicleBehavior" placeholder="" style="height: 100px;" required></textarea>
+                <label for="goal" class="form-label">Please specify the goal and the expected behavior of the vehicles (if any) in your intended experiment.<span class="text-danger fs-4">*</span></label>
+                <div class="form-text ms-2" id="goalExample"> For example, you could specify, "Predetermined trajectory within the Phase 1 geofence", or "The rover will drive to a random point on the field and the drone will perform a gradient descent for the strongest RF signal coming from the rover."</div>
+                <textarea name="goal" type="text" class="form-control ms-2" id="goal" placeholder="Your answer must contain at least 5 characters." style="height: 100px;" data-five-chars="true" required ></textarea>
             </div>
         </div>
 
@@ -216,28 +210,28 @@
         <div id="non-canonicalInfo" style="display: none;">
             <div class="mb-3">
                 <div class="mb-3">
-                    <label for="description" class="form-label">Describe your intended experiment in one or more paragraphs (Must be at least 5 characters.)<span class="text-danger fs-6 fw-light">*</span></label>
-                    <textarea name="description" type="text" class="form-control ms-2" id="description" data-five-chars="true" placeholder="" style="height: 100px;" data-validate="false" required></textarea>
+                    <label for="description" class="form-label">Describe your intended experiment in one or more paragraphs<span class="text-danger fs-4">*</span></label>
+                    <textarea name="description" type="text" class="form-control ms-2" id="description" data-five-chars="true" placeholder="Your answer must contain at least 5 characters." style="height: 100px;" data-validate="false" required></textarea>
                 </div>
             </div>
             <div class="mb-3">
                 <div class=" mb-3">
-                    <label for="hardware" class="form-label">Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.<span class="text-danger fs-6 fw-light">*</span></label>
+                    <label for="hardware" class="form-label">Describe any BYOD hardware that you may be planning to use during your experiment and how they may be interacting with other equipment and features of the AERPAW platform.<span class="text-danger fs-4">*</span></label>
                     <div class="form-text ms-2">
                         *Please identify specifics of the hardware, e.g., the specific names and counts for the drones and the radios that you intend to use.
                         <br>
                         *If none, please write, "No BYOD Hardware"
                     </div>
-                    <textarea name="byod_hardware" type="text" class="form-control ms-2" id="hardware" placeholder="" style="height: 100px;" data-validate="false" required></textarea>
+                    <textarea name="byod_hardware" type="text" class="form-control ms-2" id="hardware" placeholder="If none, please write: 'No BYOD Hardware'" style="height: 100px;" data-validate="false" required></textarea>
                 </div>
             </div>
             <div class="mb-3">
                 <div class="mb-3">
-                    <label for="software" class="form-label">Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software<span class="text-danger fs-6 fw-light">*</span></label>
-                    <div class="form-text ms-2">
+                    <label for="software" class="form-label">Describe the radio, traffic, and vehicle software that you are planning to use during your experiment. Can be BYOD or AERPAW software<span class="text-danger fs-4">*</span></label>
+                    <!-- <div class="form-text ms-2">
                         *If none, please write, "No BYOD Software"
-                    </div>
-                    <textarea name="byod_software" type="text" class="form-control ms-2" id="software" placeholder="" style="height: 100px;" data-validate="false" required></textarea>
+                    </div> -->
+                    <textarea name="byod_software" type="text" class="form-control ms-2" id="software" style="height: 100px;" data-validate="false" required></textarea>
                 </div>
             </div>
             <div class="mb-3">

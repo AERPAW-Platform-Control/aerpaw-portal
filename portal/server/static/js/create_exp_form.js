@@ -86,6 +86,7 @@ class FormInput{
         //Create an instance for each textarea
         $(form).find('textarea').each((index, textarea)=>{
             const formInput = new FormInput($(textarea))
+            formInput.validateThis()
         })
 
         // Create an instance for each checkbox input and create a CheckBoxGroup for checkboxes that are part of the same question
@@ -98,7 +99,6 @@ class FormInput{
             })
             const checkboxGroup = new CheckboxGroup($(checkboxContainer), checkboxes)
         })
-        
 
     }
 
@@ -110,6 +110,16 @@ class FormInput{
             }
         })
         return inputToGet
+    }
+    
+    static getMultipleInputById(idList){
+        let inputList = []
+        $(idList).each((index, id)=>{
+            let inputToGet = FormInput.allFormInputs.find(inp => inp.id === id)
+            console.log(`inputToGet= ${inputToGet} ${inputToGet.id}`)
+            inputList.push(inputToGet)
+        })
+        return inputList
     }
 
     validate5CharMin(){
@@ -279,6 +289,7 @@ class FormInput{
     }
 
     validateTextInput(){
+        if(this.validate == true){
             let minCharCount = this.validate5CharMin()
             let nonBlankInput = this.validateTextPresent()
             if(minCharCount == true && nonBlankInput == true){
@@ -295,23 +306,26 @@ class FormInput{
                 this.isValidated = false
                 return false
             }
+        }
         
     }
 
     validateCheckBox(){
-        this.isValidated = this.validateCheckBoxGroup()
-        
-        if (this.isValidated == false){
-            this.addRequiredMessage()
-            if( this.id == 'expTypeCan' || this.id == 'expTypeNon' ){FormButton.manageSubmitButtons()}
-        }else if( this.isValidated == true){
-            this.removeMessages()
+        if(this.validate == true){
+            this.isValidated = this.validateCheckBoxGroup()
+            if (this.isValidated == false){
+                this.addRequiredMessage()
+                if( this.id == 'expTypeCan' || this.id == 'expTypeNon' ){FormButton.manageSubmitButtons()}
+            }else if( this.isValidated == true){
+                this.removeMessages()
+            }
+            
+            return this.validateCheckBoxGroup()
         }
-        
-        return this.validateCheckBoxGroup()
     }
 
     activeValidations(){
+        
         if(this.type != 'checkbox'){
             $(this.input).on('input', ()=>{
                 return this.validateTextInput()
@@ -322,6 +336,7 @@ class FormInput{
                 return this.validateCheckBox()
             })
         }
+        
     }
 
     removeMessages(){
@@ -413,26 +428,38 @@ class FormButton{
     static manageSubmitButtons(canonical){
         let canButton = FormButton.getButtonById('canonicalSubmit')
         let nonCanButton = FormButton.getButtonById('nonCanonicalSubmit')
+        let dependentQuestionIds = [
+            'description',
+            'hardware',
+            'software',
+        ]
+        let formInputList = FormInput.getMultipleInputById(dependentQuestionIds)
         
         //canonical experiment
         if( canonical == true ){
             canButton.activateButton()
             nonCanButton.deactivateButton()
             $('p#type-message').hide()
-            $('#description').removeAttr('required')
-            $('#hardware').removeAttr('required')
-            $('#software').removeAttr('required')
-            $('#questions').removeAttr('required')
+            $(formInputList).each((index, input)=>{
+                input.required = false
+                input.validate = false
+                $(input.ipnut).removeAttr('required')
+                $(input.ipnut).attr({'data-validate': false})
+            })
         }
         //non canonical experiment
         else if( canonical == false ){
             nonCanButton.activateButton()
             canButton.deactivateButton()
             $('p#type-message').hide()
-            $('#description').prop('required',true)
-            $('#hardware').prop('required',true)
-            $('#software').prop('required',true)
-            $('#questions').prop('required',true)
+            $(formInputList).each((index, input)=>{
+                input.required = true
+                input.validate = true
+                console.log(`${input.id} will now be validated: ${input.validate} `)
+                console.log(`${input.id} is now required: ${input.required}`)
+                $(input.ipnut).prop('required',true)
+                $(input.ipnut).attr({'data-validate': true})
+            })
         }
         //No experiment type selected
         else{
@@ -574,7 +601,6 @@ $(document).ready(()=>{
             
             const newValidation = new FormValidation($('#create-experiment'))
             let isValid = newValidation.validateForm()
-            console.log(`from is valid? ${isValid}`)
             if(isValid == false){
                 e.preventDefault()
                 $('div[name=create-exp-messages').append("<p class='text-danger'>Please fill in required fields and fix any errors before submitting</p>")
