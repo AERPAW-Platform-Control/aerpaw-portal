@@ -49,7 +49,6 @@ class ReportView(View):
             'portable_resource_data':portable_resource_data,
             'cloud_resource_data': cloud_resource_data,
             'session_data':session_data,
-            'google_group_members':google_group_members
         }
 
         return render(request, 'reports/reports_home.html', context)
