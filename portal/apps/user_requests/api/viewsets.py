@@ -289,6 +289,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                     new_error(exc, request.user)
             else:
                 # create user_request
+                print(f'creating user request')
                 user_request = AerpawUserRequest()
                 user_request.created_by = user.username
                 user_request.modified_by = user.username
