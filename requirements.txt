@@ -28,3 +28,4 @@ sqlparse==0.5.1
 typing_extensions==4.12.2
 urllib3==2.2.3
 uWSGI==2.0.27
+setuptools
