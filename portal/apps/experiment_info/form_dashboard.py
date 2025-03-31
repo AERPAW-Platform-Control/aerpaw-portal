@@ -292,13 +292,8 @@ Thank you,
     experiment_info.questions,
     )
         
-    print('')
-    print(f'message body= \n{message_body}')
-    print('')
     kwargs={'received_by':recieved_by, 'message_subject':message_subject, 'message_body':message_body}
-    sent_mail = send_portal_mail_from_message(request=request, **kwargs)
-    if sent_mail == True:
-        print('Email sent!!')
+    send_portal_mail_from_message(request=request, **kwargs)
 
 def new_experiment_form_dashboard(request, project_id):
     print('request.POST= ', request.POST)
