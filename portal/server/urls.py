@@ -31,7 +31,6 @@ from portal.apps.projects.api.viewsets import ProjectViewSet, UserProjectViewSet
 from portal.apps.resources.api.viewsets import ResourceViewSet
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
-from portal.apps.google_group.views import oauth2_callback
 from portal.apps.users.api.viewsets import UserViewSet
 
 # Routers provide an easy way of automatically determining the URL conf.
@@ -58,7 +57,6 @@ router.register(r'users', UserViewSet, basename='users')
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('oauth2callback/', oauth2_callback, name='oauth2_callback'),
     path('accounts/login/', session_expired, name='session_expired'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
@@ -73,7 +71,6 @@ urlpatterns = [
     path('operators/experiment-files/', include('portal.apps.experiment_files.urls')),  # experiment_files app
     path('operators/experiment-info/', include('portal.apps.experiment_info.urls')),  # experiment_files app
     path('experiments/', include('portal.apps.experiments.urls')),  # experiments app
-    path('google_group/', include('portal.apps.google_group.urls')),  # google_group app
     path('messages/', include('portal.apps.user_messages.urls')),  # user_messages app
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app
