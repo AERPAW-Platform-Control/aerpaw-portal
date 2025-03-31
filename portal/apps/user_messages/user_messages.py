@@ -297,7 +297,7 @@ Thank you for joining AERPAW,
     send_portal_mail_from_message(request=request, **kwargs)
 
 
-def generate_user_messages_from_project_membership(request, project: AerpawProject, project_members: [int],
+def generate_user_messages_from_project_membership(request, project: AerpawProject, project_members: list[int],
                                                    membership_type: str, add: bool = False):
     """
     UserMessage - required components (per message)
@@ -354,7 +354,7 @@ You have been removed from Project: {1} as {2}
             send_portal_mail_from_message(request=request, **kwargs)
 
 
-def generate_user_messages_from_experiment_membership(request, experiment: AerpawExperiment, experiment_members: [int],
+def generate_user_messages_from_experiment_membership(request, experiment: AerpawExperiment, experiment_members: list[int],
                                                       add: bool = False):
     """
     UserMessage - required components (per message)
