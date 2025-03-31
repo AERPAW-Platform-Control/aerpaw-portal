@@ -28,10 +28,6 @@
                 <span class="ms-3 float-end"><b>{{start_date}}</b> - <b>{{end_date}}</b> </span>
             </div>
         </div>
-        <form id="add-user-to-group" method="post" action="{% url 'add_user_google_group' %}">
-            {% csrf_token %}
-            <button type="submit" form="add-user-to-group" class="btn btn-primary">add user</button>
-        </form>
         <div class="row mb-3">
             {% if google_group_members %}
             <table class="table table-striped">
