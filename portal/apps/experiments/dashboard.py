@@ -461,7 +461,7 @@ def evaluate_session_dashboard_action(request):
         
 
 def get_session_dashboard_buttons(request, session_id: int) -> dict:
-
+    print(f'session id = {session_id}')
     buttons = {
         'start': False,
         'end': False,
@@ -469,59 +469,62 @@ def get_session_dashboard_buttons(request, session_id: int) -> dict:
         'no_actions': False,
     }
 
-    try:
-        try: 
-            session = ScheduledSession.objects.select_related('experiment').get(id=session_id)
-        except:
-            session = OnDemandSession.objects.select_related('experiment').get(id=session_id)
-
-        buttons['session_id'] = session.id
-        if session.experiment.experiment_state == 'wait_development_deploy':
-            buttons['no_actions'] = True
-
-        elif session.experiment.experiment_state == 'active_development':
-            buttons['no_actions'] = True
-
-        elif session.experiment.experiment_state == 'wait_sandbox_deploy':
-            buttons['start'] = True
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'active_sandbox':
-            buttons['no_actions'] = True
-
-        elif session.experiment.experiment_state == 'wait_emulation_schedule':
-            buttons['schedule'] = True
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'wait_emulation_deploy':
-            buttons['start'] = True
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'active_emulation':
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'wait_testbed_schedule':
-            buttons['schedule'] = True
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'wait_testbed_deploy':
-            buttons['start'] = True
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'active_testbed':
-            buttons['end'] = True
-
-        elif session.experiment.experiment_state == 'saved':
-            buttons['no_actions'] = True
-
-        else:
-            buttons['no_actions'] = True
-        return buttons
-             
-
-    except Exception as exc:
-        print(exc)
-        new_error(exc, request.user)
+    if not session_id:
         buttons['no_actions'] = True
         return buttons
-    
+    else:
+        try:
+            try: 
+                session = ScheduledSession.objects.select_related('experiment').get(id=session_id)
+            except:
+                session = OnDemandSession.objects.select_related('experiment').get(id=session_id)
+
+            buttons['session_id'] = session.id
+            if session.experiment.experiment_state == 'wait_development_deploy':
+                buttons['no_actions'] = True
+
+            elif session.experiment.experiment_state == 'active_development':
+                buttons['no_actions'] = True
+
+            elif session.experiment.experiment_state == 'wait_sandbox_deploy':
+                buttons['start'] = True
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'active_sandbox':
+                buttons['no_actions'] = True
+
+            elif session.experiment.experiment_state == 'wait_emulation_schedule':
+                buttons['schedule'] = True
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'wait_emulation_deploy':
+                buttons['start'] = True
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'active_emulation':
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'wait_testbed_schedule':
+                buttons['schedule'] = True
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'wait_testbed_deploy':
+                buttons['start'] = True
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'active_testbed':
+                buttons['end'] = True
+
+            elif session.experiment.experiment_state == 'saved':
+                buttons['no_actions'] = True
+
+            else:
+                buttons['no_actions'] = True
+            return buttons
+                
+        except Exception as exc:
+            print(exc)
+            new_error(exc, request.user)
+            buttons['no_actions'] = True
+            return buttons
+        

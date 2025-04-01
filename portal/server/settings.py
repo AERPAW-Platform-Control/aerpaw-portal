@@ -151,6 +151,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'templates/credentials'),
             os.path.join(BASE_DIR, 'templates/experiment_files'),
             os.path.join(BASE_DIR, 'templates/experiments'),
+            os.path.join(BASE_DIR, 'templates/google_group'),
             os.path.join(BASE_DIR, 'templates/portal'),
             os.path.join(BASE_DIR, 'templates/profiles'),
             os.path.join(BASE_DIR, 'templates/projects'),
@@ -283,43 +284,13 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
-        'project_level_handler': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/project_level_log'
-        },
-        'apps_handler': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/apps_log'
-        },
-        'ssh_handler': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/ssh_log'
-        },
+        
     },
     'loggers': {
         'mozilla_django_oidc': {
             'handlers': ['console'],
             'level': 'DEBUG'
         },
-        'django':{
-            'handlers':['project_level_handler'],
-            'level':'WARNING',
-            'propagate':True,
-        },
-        'apps_logger':{
-            'handlers':['apps_handler'],
-            'level':'INFO',
-            'propagate':True,
-        },
-        'ssh_logger':{
-            'handlers':['ssh_handler'],
-            'level': 'INFO',
-            'propagate': True,
-        }
-        
     },
 }
 

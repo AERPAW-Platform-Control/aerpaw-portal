@@ -7,9 +7,6 @@ var hideDescendingTargetGroupsCount = 0
 
 function singleChoiceCheckBoxGroup(clickedCheckbox){
     singleChoiceCheckboxGroupCount += 1
-    console.log(' ')
-    console.log('SINGLE CHOICE CHECKBOX count= ', singleChoiceCheckboxGroupCount)
-    console.log($(clickedCheckbox).siblings('label').text())
     /*  
         Only allows for one checkbox in a group to be checked
         Unchecks other checkboxes in the group when another checkbox in the group is checked
@@ -18,9 +15,11 @@ function singleChoiceCheckBoxGroup(clickedCheckbox){
     let checkboxGroup = $(clickedCheckbox).parentsUntil('div.single-choice-checkbox-group').parent()
     $(checkboxGroup).find('input[type=checkbox]').each((checkboxIndex, checkbox)=>{
         if(checkbox != clickedCheckbox){
-            console.log(' A - singleChoiceCheckBoxGroup ')
+            
+            console.log(`checkbox id = ${$(checkbox).attr('id')}`)
             let wasChecked = $(checkbox).prop('checked')
             if( $(checkbox).prop('checked') ){
+                console.log(`${$(checkbox).attr('id')} checkbox is checked`)
                 $(checkbox).prop('checked', false)
                 if( $(checkbox).attr('onclick') == 'toggleGroup(this)' ){
                     if( wasChecked == true ){
@@ -34,9 +33,6 @@ function singleChoiceCheckBoxGroup(clickedCheckbox){
 
 function showNextGroup(button){
     showNextGroupCount += 1
-    console.log(' ')
-    console.log('SHOW NEXT GROUP count= ', showNextGroupCount)
-    console.log($(button).siblings('label').text())
     /* 
         Shows the next targeted group of elements depending on the data-hide attribute of the button pressed
         Show: data-hide="false"
@@ -44,21 +40,22 @@ function showNextGroup(button){
         Target: data-target="<targeted element id with # at beginning>"
      */
     let target = $($(button).attr('data-target'))
-    console.log(' A - showNextGoup ')
         let hide = $(button).attr('data-hide')
-        console.log('hide= ', hide)
         if( $(button).prop('checked') ){
             if(hide == 'true'){
-                console.log(' B - showNextGoup ')
                 $(target).hide()
+                $(target).find('input, textarea').each((index, input)=>{
+                    $(input).attr({'data-validate':false})
+                })
                 clearInputGroup(target)
                 hideDescendingTargetGroups(target)
             }else if(hide == 'false'){
-                console.log(' C - showNextGoup')
                 $(target).show()
+                $(target).find('input, textarea').each((index, input)=>{
+                    $(input).attr({'data-validate':true})
+                })
             }
         } else {
-            console.log(' D - showNextGoup ')
             $(target).hide()
             clearInputGroup(target)
             hideDescendingTargetGroups(target)
@@ -69,17 +66,14 @@ function showNextGroup(button){
 
 function toggleGroup(button){
     toggleGroupCount += 1
-    console.log(' ')
-    console.log('TOGGLE GROUP count= ', toggleGroupCount)
-    console.log($(button).siblings('label').text())
 
     let target = $($(button).attr('data-target'))
     if( $(target).is(':hidden') == true ){
-        console.log(' A - toggleGroup ')
         $(target).show()
+        
     } else {
-        console.log(' A - toggleGroup ')
         $(target).hide()
+        
         clearInputGroup(target)
         hideDescendingTargetGroups(target)
     }
@@ -87,8 +81,6 @@ function toggleGroup(button){
 
 function hideDescendingTargetGroups(targetId){
     hideDescendingTargetGroupsCount += 1
-    console.log(' ')
-    console.log(' HIDE DESCENDING TARGET GROUPS count=, ', hideDescendingTargetGroupsCount)
     $(targetId).find('input').each((inputIndex, input) => {
         let onclickFun = $(input).attr('onclick')
         if( onclickFun == 'showNextGroup(this)' || onclickFun == 'toggleGroup(this)' ){
@@ -100,8 +92,6 @@ function hideDescendingTargetGroups(targetId){
 }
 
 function clearInputGroup(groupOfInputs){
-    console.log(' ')
-    console.log('CLEAR INPUT GROUP')
     $(groupOfInputs).find('input').each((inputIndex, input) => {
         switch ( $(input).attr('type') ){
             case 'checkbox':
@@ -226,7 +216,6 @@ function enableReserveSandboxBtn(checkbox){
 $(document).ready(function (){
     
     $('input[type="checkbox"]').each((index, checkbox)=>{
-        console.log('checkbox')
         /*  
             Only allows one chekbox in a group to be selected by
             unchecking other checkboxes in the group if another one is checked

@@ -17,6 +17,7 @@ from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.resources.models import AerpawResource
 from portal.apps.users.models import AerpawUser, AerpawRolesEnum
 from portal.apps.user_messages.user_messages import send_portal_mail_from_message
+from portal.server.settings import MOCK_OPS
 
 def create_canonical_experiment(request, project_id):
     print('creating new general availibility experiment')
@@ -49,7 +50,7 @@ def create_canonical_experiment(request, project_id):
         exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else None
-        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else None
+        exp_info.vehicle_behavior = None
         exp_info.uuid = uuid4()
         exp_info.save()
         return exp
@@ -60,8 +61,6 @@ def create_canonical_experiment(request, project_id):
 
 def save_non_canonical_experiment_info(request, project_id):
     print('Creating new non-canonical experiment')
-
-    
 
     try:
         exp_info = ExperimentFormData()
@@ -78,7 +77,7 @@ def save_non_canonical_experiment_info(request, project_id):
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else None
         exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') != 'null' else None
-        exp_info.description = request.POST.get('description') if request.POST.get('description') else None
+        exp_info.description = None
         exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') != 'null' else None
         exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') != 'null' else None
         exp_info.questions = request.POST.get('questions') if request.POST.get('questions') != 'null' else None
@@ -114,15 +113,13 @@ def save_custom_experiment_info(request, project_id):
 
 def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     print('sending message to aerpaw-ops')
-    try:
-        lead_experimenter_id = AerpawUser.objects.filter(email=experiment_info.lead_email)
-    except Exception as exc:
-        new_error(exc, request.user)
-        print(f'Exception in portal.apps.experiment_info.form_dashboard notify_aerpaw_ops: {exc}')
 
-    recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # aerpaw_ops?
-    """ recieved_by.append(lead_experimenter_id)
-    recieved_by.append(request.user.id) """
+    recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # all users with operator status 
+    recieved_by.append(request.user.id)
+    
+    if MOCK_OPS:
+        recieved_by = [u.id for u in AerpawUser.objects.filter(email='cjrober5@ncsu.edu')] # developer email for testing so that all the operators do not get their email's spammed
+    
 
     message_subject = ''
     message_body = ''
@@ -295,13 +292,8 @@ Thank you,
     experiment_info.questions,
     )
         
-    print('')
-    print(f'message body= \n{message_body}')
-    print('')
     kwargs={'received_by':recieved_by, 'message_subject':message_subject, 'message_body':message_body}
-    sent_mail = send_portal_mail_from_message(request=request, **kwargs)
-    if sent_mail == True:
-        print('Email sent!!')
+    send_portal_mail_from_message(request=request, **kwargs)
 
 def new_experiment_form_dashboard(request, project_id):
     print('request.POST= ', request.POST)
@@ -347,14 +339,21 @@ def new_experiment_form_dashboard(request, project_id):
         return {'template':render_to_string('experiment_info/new_experiment_form/general_availibility_form.html', context)}
     
 def upload_old_form_data():
+
     dframe = pd.read_excel('Old Create Experiment Google Form Data.xlsx')
     for row_index, row in dframe.iterrows():
         ser = pd.Series(row)
         is_urgent = True if ser.iloc[10] == 'YES' else False
         exp_fd = ExperimentFormData.objects.filter(old_form_row_number=row_index+2)
-        if len(exp_fd) == 0:
+        print(f'exp_fd= {not exp_fd.exists()}')
+        lead = str(ser.iloc[5]).split(' ')
+        experiment_creator = AerpawUser.objects.filter(first_name=lead[0], last_name=lead[len(lead)-1]).first()
+        experiment = AerpawExperiment.objects.filter(name=ser.iloc[1], experiment_creator=experiment_creator).first()
+        experiment = experiment if experiment != None else AerpawExperiment.objects.get(id=830)
+        if not exp_fd.exists():
             exp_fd = ExperimentFormData(
                 old_form_row_number=row_index+2,
+                experiment=experiment,
                 title=ser.iloc[1] if not pd.isna(ser.iloc[1]) else 'None provided',
                 host_institution=ser.iloc[2] if not pd.isna(ser.iloc[2]) else None,
                 sponsored_project=ser.iloc[3] if not pd.isna(ser.iloc[3]) else None,
@@ -369,15 +368,15 @@ def upload_old_form_data():
                 public_url=ser.iloc[12] if not pd.isna(ser.iloc[12]) else None,
                 vehicle_behavior=ser.iloc[13] if not pd.isna(ser.iloc[13]) else 'None provided'
             )
-            
-<<<<<<< Updated upstream
+
             exp_fd.save()        
     upload_fieldtrips()
+
 
 def get_fieldtrip_operators(op_names: list):
     print(f'op_ids {op_names}')
     user_operators = AerpawUser.objects.filter(groups__name=AerpawRolesEnum.OPERATOR.value).distinct()
-    print('Operators =', [f'{operator.first_name} {operator.last_name}' for operator in user_operators])
+    # print('Operators =', [f'{operator.first_name} {operator.last_name}' for operator in user_operators])
     for name in op_names:
         if name == 'Ozgur':
             op = 'oozdemi@ncsu.edu' 
@@ -429,22 +428,54 @@ def get_fieldtrip_operators(op_names: list):
             op = 'iguvenc@ncsu.edu'
 
 def upload_fieldtrips():
-    dframe = pd.read_excel('FieldTrips.xlsx')
-    user_operators = AerpawUser.objects.filter(groups__name=AerpawRolesEnum.OPERATOR.value).distinct()
-    
-    print('Operators =', [f'{operator.first_name} {operator.last_name}' for operator in user_operators])
+    dframe = pd.read_excel('FieldTrips.xlsx')    
     for row_index, row in dframe.iterrows():
         ser = pd.Series(row)
         # Gets the ExperimentFormData instances for each FieldTrip row
         row_numbers = [int(row_number) for row_number in ser.iloc[0].split(',')]
         exp_fds = ExperimentFormData.objects.filter(old_form_row_number__in = row_numbers)
-
+        exp_ids = [fd.experiment.id for fd in exp_fds]
+        experiments = AerpawExperiment.objects.filter(id__in=exp_ids)
         # Gets the Aerpaw Operators from the FieldTrip sheet
-        operators = ser.iloc[8]
-        get_fieldtrip_operators(operators)
+        operators = str(ser.iloc[8]).split(',')
+        print(f'operators= {operators}    Type= {type(operators)}')
+        ap_operators = []
+        other_operators = ''
+        for op in operators:
+            op = op.strip().split(' ')
+            #print(f'op= {op}')
+            name1 = None
+            name2 = None
+            ap_user = None
+            if len(op) == 1:
+                name1=op[0].strip()
+            elif len(op) != 1:
+                name1=op[0].strip()
+                name2=op[1].strip()
+            
+            if name2 != None:
+                ap_user = AerpawUser.objects.filter(first_name=name1, last_name=name2, email__contains='ncsu.edu')
+                if not ap_user.exists():
+                    ap_user = AerpawUser.objects.filter(first_name=name2, last_name=name1, email__contains='ncsu.edu')
+            elif name1 != None and name2 == None:
+                ap_user = AerpawUser.objects.filter(first_name=name1, email__contains='ncsu.edu')
+                if not ap_user.exists():
+                    ap_user = AerpawUser.objects.filter(last_name=name1, email__contains='ncsu.edu')
+            #print(f'AerpawUser= {ap_user}, len(ap_user)= {len(ap_user)}, user exists?= {ap_user.exists()}')
+            if ap_user.exists():
+                ap_operators.append(int(ap_user[0].id))
+            else:
+                ap_user = name1
+                other_operators = f'{other_operators}, {name1}'
+
+            
+        print(f'Aerpaw operators= {ap_operators}')
+        print(f'other operators= {other_operators}')
+
+        #get_fieldtrip_operators(operators)
         # Gets the Fixed Nodes from the FieldTrip sheet
         fixed_nodes = [AerpawResource.objects.get(name=node.strip()) for node in str(ser.iloc[12]).split(',') if not pd.isna(ser.iloc[12])]
-        print(f'Fixed nodes = {[node.name for node in fixed_nodes]}')
+        #print(f'Fixed nodes = {[node.name for node in fixed_nodes]}')
 
         # gets the site location
         location = FieldTrip.AerpawSite.OTHER
@@ -453,6 +484,17 @@ def upload_fieldtrips():
         elif str(ser.iloc[14]) == 'Centennial Campus':
             location = FieldTrip.AerpawSite.CENTENNIAL_CAMPUS
 
+        # format the start time
+        start_time = str(ser.iloc[10]) if not pd.isna(ser.iloc[10]) else None
+        if start_time != None:
+            start_dt = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+            start_time = start_dt.time()
+        
+        # format the end time
+        end_time = str(ser.iloc[11]) if not pd.isna(ser.iloc[11]) else None
+        if end_time != None:
+            end_dt = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
+            end_time = end_dt.time()
 
         field_trip = FieldTrip()
         field_trip.number_of_fixed_nodes = int(ser.iloc[1]) if not pd.isna(ser.iloc[1]) else 0
@@ -464,13 +506,15 @@ def upload_fieldtrips():
         field_trip.person_hours = int(ser.iloc[7]) if not pd.isna(ser.iloc[7]) else 0
         field_trip.list_of_operators = str(ser.iloc[8]) if not pd.isna(ser.iloc[8]) else None
         field_trip.experiment_date = str(ser.iloc[9]).split(' ')[0]
-        field_trip.start_time = str(ser.iloc[10]) if not pd.isna(ser.iloc[10]) else None
-        field_trip.end_time = str(ser.iloc[11]) if not pd.isna(ser.iloc[11]) else None
+        field_trip.start_time = start_time
+        field_trip.end_time = end_time
         field_trip.radio_hardware = str(ser.iloc[13]) if not pd.isna(ser.iloc[13]) else None
         field_trip.site = location
         field_trip.comments = str(ser.iloc[15]) if not pd.isna(ser.iloc[15]) else None
         field_trip.save()
         field_trip.experiment_form.add(*exp_fds)
+        field_trip.experiment.add(*experiments)
+        field_trip.ap_operators.add(*ap_operators)
         field_trip.fixed_nodes_used.add(*fixed_nodes)
 
 def field_trip_form(experiment_id):
@@ -478,7 +522,6 @@ def field_trip_form(experiment_id):
     if experiment_form_data:
         form = FieldTripForm(initial={'experiment_form':experiment_form_data})
     else:
-<<<<<<< Updated upstream
         form = FieldTripForm()
     return form        
         
@@ -505,14 +548,16 @@ def new_field_trip(request):
     ft.site = request.data.get('site')[0]
     ft.comments = request.data.get('comments')[0]
     ft.save()
+    ft.experiment.add(AerpawExperiment.objects.get(id=request.data.get('experiment_id')))
 
     if exp_form_data:
         ft.experiment_form.add(exp_form_data)
     for fn in request.data.get('fixed_nodes_used'):
         ft.fixed_nodes_used.add(fn)
     for op in request.data.get('operators'):
-        ft.operators.add(op)
-    print(f'Field Trip = {ft.operators.all()}')
+        ft.ap_operators.add(op)
+
+    print(f'Field Trip = {ft.ap_operators.all()}')
 
 
     

@@ -14,7 +14,7 @@ class AerpawSsh:
             self.key = paramiko.RSAKey.from_private_key_file(keyfile)
             self.client.connect(hostname=hostname, username=username, pkey=self.key, banner_timeout=200)
 
-            print(' Woohoo!! Connected!!')
+            print(f' Woohoo!! Connected to {hostname}!!')
             
         except paramiko.AuthenticationException as auth_exc:
             print("Authentication failed, please check your credentials.")
@@ -32,12 +32,14 @@ class AerpawSsh:
         print(f'command= {command}')
         response = ''
         exit_code = 1
-        """ if mock:
-            return 'mock: {0}'.format(command), 0 """
+        full_command = command
+        if mock:
+            full_command = f"echo {PASSWORD} | sudo -S {command}"
+            print(f'Mock Ops: full command= {full_command}')
+            return 'mock: {0}'.format(command), 0
         if self.client:
             try:
-               # full_command = f"echo {PASSWORD} | sudo -S {command}"
-                stdin, stdout, stderr = self.client.exec_command(command, get_pty=True)
+                stdin, stdout, stderr = self.client.exec_command(full_command, get_pty=True)
                 if verbose:
                     response = bytes()
                     while not stdout.channel.exit_status_ready():

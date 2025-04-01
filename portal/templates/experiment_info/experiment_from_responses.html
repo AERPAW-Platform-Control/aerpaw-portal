@@ -31,7 +31,6 @@
                         <table class="table">
                             <thead>
                                 <tr class="border-bottom border-black">
-                                    <th>Old Form Row Number</th>
                                     <th>Experiment Id</th>
                                     <th>Title</th>
                                     <th>Keywords</th>
@@ -45,13 +44,7 @@
                             <tbody class="">
                                 {% for fd in experiment_fds %}
                                 <tr class="border border-bottom-0 border-black">
-                                    <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">
-                                        {% if fd.old_form_row_number != None %}
-                                        {{fd.old_form_row_number}}
-                                        {% else %}
-                                        ---
-                                        {% endif %}
-                                    </td>
+                                    
                                     <td class="{% cycle 'bg-body-secondary' 'bg-body-tertiary' %}">
                                         {% if fd.experiment != None %}
                                         {{fd.experiment.id}}

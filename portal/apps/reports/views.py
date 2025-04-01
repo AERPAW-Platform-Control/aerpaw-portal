@@ -37,6 +37,8 @@ class ReportView(View):
         cloud_resource_data, cloud_resource_usage = cloud_resource_usage_report(start_date, end_date)
         session_data, session_use = session_use_report(start_date, end_date)
 
+
+
         context = {
             'user':user,
             'is_operator':is_operator,
