@@ -29,6 +29,7 @@ def download_sftp_experiment_file(user_id: int, experiment_id: int, file_id: int
         dest_dir_path = _TMP_FILE_PATH + '/{0}'.format(str(user.uuid))
         filename = file.file_location.split('/')[-1]
         dest_file_path = dest_dir_path + '/{0}'.format(filename)
+        print(dest_file_path)
 
         # create directory /tmp/aerpaw_files/{experiment_uuid:uuid}/filename
         if not os.path.exists(dest_dir_path):

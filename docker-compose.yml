@@ -1,5 +1,5 @@
-# compose/docker-compose.yml.local-dev
-# - database port 5432 exposed to host (security risk)
+# compose/docker-compose.yml.docker
+# - nginx port 8080, 8443 exposed to host (http, https) - self signed certs by default
 
 version: '3.9'
 services:
@@ -10,8 +10,8 @@ services:
     container_name: portal-database
     networks:
       - portal-network
-    ports:
-      - "5432:5432"
+#    ports:
+#      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -19,6 +19,48 @@ services:
       PGDATA: ${PGDATA}
 #    volumes:
 #      - ${HOST_DB_DATA}:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  nginx:
+    # default port 8080, 8443
+    image: nginx:1
+    container_name: portal-nginx
+    networks:
+      - portal-network
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - .:/code
+      - ./portal/static:/code/static
+      - ./portal/media:/code/media
+      - /home/aerpawops/acme_files:/data/letsencrypt    #For certbot renewal
+      - ${NGINX_DEFAULT_CONF}:/etc/nginx/conf.d/default.conf
+      - ${NGINX_NGINX_CONF}:/etc/nginx/nginx.conf
+      - ${NGINX_SSL_CERTS_DIR}:/etc/letsencrypt:ro
+    restart: unless-stopped
+
+  django:
+    # default port 8000
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: portal-django
+    networks:
+      - portal-network
+#    ports:
+#      - "8000:8000"
+    depends_on:
+      - database
+    volumes:
+      - ./:/code
+      - ./portal/static:/code/portal/static
+      - ./portal/media:/code/portal/media
+    environment:
+      - UWSGI_UID=${UWSGI_UID}
+      - UWSGI_GID=${UWSGI_GID}
+      - LOAD_FIXTURES=${LOAD_FIXTURES:-0}
+      - MAKE_MIGRATIONS=${MAKE_MIGRATIONS:-0}
     restart: unless-stopped
 
 networks:
