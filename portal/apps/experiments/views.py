@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
 from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard, field_trip_form
 from portal.apps.experiments.api.experiment_utils import to_retired
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
@@ -119,6 +120,7 @@ def experiment_list(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_detail(request, experiment_id):
     e = ExperimentViewSet(request=request)
     message = None

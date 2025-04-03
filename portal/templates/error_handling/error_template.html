@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load profiles_tags users_tags user_request_tags %}
+
+{% block title %}
+    Aerpaw Errors
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+{% if message %}
+    <div class="text-danger" style="font-size: large">{{ message }}</div>
+{% endif %}
+
+{% endblock %}
