@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block content %}
-    {% if message %}
+    <!-- {% if message %}
         <div class="text-danger" style="font-size: large">{{ message|escape }}</div>
-    {% endif %}
+    {% endif %} -->
     {% if user.is_authenticated and experiment %}
         <div class="container w-85">
             <div class="d-flex flex-row align-items-center justify-content-between">

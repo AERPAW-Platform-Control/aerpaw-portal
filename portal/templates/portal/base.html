@@ -10,7 +10,7 @@
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     {# Display django.contrib.messages as Bootstrap alerts #}
-    {% bootstrap_messages %}
+    <!-- {% bootstrap_messages %} -->
     {# FontAwesome: https://fontawesome.com/docs/web/use-with/python-django #}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -33,7 +33,26 @@
 <body>
 {% include 'navbar.html' %}
 <main class="ps-5 pe-5 pt-3 ms-auto me-auto">
-    <div id="aerpaw-messages"></div>
+    <!-- <div id="aerpaw-messages"></div> -->
+    {% if messages %}
+        {% for message in messages %}
+        {% if message.level != 25 %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+           {{message}}
+            {% if message.level == 50 %}
+                <a type="button" class="btn-close" href="{% url 'home' %}"></a>
+            {% else %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+         </div>
+         {% endif %}
+        {% endfor %}
+    {% endif %}
     {% block content %}
     {% endblock %}
     {% block extra_js %}
