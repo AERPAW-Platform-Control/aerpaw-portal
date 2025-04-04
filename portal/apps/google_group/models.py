@@ -15,7 +15,7 @@ class GoogleGroupMembership(BaseModel, BaseTimestampModel, models.Model):
     - user
     - consent_asked - has the user been asked if they are willing to join the google group
     - consent_given - has the user given consent to auto join the google group
-    - member - Is the user a mamber of the google group
+    - member - Is the user a member of the google group
 
     """
     user = models.ForeignKey(AerpawUser, on_delete=models.CASCADE)

@@ -47,7 +47,6 @@ class AerpawUser(BaseModel, AuditModelMixin, AbstractUser):
 
     display_name = models.CharField(max_length=255)
     openid_sub = models.CharField(max_length=255)
-    google_group_member = models.BooleanField(blank=True, null=True)
     profile = models.ForeignKey(
         AerpawUserProfile,
         related_name='+',
