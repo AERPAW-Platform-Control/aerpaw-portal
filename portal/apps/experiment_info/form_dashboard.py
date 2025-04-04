@@ -39,18 +39,18 @@ def create_canonical_experiment(request, project_id):
         exp_info.experiment_type = ExperimentFormData.ExperimentType.CANONICAL
         exp_info.experiment = AerpawExperiment.objects.get(id=exp.data.get("experiment_id"))
         exp_info.title = request.POST.get('title')
-        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
-        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
-        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else None
-        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else None 
-        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else None
-        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
-        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') else None
-        exp_info.location = request.POST.get('location') if request.POST.get('location') else None
+        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else 'none'
+        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else 'none'
+        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else 'none'
+        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else 'none' 
+        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else 'none'
+        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else 'none'
+        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') else 'none'
+        exp_info.location = request.POST.get('location') if request.POST.get('location') else 'none'
         exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
-        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
-        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else None
-        exp_info.vehicle_behavior = None
+        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else 'none'
+        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else 'none'
+        exp_info.vehicle_behavior = 'none'
         exp_info.uuid = uuid4()
         exp_info.save()
         return exp
