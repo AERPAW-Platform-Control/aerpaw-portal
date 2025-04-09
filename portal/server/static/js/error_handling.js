@@ -32,7 +32,7 @@ class AerpawThread{
     }
 
     static findThreads(){
-        fetch('http://127.0.0.1:8000/error_handling/ssh_error_handling',{
+        fetch('https://tutorial-portal.aerpaw.ncsu.edu//error_handling/ssh_error_handling',{
             method: 'POST',
             headers: {
                 'Content-Type':'application/json',
@@ -129,7 +129,7 @@ class AerpawThread{
     }
 
     static fetchIncompleteThreads(){
-        fetch('http://127.0.0.1:8000/error_handling/ssh_error_handling',{
+        fetch('https://tutorial-portal.aerpaw.ncsu.edu//error_handling/ssh_error_handling',{
             method: 'POST',
             headers: {
                 'Content-Type':'application/json',
@@ -178,7 +178,7 @@ class AerpawThread{
             }
         })
         if(displayedThreads.length > 0 ){
-            fetch('http://127.0.0.1:8000/error_handling/ssh_error_handling',{
+            fetch('https://tutorial-portal.aerpaw.ncsu.edu//error_handling/ssh_error_handling',{
                 method: 'POST',
                 headers: {
                     'Content-Type':'application/json',
@@ -194,7 +194,6 @@ class AerpawThread{
     }
 
 }
-
 
 
 AerpawThread.findThreads()
