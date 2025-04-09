@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from .models import ExperimentFormData, FieldTrip
 from .forms import FieldTripForm, MultipleExpFieldTripForm
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
 from portal.apps.experiments.models import AerpawExperiment, ScheduledSession
 from portal.apps.experiments.api.experiment_sessions import end_scheduled_session, create_experiment_session
 from portal.apps.experiments.api.viewsets import ExperimentViewSet

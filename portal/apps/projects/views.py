@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.apps.projects.forms import ProjectCreateForm, ProjectMembershipForm
 from portal.apps.projects.models import AerpawProject
@@ -18,6 +19,7 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 @csrf_exempt
 @login_required
+@handle_error
 def project_list(request):
     message = None
     try:
@@ -109,6 +111,7 @@ def project_list(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def project_detail(request, project_id):
     p = ProjectViewSet(request=request)
     message = None
@@ -197,6 +200,7 @@ def project_detail(request, project_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def project_create(request):
     message = None
     if request.method == "POST":
@@ -229,6 +233,7 @@ def project_create(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def project_edit(request, project_id):
     message = None
     if request.method == "POST":
@@ -267,6 +272,7 @@ def project_edit(request, project_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def project_members(request, project_id):
     message = None
     project = get_object_or_404(AerpawProject, id=project_id)
@@ -304,6 +310,7 @@ def project_members(request, project_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def project_owners(request, project_id):
     message = None
     project = get_object_or_404(AerpawProject, id=project_id)

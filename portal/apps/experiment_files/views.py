@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
 from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiment_files.forms import ExperimentFileCreateForm
 from portal.apps.experiment_files.models import ExperimentFile
@@ -14,6 +15,7 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_file_list(request):
     message = None
     try:
@@ -91,6 +93,7 @@ def experiment_file_list(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_file_detail(request, file_id):
     message = None
     try:
@@ -117,6 +120,7 @@ def experiment_file_detail(request, file_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_file_create(request):
     message = None
     if request.method == "POST":
@@ -150,6 +154,7 @@ def experiment_file_create(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_file_edit(request, file_id):
     message = None
     if request.method == "POST":

@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
 from portal.apps.resources.api.viewsets import ResourceViewSet
 from portal.apps.resources.forms import ResourceCreateForm
 from portal.apps.resources.models import AerpawResource
@@ -14,6 +15,7 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 @csrf_exempt
 @login_required
+@handle_error
 def resource_list(request):
     message = None
     try:
@@ -91,6 +93,7 @@ def resource_list(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def resource_detail(request, resource_id):
     r = ResourceViewSet(request=request)
     message = None
@@ -116,6 +119,7 @@ def resource_detail(request, resource_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def resource_create(request):
     message = None
     if request.method == "POST":
@@ -148,6 +152,7 @@ def resource_create(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def resource_edit(request, resource_id):
     message = None
     if request.method == "POST":

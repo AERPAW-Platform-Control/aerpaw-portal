@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_messages.models import AerpawUserMessage
 from portal.server.settings import DEBUG, REST_FRAMEWORK
@@ -15,8 +16,8 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 @csrf_exempt
 @login_required
+@handle_error
 def user_message_list(request):
-    print(f'user message list rquest= {request.POST}')
     message = None
     try:
         # check for query parameters
@@ -112,6 +113,7 @@ def user_message_list(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def user_message_detail(request, user_message_id):
     message = None
     user_message_obj = get_object_or_404(AerpawUserMessage, pk=user_message_id)

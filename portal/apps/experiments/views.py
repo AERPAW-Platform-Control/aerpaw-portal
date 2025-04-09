@@ -32,6 +32,7 @@ from portal.server.settings import DEBUG, REST_FRAMEWORK
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_list(request):
     message = None
     try:
@@ -256,11 +257,8 @@ def experiment_detail(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_create(request):
-    print('4 ',Group.objects.get(id=4))
-    print('3 ',Group.objects.get(id=3))
-    print('2 ',Group.objects.get(id=2))
-    print('1 ',Group.objects.get(id=1))
     message = None
     project = None
     form = None
@@ -294,6 +292,7 @@ def experiment_create(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_edit(request, experiment_id):
     message = 'INFO: selecting IS_RETIRED will permanently disable the experiment'
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
@@ -330,6 +329,7 @@ def experiment_edit(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_members(request, experiment_id):
     message = None
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
@@ -372,6 +372,7 @@ def experiment_members(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_resource_list(request, experiment_id):
     #message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
     message = ''
@@ -448,6 +449,7 @@ def experiment_resource_list(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_resource_targets(request, experiment_id):
     message = None
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
@@ -541,6 +543,7 @@ def experiment_resource_targets(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_resource_target_edit(request, experiment_id, canonical_experiment_resource_id):
     message = None
     cer = get_object_or_404(CanonicalExperimentResource, id=canonical_experiment_resource_id)
@@ -588,6 +591,7 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_files(request, experiment_id):
     message = None
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
@@ -623,6 +627,7 @@ def experiment_files(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def experiment_sessions(request, experiment_id):
     message = None
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
@@ -733,6 +738,7 @@ def experiment_sessions(request, experiment_id):
 
 @csrf_exempt
 @login_required
+@handle_error
 def session_detail(request, experiment_id, session_id):
     message = None
     

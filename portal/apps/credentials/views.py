@@ -5,13 +5,15 @@ from django.views.decorators.csrf import csrf_exempt
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
 from portal.apps.credentials.forms import CredentialAddForm, CredentialGenerateForm
-from portal.server.download_utils import download_db_credential_private_key, download_db_credential_public_key
 from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.decorators import handle_error
+from portal.server.download_utils import download_db_credential_private_key, download_db_credential_public_key
 from portal.server.settings import DEBUG
 
 
 @csrf_exempt
 @login_required
+@handle_error
 def credential_create(request):
     message = None
     if request.method == "POST":
@@ -71,6 +73,7 @@ def credential_create(request):
 
 @csrf_exempt
 @login_required
+@handle_error
 def credential_add(request):
     message = None
     if request.method == "POST":
