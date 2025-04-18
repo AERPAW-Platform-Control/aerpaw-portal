@@ -1,4 +1,6 @@
-from portal.apps.error_handling.error_dashboard import new_error
+from django.http import HttpRequest
+
+from portal.apps.error_handling.api.error_utils import catch_exception
 
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
 from cryptography.hazmat.primitives import serialization as crypto_serialization
@@ -25,4 +27,4 @@ def generate_rsa_2048_key() -> dict:
         )
         return {'private_key': private_key.decode('utf-8'), 'public_key': public_key.decode('utf-8')}
     except Exception as exc:
-        error = new_error(exc, user=None, msg='Unable to generate rsa key')
+        catch_exception(exc)

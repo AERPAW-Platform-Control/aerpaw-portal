@@ -1,8 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from portal.apps.credentials.models import PublicCredentials
-from portal.apps.users.models import AerpawUser, AerpawUserProfile
 
 User = get_user_model()
 

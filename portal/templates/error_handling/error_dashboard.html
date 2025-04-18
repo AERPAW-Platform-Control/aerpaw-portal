@@ -12,7 +12,6 @@
 {% if message %}
     <div class="text-danger" style="font-size: large">{{ message }}</div>
 {% endif %}
-{% if is_operator == True %}
 <form id="get-error-form" method="post" action="{% url 'error_dashboard' %}">
     {% csrf_token %}
     <div class="row">
@@ -86,30 +85,61 @@
         </div>
     </div>
 </form>
-<div id="error-container" class="container">
-    {% if errors %}
-    <ul>
-        {% for error in errors %}
-        <hr>
-        <li><b>Error#: {{error.id}}</b>
-            <ul class="list-group list-group-horizontal">
-                <li class="list-group-item border border-0"><u>Date:</u><br> {{error.datetime}}</li>
-                <li class="list-group-item border border-0"><u>User:</u><br> {{error.user.email}}</li>
-                <li class="list-group-item border border-0"><u>Type:</u><br> {{error.type}}</li>
-            </ul>
+<div id="error-container" class="container mb-5">
+    {% if error_group %}
+    <h4>Error Group #{{error_group.id}}</h4>
+    <hr>
+    <ul class="list-group">
+        <li class="list-group-item border border-0 py-0"><b>User:</b>  {{error_group.user}}</li>
+        <li class="list-group-item border border-0 py-0"><b>View Function:</b>  {{error_group.view_name}}</li>
+        <li class="list-group-item border border-0 py-0"><b>Errors:</b>
             <ul class="list-group">
-                <li class="list-group-item border border-0"><u>User Message:</u><br> {{error.message|safe}}</li>
-                <li class="list-group-item border border-0"><u>Traceback:</u><br> {{error.traceback}}</li>
+                {% for error in errors %}
+                <li class="list-group-item border border-1">#{{error.id}}
+                    <ul class="list-group list-group-horizontal">
+                        <li class="list-group-item border border-0"><u>Date:</u><br> {{error.datetime}}</li>
+                        <li class="list-group-item border border-0"><u>User:</u><br> {{error.user.email}}</li>
+                        <li class="list-group-item border border-0"><u>Type:</u><br> {{error.type}}</li>
+                    </ul>
+                    <ul class="list-group">
+                        {% if error.message %}
+                        <li class="list-group-item border border-0"><u>User Message:</u><br> {{error.message|safe}}</li>
+                        {% endif %}
+                        <li class="list-group-item border border-0"><u>Traceback:</u>
+                            <ul class="list-group">
+                                {% for err_trace in error.traceback %}
+                                <li class="list-group-item border border-0">{{err_trace}}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                {% endfor %}
             </ul>
         </li>
-        {% endfor %}
     </ul>
+    {% else %}
+        {% if errors %}
+        <ul>
+            {% for error in errors %}
+            <hr>
+            <li><b>Error#: {{error.id}}</b>
+                <ul class="list-group list-group-horizontal">
+                    <li class="list-group-item border border-0"><u>Date:</u><br> {{error.datetime}}</li>
+                    <li class="list-group-item border border-0"><u>User:</u><br> {{error.user.email}}</li>
+                    <li class="list-group-item border border-0"><u>Type:</u><br> {{error.type}}</li>
+                </ul>
+                <ul class="list-group">
+                    <li class="list-group-item border border-0"><u>User Message:</u><br> {{error.message|safe}}</li>
+                    <li class="list-group-item border border-0"><u>Traceback:</u><br> {{error.traceback}}</li>
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
     {% endif %}
     <div id="error-notice-container">
         <h4>{{notice|safe}}</h4>
     </div>
 </div>
-{% else %}
-<div class="text-danger" style="font-size: large">You do not have access to the errors.  If you think this is a mistake please reach out to the aerpaw ops team at aerpawops@ncsu.edu.</div>
-{% endif %}
 {% endblock %}

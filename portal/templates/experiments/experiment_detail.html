@@ -581,6 +581,117 @@
             <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
             <br>
         {% endif %}
+         <!-- Modal for scheduling sandbox session -->
+        <div class="modal fade" id="sandboxScheduleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sandboxScheduleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-dark">
+                <h1 class="modal-title fs-5 text-light" id="sandboxScheduleModalLabel">Schedule Sandbox Session</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-body-tertiary">
+                    <div class="row">
+                        <div class="col-7">
+                            
+                            <form id="sandbox-schedule-form" action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}" method="POST">
+                                {% csrf_token %}  
+                                    <div class="container">
+                                        {% for month, calendar in sandbox_calendar.items %}
+                                        <div id="sandbox-calendar" class="calendar">
+                                            <div class="calendar-heading">
+                                                <div class="row calendar-month">
+                                                    <h1>{{month}}</h1>
+                                                    <hr>
+                                                </div>
+                                                <div class="row calendar-weekday-names">
+                                                    {% for weekday, days in calendar.2.items %}
+                                                    <div class="col text-center">
+                                                        <div class="weekday-name">{{weekday}}</div>
+                                                        {% for day in days %}
+                                                        <!-- 
+                                                            day.0 == calendar date 
+                                                            day.1 == is_reserved
+                                                            day.2 == out_of_bounds (within the 28 day schedule requirment?)
+                                                        -->
+                                                        {% if day.0 != '00' %} 
+                                                            {% if day.2 == True %}
+                                                            <div class="m-1">
+                                                                <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn-light text-light consecutive-check" disabled>{{day.0}}</button>
+                                                            </div>
+                                                            {% else %}
+                                                                {% if day.1 == False %}
+                                                                <div class="m-1">
+                                                                    <input id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0}}" type="checkbox" class="btn-check consecutive-check" autocomplete="off" value="{{calendar.0}}-{{calendar.1}}-{{day.0}}">
+                                                                    <label class="btn" for="btn-check-{{calendar.1}}-{{day.0}}">{{day.0}}</label>
+                                                                </div>
+                                                                {% elif day.1 == True %}
+                                                                <div class="m-1">
+                                                                    <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn btn-secondary consecutive-check" disabled>{{day.0}}</button>
+                                                                </div>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% else %}
+                                                        <div class="m-1">
+                                                            <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn-light text-light consecutive-check" disabled>{{day.0}}</button>
+                                                        </div>
+                                                        {% endif%}
+                                                        {% endfor %}
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                            </form>
+                        </div>
+                        <div class="col-5 mt-4 pt-2">
+                            <div class="contianer  h-100">
+                                <div class="row">
+                                    <h3>Requirements</h3>
+                                    <hr>
+                                </div>
+                                <div class="row mb-3">
+                                    <ul class="list-group list-group-flush border rounded">
+                                        <li id="reservation-min-msg" class="list-group-item">Select at least one day to make a reservation.</li>
+                                        <li id="reservation-advance-msg" class="list-group-item">Reservations can be made up to 28 days in advance.</li>
+                                        <li id="reservation-consecutive-msg" class="list-group-item">Reservations can only be made for consecutive days.</li>
+                                        <li id="reservation-limit-msg" class="list-group-item">For reservations exceeding 5 days, contact AERPAW at: aerpaw-operations@ncsu.edu.</li>
+                                        <li id="reservation-time-msg" class="list-group-item">Rervations start at 10:00am ETC on the first day and end at 5:00am the next/last day. 
+                                            <br><br>Example: 
+                                            <ul class="list-group list-group-flush border rounded">
+                                                <li class="list-group-item">If the reserved dates are for the 3rd and 4th.</li> 
+                                                <li class="list-group-item">Start time would be at 10:00am on the 3rd.</li>
+                                                <li class="list-group-item">End time would be at 5:00am on the 5th</li>
+                                            </ul>
+                                    </ul>
+
+                                </div>
+                                <div class="row mb-3">
+                                    <div id="sandbox-calendar-messages"></div>
+                                </div>
+                                <div class="row">
+                                    <button 
+                                            type="submit"
+                                            form="sandbox-schedule-form"
+                                            name="b_sandbox_submit"
+                                            value="{{ experiment.experiment_id }}" 
+                                            class="btn btn-success float-end"
+                                            disabled>
+                                            Reserve Sandbox
+                                    </button>
+                                    <button type="button" class="btn btn-primary float-end" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-body-tertiary">
+                
+                </div>
+            </div>
+            </div>
+        </div>
     {% else %}
         <p>You are not allowed to view this experiment or are not logged in</p>
         <a href="{% url 'login' %}">
@@ -588,117 +699,7 @@
         </a>
     {% endif %}
 
-    <!-- Modal for scheduling sandbox session -->
-    <div class="modal fade" id="sandboxScheduleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sandboxScheduleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-          <div class="modal-content">
-            <div class="modal-header bg-dark">
-              <h1 class="modal-title fs-5 text-light" id="sandboxScheduleModalLabel">Schedule Sandbox Session</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body bg-body-tertiary">
-                <div class="row">
-                    <div class="col-7">
-                        
-                        <form id="sandbox-schedule-form" action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}" method="POST">
-                            {% csrf_token %}  
-                                <div class="container">
-                                    {% for month, calendar in sandbox_calendar.items %}
-                                    <div id="sandbox-calendar" class="calendar">
-                                        <div class="calendar-heading">
-                                            <div class="row calendar-month">
-                                                <h1>{{month}}</h1>
-                                                <hr>
-                                            </div>
-                                            <div class="row calendar-weekday-names">
-                                                {% for weekday, days in calendar.2.items %}
-                                                <div class="col text-center">
-                                                    <div class="weekday-name">{{weekday}}</div>
-                                                    {% for day in days %}
-                                                    <!-- 
-                                                        day.0 == calendar date 
-                                                        day.1 == is_reserved
-                                                        day.2 == out_of_bounds (within the 28 day schedule requirment?)
-                                                    -->
-                                                    {% if day.0 != '00' %} 
-                                                        {% if day.2 == True %}
-                                                        <div class="m-1">
-                                                            <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn-light text-light consecutive-check" disabled>{{day.0}}</button>
-                                                        </div>
-                                                        {% else %}
-                                                            {% if day.1 == False %}
-                                                            <div class="m-1">
-                                                                <input id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0}}" type="checkbox" class="btn-check consecutive-check" autocomplete="off" value="{{calendar.0}}-{{calendar.1}}-{{day.0}}">
-                                                                <label class="btn" for="btn-check-{{calendar.1}}-{{day.0}}">{{day.0}}</label>
-                                                            </div>
-                                                            {% elif day.1 == True %}
-                                                            <div class="m-1">
-                                                                <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn btn-secondary consecutive-check" disabled>{{day.0}}</button>
-                                                            </div>
-                                                            {% endif %}
-                                                        {% endif %}
-                                                    {% else %}
-                                                    <div class="m-1">
-                                                        <button id="btn-check-{{calendar.1}}-{{day.0}}" name="sandbox-calendar-day" data-date="{{calendar.0}}-{{calendar.1}}-{{day.0 }}" type="button" class="btn btn-light text-light consecutive-check" disabled>{{day.0}}</button>
-                                                    </div>
-                                                    {% endif%}
-                                                    {% endfor %}
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                        </form>
-                    </div>
-                    <div class="col-5 mt-4 pt-2">
-                        <div class="contianer  h-100">
-                            <div class="row">
-                                <h3>Requirements</h3>
-                                <hr>
-                            </div>
-                            <div class="row mb-3">
-                                <ul class="list-group list-group-flush border rounded">
-                                    <li id="reservation-min-msg" class="list-group-item">Select at least one day to make a reservation.</li>
-                                    <li id="reservation-advance-msg" class="list-group-item">Reservations can be made up to 28 days in advance.</li>
-                                    <li id="reservation-consecutive-msg" class="list-group-item">Reservations can only be made for consecutive days.</li>
-                                    <li id="reservation-limit-msg" class="list-group-item">For reservations exceeding 5 days, contact AERPAW at: aerpaw-operations@ncsu.edu.</li>
-                                    <li id="reservation-time-msg" class="list-group-item">Rervations start at 10:00am ETC on the first day and end at 5:00am the next/last day. 
-                                        <br><br>Example: 
-                                        <ul class="list-group list-group-flush border rounded">
-                                            <li class="list-group-item">If the reserved dates are for the 3rd and 4th.</li> 
-                                            <li class="list-group-item">Start time would be at 10:00am on the 3rd.</li>
-                                            <li class="list-group-item">End time would be at 5:00am on the 5th</li>
-                                        </ul>
-                                </ul>
-
-                            </div>
-                            <div class="row mb-3">
-                                <div id="sandbox-calendar-messages"></div>
-                            </div>
-                            <div class="row">
-                                <button 
-                                        type="submit"
-                                        form="sandbox-schedule-form"
-                                        name="b_sandbox_submit"
-                                        value="{{ experiment.experiment_id }}" 
-                                        class="btn btn-success float-end"
-                                        disabled>
-                                        Reserve Sandbox
-                                </button>
-                                <button type="button" class="btn btn-primary float-end" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer bg-body-tertiary">
-              
-            </div>
-          </div>
-        </div>
-      </div>
+   
 {% endblock %}
 
 {% block extra_js %}

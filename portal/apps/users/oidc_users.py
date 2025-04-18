@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.contrib.auth.models import update_last_login
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.profiles.models import AerpawUserProfile
 from portal.apps.user_messages.user_messages import generate_new_user_welcome_message
 
@@ -35,8 +35,7 @@ class MyOIDCAB(OIDCAuthenticationBackend):
         try:
             generate_new_user_welcome_message(request=self.request, user=user)
         except Exception as exc:
-            print(exc)
-            new_error(exc, user=None)
+            catch_exception(exc, request=None, user=None)
 
         return user
 

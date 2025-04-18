@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.resources.api.serializers import ResourceSerializerDetail, ResourceSerializerList
 from portal.apps.resources.models import AerpawResource
 from portal.apps.users.models import AerpawUser
@@ -92,7 +92,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /resources list")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
         
 
     def create(self, request):
@@ -124,7 +124,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="description:  must be at least {0} chars long".format(RESOURCE_MIN_DESC_LEN))
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate hostname
             hostname = request.data.get('hostname', None)
             if hostname and len(hostname) < RESOURCE_MIN_HOSTNAME_LEN:
@@ -132,7 +132,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="hostname:  must be at least {0} chars long".format(RESOURCE_MIN_HOSTNAME_LEN))
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate ip_address
             ip_address = request.data.get('ip_address', None)
             # validate is_active
@@ -144,7 +144,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="location:  must be at least {0} chars long".format(RESOURCE_MIN_LOCATION_LEN))
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate name
             name = request.data.get('name', None)
             if not name or len(name) < RESOURCE_MIN_NAME_LEN:
@@ -152,7 +152,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="name: must be at least {0} chars long".format(RESOURCE_MIN_NAME_LEN))
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate ops_notes
             ops_notes = request.data.get('ops_notes', None)
             # validate resource_class
@@ -162,7 +162,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="resource_class: must be a valid Resource Class value")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate resource_mode
             resource_mode = request.data.get('resource_mode', None)
             if resource_mode not in [c[0] for c in AerpawResource.ResourceMode.choices]:
@@ -170,7 +170,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="resource_mode: must be a valid Resource Mode value")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate resource_type
             resource_type = request.data.get('resource_type', None)
             if resource_type not in [c[0] for c in AerpawResource.ResourceType.choices]:
@@ -178,7 +178,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="resource_type: must be a valid Resource Type value")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # check if allow_canonical is of type AFRN or APRN
             if resource_class == AerpawResource.ResourceClass.ALLOW_CANONICAL and \
                     resource_type not in [AerpawResource.ResourceType.AFRN, AerpawResource.ResourceType.APRN]:
@@ -186,7 +186,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="resource_class: ALLOW_CANONICAL must be type AFRN or APRN")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # check if UAV or UGV that resource_mode == testbed
             if resource_type in [AerpawResource.ResourceType.UAV, AerpawResource.ResourceType.UGV] and \
                     resource_mode != AerpawResource.ResourceMode.TESTBED:
@@ -194,7 +194,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="resource_type: UAV/UGV must be mode TESTBED")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
 
             # create resource
             resource = AerpawResource()
@@ -218,7 +218,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to POST /resources")
             except PermissionDenied as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -287,7 +287,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /resources/{0} details".format(kwargs.get('pk')))
             except PermissionError as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def update(self, request, *args, **kwargs):
         """
@@ -318,7 +318,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="description:  must be at least {0} chars long".format(RESOURCE_MIN_DESC_LEN))
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.description = request.data.get('description')
                 modified = True
             # check for hostname
@@ -328,7 +328,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="hostname:  must be at least {0} chars long".format(RESOURCE_MIN_HOSTNAME_LEN))
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.hostname = request.data.get('hostname', None)
                 modified = True
             # check for ip_address
@@ -347,7 +347,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="location:  must be at least {0} chars long".format(RESOURCE_MIN_LOCATION_LEN))
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.location = request.data.get('location', None)
                 modified = True
             # check for name
@@ -357,7 +357,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="name:  must be at least {0} chars long".format(RESOURCE_MIN_NAME_LEN))
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.name = request.data.get('name')
                 modified = True
             # check for ops_notes
@@ -371,7 +371,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="resource_class: must be a valid Resource Class value")
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.resource_class = request.data.get('resource_class')
                 modified = True
             # check for resource_mode
@@ -381,7 +381,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="resource_mode: must be a valid Resource Mode value")
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.resource_mode = request.data.get('resource_mode')
                 modified = True
             # check for resource_type
@@ -391,7 +391,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                         raise ValidationError(
                             detail="resource_class: must be a valid Resource Type value")
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 resource.resource_type = request.data.get('resource_type', None)
                 modified = True
             # check if UAV or UGV that resource_mode == testbed
@@ -401,7 +401,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                     raise ValidationError(
                         detail="resource_type: UAV/UGV must be mode TESTBED")
                 except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             # save if modified
             if modified:
                 resource.modified_by = request.user.email
@@ -412,7 +412,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to PUT/PATCH /resources/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -454,7 +454,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to DELETE /resources/{0}".format(pk))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     @action(detail=True, methods=['get'])
     def experiments(self, request, *args, **kwargs):
@@ -481,7 +481,7 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /resources/{0}/experiments".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     @action(detail=True, methods=['get'])
     def projects(self, request, *args, **kwargs):
@@ -507,4 +507,4 @@ class ResourceViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Update
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /resources/{0}/projects".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)

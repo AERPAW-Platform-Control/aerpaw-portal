@@ -4,6 +4,7 @@ from django.views import View
 from django.utils import timezone
 
 from portal.apps.error_handling.decorators import handle_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.users.models import AerpawUser
 from portal.apps.reports.report_dashboard import report_by_institution, resource_usage_report, lab_usage_report, session_use_report, fixed_resource_usage_report, portable_resource_usage_report, cloud_resource_usage_report
 

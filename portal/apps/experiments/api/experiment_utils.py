@@ -8,14 +8,14 @@ Define the following for each transition between states
 
 import os
 import threading
-import time
-import queue
 from datetime import datetime, timezone, timedelta
+from django.http import HttpRequest
 from django.utils import timezone as tz
 from rest_framework.exceptions import NotFound, ValidationError
 
 from portal.apps.credentials.models import PublicCredentials
-from portal.apps.error_handling.error_dashboard import new_error, start_aerpaw_thread, end_aerpaw_thread, add_error_to_thread
+from portal.apps.error_handling.api.error_utils import catch_exception
+from portal.apps.error_handling.error_dashboard import start_aerpaw_thread, end_aerpaw_thread, add_error_to_thread
 from portal.apps.error_handling.models import AerpawThread
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
     start_experiment_session, stop_experiment_session, create_experiment_scheduled_session, schedule_experiment_scheduled_session, \
@@ -31,7 +31,6 @@ aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
 _TMP_FILE_PATH = '/tmp/aerpaw_files'
-
 
 def active_development_to_saving_development(request, experiment: AerpawExperiment):
     """
@@ -58,7 +57,7 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
     # UPDATE STATE: save_development
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVING_DEVELOPMENT
@@ -68,7 +67,7 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
         exit_development = request.data.get('exit_development', False)
     except Exception as exc:
         print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         exit_development = False
 
     # MESSAGE / EMAIL: saving development
@@ -103,7 +102,7 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
         ssh_thread.start()
         
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
 
 
 def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
@@ -135,7 +134,7 @@ def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
         
     else:
         session = OnDemandSession.objects.filter(
@@ -148,7 +147,7 @@ def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     # UPDATE STATE: save_sandbox
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVING_SANDBOX
@@ -159,7 +158,7 @@ def active_sandbox_to_saving_sandbox(request, experiment: AerpawExperiment):
         exit_sandbox = request.data.get('exit_sandbox', False)
     except Exception as exc:
         print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         exit_sandbox = False
 
     # PORTAL CF: save_sandbox
@@ -206,7 +205,7 @@ def saving_development_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
     stop_experiment_session(session=session, user=request.user)
 
@@ -246,7 +245,7 @@ def saving_development_to_active_development(request, experiment: AerpawExperime
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
     # UPDATE STATE: wait_development_deploy
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
@@ -296,7 +295,7 @@ def saving_sandbox_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
     stop_experiment_session(session=session, user=request.user)
 
@@ -336,7 +335,7 @@ def saving_sandbox_to_active_sandbox(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
     # UPDATE STATE: saved
     experiment.experiment_state = AerpawExperiment.ExperimentState.ACTIVE_SANDBOX
@@ -385,7 +384,7 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
         end_scheduled_session(request=request, session=ops_session, user=request.user)
 
@@ -405,7 +404,7 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
         stop_experiment_session(session=session, user=request.user)
 
@@ -413,8 +412,7 @@ def active_emulation_to_saved(request, experiment: AerpawExperiment):
     try:
         emulation_passed = request.data.get('emulation_passed', False)
     except Exception as exc:
-        print('UTILS Exception', exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         emulation_passed = False
     experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
     if emulation_passed:
@@ -454,15 +452,14 @@ def active_emulation_to_wait_testbed_deploy(request, experiment: AerpawExperimen
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     stop_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: wait_testbed_deploy
     try:
         emulation_passed = request.data.get('emulation_passed', False)
     except Exception as exc:
-        print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         emulation_passed = False
     if emulation_passed:
         # continue to wait_testbed_deploy
@@ -513,7 +510,7 @@ def active_testbed_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     end_scheduled_session(request=request, session=session, user=request.user)
 
     # UPDATE STATE: saved
@@ -546,7 +543,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
             raise ValidationError(
                 detail="ValidationError: one or more resources required for /experiments/{0}/state".format(experiment.id))
         except ValidationError as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     # user has one or more credentials
     if not PublicCredentials.objects.filter(
             owner=request.user,
@@ -557,7 +554,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
                 detail="ValidationError: one or more user credentials required for /experiments/{0}/state".format(
                 experiment.id))
         except ValidationError as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
     # ACTION ITEMS:
     # lock experiment resources and experiment members from being further modified
@@ -592,7 +589,6 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
         # PRODUCTION
         mock = False
         
-    print('mock= ', mock, command)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_DEV)
     ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()
@@ -623,7 +619,7 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
         experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY
         experiment.save()
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
 
     generate_user_messages_for_sandbox(request, experiment=experiment)
 
@@ -677,7 +673,7 @@ def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
         experiment.experiment_state = AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE
         experiment.save()
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
 
     generate_user_messages_for_emulation(request, experiment=experiment)
 
@@ -717,7 +713,7 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
         if reschedule == 'True':
             scheduled_session = wait_testbed_schedule_to_wait_testbed_deploy(request, experiment=experiment)
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
 
     # MESSAGE / EMAIL: submit to testbed - emulation not required
     generate_user_messages_for_testbed(request=request, experiment=experiment)
@@ -765,7 +761,7 @@ def wait_development_deploy_to_active_development(request, experiment: AerpawExp
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     # start session if not already running
     if not session.start_date_time:
         start_experiment_session(session=session, user=request.user)
@@ -804,7 +800,7 @@ def wait_development_deploy_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     # stop session if it was previously running
     if session.start_date_time:
         stop_experiment_session(session=session, user=request.user)
@@ -839,7 +835,7 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
         started = start_scheduled_session(session = ops_session, user=request.user)
         
     else:
@@ -855,7 +851,7 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
         start_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: active_emulation
@@ -891,7 +887,7 @@ def wait_emulation_deploy_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     cancel_experiment_session(session=session, user=request.user)
 
     # UPDATE STATE: saved
@@ -924,7 +920,7 @@ def wait_emulation_schedule_to_wait_emulation_deploy(request, experiment: Aerpaw
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     schedule_experiment_scheduled_session(request=request, session=session, user=request.user)
 
     # UPDATE STATE: wait_emulation_deploy
@@ -961,7 +957,7 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
         cancel_scheduled_session(request=request, session=ops_session, user=request.user)
     else:
@@ -975,7 +971,7 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
                 raise NotFound(
                     detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
         cancel_experiment_session(session=session, user=request.user)
 
@@ -1011,7 +1007,7 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     # start session if not already running
     if not session.start_date_time:
         start_experiment_session(session=session, user=request.user)
@@ -1032,7 +1028,7 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
         mock = True
 
     aerpaw_thread = start_aerpaw_thread(user, experiment, AerpawThread.ThreadActions.INITIATE_SB)
-    ssh_thread = threading.Thread(target=active_sandbox, args=(experiment, command, mock, aerpaw_thread))
+    ssh_thread = threading.Thread(target=active_sandbox, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()
 
     generate_user_messages_for_sandbox(request, experiment=experiment)
@@ -1063,7 +1059,7 @@ def wait_sandbox_deploy_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     # stop session if it was previously running
     if session.start_date_time:
         end_scheduled_session(request, session=session, user=request.user)
@@ -1097,7 +1093,7 @@ def wait_testbed_deploy_to_active_testbed(request, experiment: AerpawExperiment)
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     
     started = start_scheduled_session(session=session, user=request.user)
 
@@ -1133,7 +1129,7 @@ def wait_testbed_deploy_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     cancel_scheduled_session(request, session=session, user=request.user)
 
     # UPDATE STATE: saved
@@ -1168,7 +1164,7 @@ def wait_testbed_schedule_to_wait_testbed_deploy(request, experiment: AerpawExpe
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     schedule_experiment_scheduled_session(request=request, session=session, user=request.user)
 
     # UPDATE STATE: wait_testbed_deploy
@@ -1204,7 +1200,7 @@ def wait_testbed_schedule_to_saved(request, experiment: AerpawExperiment):
             raise NotFound(
                 detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
             
     cancel_scheduled_session(request=request, session=session, user=request.user)
 
@@ -1286,7 +1282,7 @@ def saving_development(request, experiment: AerpawExperiment, command: str, exit
         exit_code = exit_code
     except Exception as exc:
         response = exc
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
         
@@ -1317,7 +1313,7 @@ def saving_development(request, experiment: AerpawExperiment, command: str, exit
                 raise NotFound(
                     detail="SaveError: something occurred during the save for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1327,7 +1323,7 @@ def saving_development(request, experiment: AerpawExperiment, command: str, exit
                     detail="SaveError: unable to deploy active_development for /experiments/{0}/state".format(
                         experiment.id))
             except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
     
@@ -1341,7 +1337,7 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
     #   response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     # except Exception as exc:
     #   response = exc
-    #   error = new_error(exc, request.user)
+    #   error = catch_exception(exc, request=request)
     #   add_error_to_thread(aerpaw_thread, error)
     #   exit_code = 1
     """ if MOCK_OPS:
@@ -1365,7 +1361,7 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
                 raise NotFound(
                     detail="SaveError: something occurred during the save for /experiments/{0}/state".format(experiment.id))
             except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1375,7 +1371,7 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
                     detail="SaveError: unable to deploy active_sandbox for /experiments/{0}/state".format(
                         experiment.id))
             except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1388,9 +1384,8 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str,
         ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
         response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     except Exception as exc:
-        print(f'Excpetion in wait_development_deploy:\n {exc}\n')
         response = exc
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
 
@@ -1414,7 +1409,7 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str,
             raise NotFound(
                 detail="DeployError: unable to deploy active_development for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1430,7 +1425,7 @@ def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str, moc
     #   
     # except Exception as exc:
     #    response = exc
-    #    error = new_error(exc, request.user)
+    #    error = catch_exception(exc, request=request)
     #    add_error_to_thread(aerpaw_thread, error)
     #    exit_code = 1
 
@@ -1453,11 +1448,11 @@ def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str, moc
             raise NotFound(
                 detail="DeployError: unable to deploy active_sandbox for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-            error = new_error(exc, request.user)
+            error = catch_exception(exc, request=request)
             add_error_to_thread(aerpaw_thread, error)
             end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
-def active_sandbox(experiment: AerpawExperiment, command: str, mock: bool, aerpaw_thread: AerpawThread):
+def active_sandbox(request, experiment: AerpawExperiment, command: str, mock: bool, aerpaw_thread: AerpawThread):
     print('function for deploying sandbox is still being written')
     exit_code = 0
     response = ''
@@ -1465,9 +1460,8 @@ def active_sandbox(experiment: AerpawExperiment, command: str, mock: bool, aerpa
         ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
         response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     except Exception as exc:
-        print(f'Excpetion in wait_development_deploy:\n {exc}\n')
         response = exc
-        error = new_error(exc, experiment.created_by)
+        error = catch_exception(exc, request=request)
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
 
@@ -1491,7 +1485,7 @@ def active_sandbox(experiment: AerpawExperiment, command: str, mock: bool, aerpa
             raise NotFound(
                 detail="DeployError: unable to deploy active_sandbox for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-                error = new_error(exc, experiment.created_by)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1516,9 +1510,8 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
         ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
         response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     except Exception as exc:
-        print(f'Excpetion in wait_testbed_schedule:\n {exc}\n')
         response = exc
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
 
@@ -1533,17 +1526,15 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
     if exit_code == 0:
         # ap-cf-submit-to-tbed.py - success
         # - do nothing
-        print(exit_code)
         end_aerpaw_thread(aerpaw_thread, exit_code, response)
     else:
         # ap-cf-submit-to-tbed.py- failure
         # - do nothing
-        print(exit_code)
         try:
             raise NotFound(
                 detail="DeployError: unable to deploy active_testbed for /experiments/{0}/state".format(experiment.id))
         except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1555,9 +1546,8 @@ def retired(request, experiment: AerpawExperiment, command: str, mock: bool, aer
         ssh_call = AerpawSsh(hostname=aerpaw_ops_host, username=aerpaw_ops_user, keyfile=aerpaw_ops_key_file)
         response, exit_code = ssh_call.send_command(command, verbose=True, mock=mock)
     except Exception as exc:
-        print(exc)
         response = exc
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
     
@@ -1572,19 +1562,17 @@ def retired(request, experiment: AerpawExperiment, command: str, mock: bool, aer
     if exit_code == 0:
         # ap-cf-retire-exp.py - success
         # - do nothing
-        print('exit code: ', exit_code)
         end_aerpaw_thread(aerpaw_thread, exit_code, response)
     else:
         # ap-cf-retire-exp.py- failure
         # - do nothing
-        print('exit code: ', exit_code)
         experiment.is_retired = False
         experiment.save()
         try:
             raise NotFound(
                 detail="RetireError: unable to retire experiment /experiments/{0}".format(experiment.id))
         except NotFound as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 add_error_to_thread(aerpaw_thread, error)
                 end_aerpaw_thread(aerpaw_thread, exit_code, response)
 
@@ -1622,7 +1610,6 @@ def to_retired(request, experiment: AerpawExperiment):
         ended_by__isnull=False
     ).order_by('-created').exists()
 
-    print('session = ', session)
     if not session:
         try:
             response = f'Experiment {experiment.id} is successfully enjoying retirement!'
@@ -1630,10 +1617,9 @@ def to_retired(request, experiment: AerpawExperiment):
             end_aerpaw_thread(aerpaw_thread, 0, response)
             return True
         except Exception as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
             return False
 
-    print('experiment.experiment_state = ', experiment.experiment_state)
     # UPDATE STATE: save_development if current state is ACTIVE_DEVELOPMENT
     if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
         request.data.exit_development = True
@@ -1666,8 +1652,6 @@ def to_retired(request, experiment: AerpawExperiment):
     else:
         # PRODUCTION
         mock = False
-    print('command = ', command)
-    print('Mock = ', mock)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
     ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()

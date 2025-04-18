@@ -11,7 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from portal.apps.credentials.api.serializers import CredentialSerializerDetail
 from portal.apps.credentials.models import PublicCredentials
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.profiles.api.serializers import UserProfileSerializerDetail
 from portal.apps.users.api.serializers import UserSerializerDetail, UserSerializerList, UserSerializerTokens
 from portal.apps.users.api.utils import get_tokens_for_user, refresh_access_token_for_user
@@ -85,7 +85,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /users list")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def create(self, request):
         """
@@ -137,7 +137,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /users/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def update(self, request, *args, **kwargs):
         """
@@ -161,7 +161,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to PUT/PATCH /users/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -227,7 +227,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /users/{0}/credentials".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     @action(detail=True, methods=['get'])
     def tokens(self, request, *args, **kwargs):
@@ -262,7 +262,7 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /users/{0}/tokens".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     @action(detail=True, methods=['get'])
     def profile(self, request, *args, **kwargs):
@@ -290,4 +290,4 @@ class UserViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, UpdateMode
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /users/{0}/profile".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)

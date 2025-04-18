@@ -6,7 +6,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateMode
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.operations.api.serializers import CanonicalNumberSerializerDetail, CanonicalNumberSerializerList
 from portal.apps.operations.models import CanonicalNumber, get_current_canonical_number, set_current_canonical_number
 
@@ -65,7 +65,7 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /canonical-number list")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def create(self, request):
         """
@@ -106,7 +106,7 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /canonical-number/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def update(self, request, *args, **kwargs):
         """
@@ -146,7 +146,7 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
                     raise PermissionDenied(
                         detail="PermissionDenied: unable to PUT/PATCH /canonical-number")
                 except PermissionDenied as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
         if request.user.is_active:
             response_data = {'current_canonical_number': int(get_current_canonical_number())}
             return Response(response_data)
@@ -155,4 +155,4 @@ class CanonicalNumberViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin,
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /canonical-number/current")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)

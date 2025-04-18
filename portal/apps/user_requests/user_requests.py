@@ -1,12 +1,13 @@
 from django.contrib.auth.models import Group
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.users.models import AerpawRolesEnum
 
 
 def approve_user_role_request(request_id: int) -> bool:
     user_request = AerpawUserRequest.objects.filter(id=request_id).first()
+    user = user_request.requested_by
     if user_request:
         try:
             group_name = None
@@ -20,7 +21,7 @@ def approve_user_role_request(request_id: int) -> bool:
             # if group exists and user is not already a member add user to group
             if group:
                 if group_name not in [g.name for g in user_request.requested_by.groups.all()]:
-                    user = user_request.requested_by
+                    user = user
                     user.groups.add(group)
                     user.save()
                     return True
@@ -29,8 +30,7 @@ def approve_user_role_request(request_id: int) -> bool:
             else:
                 return False
         except Exception as exc:
-            print(exc)
-            new_error(exc, user_request.requested_by)
+            catch_exception(exc, request=None, user=user)
             return False
     else:
         return False
@@ -38,6 +38,7 @@ def approve_user_role_request(request_id: int) -> bool:
 
 def deny_user_role_request(request_id: int) -> bool:
     user_request = AerpawUserRequest.objects.filter(id=request_id).first()
+    user = user_request.requested_by
     if user_request:
         try:
             group_name = None
@@ -51,7 +52,7 @@ def deny_user_role_request(request_id: int) -> bool:
             # if group exists and user is not already a member add user to group
             if group:
                 if group_name in [g.name for g in user_request.requested_by.groups.all()]:
-                    user = user_request.requested_by
+                    user = user
                     user.groups.remove(group)
                     user.save()
                     return True
@@ -60,8 +61,7 @@ def deny_user_role_request(request_id: int) -> bool:
             else:
                 return False
         except Exception as exc:
-            print(exc)
-            new_error(exc, user_request.requested_by)
+            catch_exception(exc, request=None, user=user)
             return False
     else:
         return False

@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.error_handling.decorators import handle_error
 from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard, field_trip_form
 from portal.apps.experiments.api.experiment_utils import to_retired
@@ -78,7 +78,7 @@ def experiment_list(request):
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     prev_page = 1
             next_url = experiments.get('next', None)
             if next_url:
@@ -86,7 +86,7 @@ def experiment_list(request):
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     next_page = 1
             count = int(experiments.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -97,7 +97,7 @@ def experiment_list(request):
             experiments = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         experiments = {}
         item_range = None
         next_page = None
@@ -131,7 +131,7 @@ def experiment_detail(request, experiment_id):
             try:
                 evaluate_dashboard_action(request)
             except Exception as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
             if request.POST.get('approve_request_id'):
                 if approve_experiment_join_request(request_id=int(request.POST.get('approve_request_id'))):
                     try:
@@ -158,7 +158,7 @@ def experiment_detail(request, experiment_id):
                         ur_resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
                         return redirect('experiment_detail', experiment_id=experiment_id)
                     except Exception as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             elif request.POST.get('deny_request_id'):
                 if deny_experiment_join_request(request_id=int(request.POST.get('deny_request_id'))):
                     # TODO: placeholder for member check or other login
@@ -177,7 +177,7 @@ def experiment_detail(request, experiment_id):
                     )
                     return response
                 except Exception as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             elif request.POST.get('retire_experiment') == "true":
                 request.data = QueryDict('', mutable=True)
                 request.data.update({'is_retired': 'true'})
@@ -199,7 +199,7 @@ def experiment_detail(request, experiment_id):
             resources.sort(key=lambda x: x.get('experiment_node_number'))
         except Exception as exc:
             resources = []
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
         # get join requests
         if experiment.get('membership').get('is_experiment_creator') or \
                 experiment.get('membership').get('is_experiment_member'):
@@ -216,7 +216,7 @@ def experiment_detail(request, experiment_id):
         else:
             user_requests = {}
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         experiment = None
         resources = []
         user_requests = {}
@@ -234,12 +234,12 @@ def experiment_detail(request, experiment_id):
                 if not session_obj.start_date_time:
                     message = 'DeploymentError: most recent deployment attempt was cancelled by user/operator'
         else:
-            # If there is no current experiment session
+            # If there is not a current experiment session
             session = {}
     except Exception as exc:
         session = {}
-        new_error(exc, request.user)
-    sandbox_calendar = SandboxCalendar().get_calendar()
+        catch_exception(exc, request=request)
+    sandbox_calendar = SandboxCalendar().get_calendar(request)
     return render(request,
                   'experiment_detail.html',
                   {
@@ -277,7 +277,7 @@ def experiment_create(request):
             if 'template' in form.keys():
                 form = form['template']
         except Exception as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     else:
         form = new_experiment_form_dashboard(request, project_id)
         form = form['template']
@@ -314,7 +314,7 @@ def experiment_edit(request, experiment_id):
                 experiment = e.partial_update(request=request, pk=experiment_id)
                 return redirect('experiment_detail', experiment_id=experiment_id)
             except Exception as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
     else:
         form = ExperimentEditForm(instance=experiment, initial={'project_id': project.get('project_id')})
     return render(request,
@@ -348,7 +348,7 @@ def experiment_members(request, experiment_id):
                 experiment = e.membership(request=api_request, pk=experiment_id)
                 return redirect('experiment_detail', experiment_id=experiment_id)
             except Exception as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
     else:
         if experiment.experiment_state == 'saved':
             initial_dict = {
@@ -374,8 +374,7 @@ def experiment_members(request, experiment_id):
 @login_required
 @handle_error
 def experiment_resource_list(request, experiment_id):
-    #message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
-    message = ''
+    message = 'INFO: Be sure to properly configure "Node UHD" and "Node Vehicle"'
     try:
         # check for query parameters
         current_page = 1
@@ -405,7 +404,7 @@ def experiment_resource_list(request, experiment_id):
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     prev_page = 1
             next_url = resources.get('next', None)
             if next_url:
@@ -413,7 +412,7 @@ def experiment_resource_list(request, experiment_id):
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     next_page = 1
             count = int(resources.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -424,7 +423,7 @@ def experiment_resource_list(request, experiment_id):
             resources = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         resources = {}
         item_range = None
         next_page = None
@@ -489,7 +488,7 @@ def experiment_resource_targets(request, experiment_id):
             exp = e.resources(request=api_request, pk=experiment_id)
             return redirect('experiment_resource_list', experiment_id=experiment_id)
         except Exception as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
 
 
         #form = ExperimentResourceTargetsForm(request.POST, instance=experiment)
@@ -516,7 +515,6 @@ def experiment_resource_targets(request, experiment_id):
         lpn_resources = [resource for resource in all_resources if resource.name[:3] == 'LPN']
         spn_resources = [resource for resource in all_resources if resource.name[:3] == 'SPN']
         acn_resources = [resource for resource in all_resources if resource.resource_type == 'ACN']
-        print(f'Aerpaw Cloud Nodes= {acn_resources}')
         experiment_resources = experiment.resources.all()
         canonical_resources = CanonicalExperimentResource.objects.filter(experiment__id=experiment.id).order_by('experiment_node_number')
         context={
@@ -566,7 +564,7 @@ def experiment_resource_target_edit(request, experiment_id, canonical_experiment
                 u_cer = c.update(request=api_request, pk=canonical_experiment_resource_id)
                 return redirect('experiment_resource_list', experiment_id=experiment_id)
             except Exception as exc:
-                error = new_error(exc, request.user)
+                catch_exception(exc, request=request)
     else:
         initial_dict = {
             'name': cer.resource.name,
@@ -609,7 +607,7 @@ def experiment_files(request, experiment_id):
                 experiment = e.files(request=api_request, pk=experiment_id)
                 return redirect('experiment_detail', experiment_id=experiment_id)
             except Exception as exc:
-                error = new_error(exc, request.user)
+                catch_exception(exc, request=request)
     else:
         initial_dict = {
             'experiment_files': [f.id for f in experiment.experiment_files.all()]
@@ -639,7 +637,7 @@ def experiment_sessions(request, experiment_id):
             is_operator = True
             evaluate_session_dashboard_action(request)    
         except Exception as exc:
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
     try:
         # check for query parameters
         current_page = 1
@@ -664,9 +662,6 @@ def experiment_sessions(request, experiment_id):
         # Combines and retrieves data for ScheduledSessions and OnDemandSessions
         all_sessions = scheduled_e.sessions_list(request=request, many=True, ops_sessions=scheduled_sessions, sessions=sessions)
         
-
-
-
         # get prev, next and item range
         next_page = None
         prev_page = None
@@ -675,7 +670,6 @@ def experiment_sessions(request, experiment_id):
         max_range = 0
         if all_sessions.data:
             all_sessions = dict(all_sessions.data)
-            print(f'all sessions= {all_sessions}')
             dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
             results = all_sessions['results']
             all_sessions['results'] = sorted(results, key=lambda x: x['session_id'], reverse=True)
@@ -685,8 +679,7 @@ def experiment_sessions(request, experiment_id):
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    print(f'1.) experiments/views experiment_sessions {exc}')
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     prev_page = 1
             next_url = all_sessions.get('next', None)
             if next_url:
@@ -694,9 +687,7 @@ def experiment_sessions(request, experiment_id):
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    print(f'2.) experiments/views experiment_sessions {exc}')
-                    error = new_error(exc, request.user)
-                    message = error.message
+                    catch_exception(exc, request=request)
                     next_page = 1
             count = int(all_sessions.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -709,7 +700,7 @@ def experiment_sessions(request, experiment_id):
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
         
     except Exception as exc:
-        error = new_error(exc, request.user)
+        catch_exception(exc, request=request)
         all_sessions = None
         item_range = None
         next_page = None
@@ -749,7 +740,7 @@ def session_detail(request, experiment_id, session_id):
         else:
             session = sessions[0]
     except Exception as exc:
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         session = None
     
 

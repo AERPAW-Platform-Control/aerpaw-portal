@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.error_handling.decorators import handle_error
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.apps.projects.forms import ProjectCreateForm, ProjectMembershipForm
@@ -65,8 +65,7 @@ def project_list(request):
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     prev_page = 1
             next_url = projects.get('next', None)
             if next_url:
@@ -74,8 +73,7 @@ def project_list(request):
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     next_page = 1
             count = int(projects.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -86,7 +84,7 @@ def project_list(request):
             projects = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         message = error.message
         projects = {}
         item_range = None
@@ -143,7 +141,7 @@ def project_detail(request, project_id):
                         ur_resp = ur.update(request=ur_api_request, pk=request.POST.get('approve_request_id'))
                         return redirect('project_detail', project_id=project_id)
                     except Exception as exc:
-                        error = new_error(exc, request.user)
+                        error = catch_exception(exc, request=request)
                         message = error.message
             elif request.POST.get('deny_request_id'):
                 if deny_project_join_request(request_id=int(request.POST.get('deny_request_id'))):
@@ -181,7 +179,7 @@ def project_detail(request, project_id):
         else:
             user_requests = {}
     except Exception as exc:
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         message = error.message
         project = None
         experiments = None
@@ -219,7 +217,7 @@ def project_create(request):
                 project = p.create(request=request).data
                 return redirect('project_detail', project_id=project.get('project_id', 9999))
             except Exception as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 message = error.message
     else:
         form = ProjectCreateForm()
@@ -252,7 +250,7 @@ def project_edit(request, project_id):
                 project = p.partial_update(request=request, pk=project_id)
                 return redirect('project_detail', project_id=project_id)
             except Exception as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 message = error.message
     else:
         project = get_object_or_404(AerpawProject, id=project_id)
@@ -290,7 +288,7 @@ def project_members(request, project_id):
                 project = p.membership(request=api_request, pk=project_id)
                 return redirect('project_detail', project_id=project_id)
             except Exception as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 message = error.message
     else:
         initial_dict = {
@@ -328,7 +326,7 @@ def project_owners(request, project_id):
                 project = p.membership(request=api_request, pk=project_id)
                 return redirect('project_detail', project_id=project_id)
             except Exception as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 message = error.message
     else:
         initial_dict = {

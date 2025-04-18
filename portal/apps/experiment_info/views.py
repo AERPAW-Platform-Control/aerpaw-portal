@@ -7,7 +7,7 @@ from rest_framework.request import Request
 
 from .models import ExperimentFormData, FieldTrip
 from .forms import FieldTripForm, MultipleExpFieldTripForm
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.error_handling.decorators import handle_error
 from portal.apps.experiments.models import AerpawExperiment, ScheduledSession
 from portal.apps.experiments.api.experiment_sessions import end_scheduled_session, create_experiment_session
@@ -61,17 +61,14 @@ class FieldTripView(View):
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to view errors")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def post(self, request):
-        print('')
         message = None
         user = request.user
         is_operator = user.is_operator()
         if is_operator == True:
-            
             if request.method == 'POST':
-                print('request= ', request.POST)
                 """ 
                 Action Items:
                  - save the field trip form
@@ -89,7 +86,6 @@ class FieldTripView(View):
                 exps_new_dev_session = request.POST.getlist('init-development') if 'init-development' in request.POST else []
                 exps_new_tb_session = request.POST.getlist('reschedule-testbed') if 'reschedule-testbed' in request.POST else []
                 for exp_id in experiments:
-                    print()
                     experiment = AerpawExperiment.objects.get(id=int(exp_id))
                     api_request = Request(request=HttpRequest())
                     api_request.user = request.user
@@ -103,7 +99,6 @@ class FieldTripView(View):
                     reschedule_tb = True if exp_id in exps_new_tb_session else False
                     
                     if init_dev == True and reschedule_tb == False:
-                        print(f'Ending Testbed session and starting Dev session for exp# {experiment.id}')
                         # Ends the current Testbed Session
                         api_request.data.update({
                             'next_state':AerpawExperiment.ExperimentState.SAVED,
@@ -117,7 +112,6 @@ class FieldTripView(View):
                         #e.state(api_request, pk=int(experiment.id))
 
                     elif init_dev == False and reschedule_tb == True:
-                        print(f'Ending Testbed session and starting new testbed session for exp# {experiment.id}')
                         # Ends the current testbed session and reschedules a new one
                         api_request.data.update({
                             'next_state':AerpawExperiment.ExperimentState.SAVED,
@@ -128,11 +122,10 @@ class FieldTripView(View):
                         e.state(api_request, pk=int(experiment.id))
 
                     elif init_dev == True and reschedule_tb == True:
-                        print(f'Ending Testbed session and Error for exp# {experiment.id}')
                         try:
                             raise ValidationError(detail='Multiple Session Error: Cannot reinitiate development session and reschedule testbed session at the same time')
                         except ValidationError as exc:
-                            new_error(exc, request.user)
+                            catch_exception(exc, request=request)
                         # Ends the current Testbed Session
                         api_request.data.update({
                             'next_state':AerpawExperiment.ExperimentState.SAVED,
@@ -141,7 +134,6 @@ class FieldTripView(View):
                         })
                         e.state(api_request, pk=int(experiment.id))
                     else:
-                        print(f'Ending Testbed session for exp# {experiment.id}')
                         # Ends the current Testbed Session
                         api_request.data.update({
                             'next_state':AerpawExperiment.ExperimentState.SAVED,
@@ -171,4 +163,4 @@ class FieldTripView(View):
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to view errors")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)

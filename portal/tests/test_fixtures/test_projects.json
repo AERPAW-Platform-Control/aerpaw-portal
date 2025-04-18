@@ -1,0 +1,34 @@
+[
+    {
+      "model": "projects.aerpawproject",
+      "pk": 1,
+      "fields": {
+        "created": "2021-09-02T16:25:45.157Z",
+        "modified": "2021-09-02T21:16:16.164Z",
+        "created_by": "tester1@ncsu.edu",
+        "modified_by": "tester1@ncsu.edu",
+        "description": "Test project 1",
+        "is_deleted": false,
+        "is_public": false,
+        "name": "AERPAW Tester 1 Project",
+        "project_creator": 2,
+        "uuid": "b9fd7b7d-d057-4aa9-8d88-a478be901072"
+      }
+    },
+    {
+      "model": "projects.aerpawproject",
+      "pk": 2,
+      "fields": {
+        "created": "2021-09-22T14:45:10.476Z",
+        "modified": "2021-09-22T17:17:10.079Z",
+        "created_by": "tester2@gmail.com",
+        "modified_by": "tester2@gmail.com",
+        "description": "Test project 2",
+        "is_deleted": false,
+        "is_public": false,
+        "name": "AERPAW Tester 2 Project",
+        "project_creator": 3,
+        "uuid": "1727f4db-1d59-459f-8eac-4baf7ae508e0"
+      }
+    }
+]

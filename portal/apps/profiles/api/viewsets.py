@@ -5,7 +5,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateMode
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.profiles.api.serializers import UserProfileSerializerDetail
 from portal.apps.profiles.models import AerpawUserProfile
 
@@ -64,7 +64,7 @@ class UserProfileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /users/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def update(self, request, *args, **kwargs):
         """
@@ -101,7 +101,7 @@ class UserProfileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to PUT/PATCH /users/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def partial_update(self, request, *args, **kwargs):
         """

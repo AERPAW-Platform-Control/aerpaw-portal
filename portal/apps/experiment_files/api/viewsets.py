@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.experiment_files.api.serializers import ExperimentFileSerializerDetail, ExperimentFileSerializerList
 from portal.apps.experiment_files.models import ExperimentFile
 from portal.apps.experiments.models import AerpawExperiment
@@ -42,7 +42,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                     raise NotFound(
                         detail="NotFound: unable to GET /experiment-files list")
                 except NotFound as exc:
-                    new_error(exc, user=None)
+                    catch_exception(exc)
                     
             if search and show_deleted:
                 q_filter = Q(id__in=experiment.experiment_files.all()) & \
@@ -102,7 +102,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                         raise PermissionDenied(
                             detail="PermissionDenied: unable to GET /experiment-files list?experiment_id=...")
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 page = self.paginate_queryset(self.get_queryset())
             if page:
                 serializer = ExperimentFileSerializerList(page, many=True)
@@ -131,7 +131,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /experiment-files list")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def create(self, request):
         """
@@ -160,7 +160,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                     raise ValidationError(
                         detail="file_location:  must include a Linked File Location")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate file_name
             file_name = request.data.get('file_name', None)
             if not file_name:
@@ -168,7 +168,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                     raise ValidationError(
                         detail="file_name:  must include a Linked File Name")
                 except:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate file_type
             file_type = request.data.get('file_type', None)
             if not file_type or file_type not in [c[0] for c in ExperimentFile.LinkedFileType.choices]:
@@ -177,7 +177,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                         detail="file_type:  must include a valid Linked File Type {0}".format(
                             [c[0] for c in ExperimentFile.LinkedFileType.choices]))
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             # validate is_active
             is_active = str(request.data.get('is_active')).casefold() == 'true'
             # create experiment linked file
@@ -199,7 +199,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to POST /experiment-files")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -233,7 +233,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                             detail="PermissionDenied: unable to GET /experiment-files/{0} list?experiment_id=...".format(
                                 experiment_id))
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 linked_file = get_object_or_404(self.get_queryset, pk=kwargs.get('pk'))
 
             serializer = ExperimentFileSerializerDetail(linked_file)
@@ -257,7 +257,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /experiment-files/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def update(self, request, *args, **kwargs):
         """
@@ -294,7 +294,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                             detail="file_type:  must include a valid Linked File Type {0}".format(
                                 [c[0] for c in ExperimentFile.LinkedFileType.choices]))
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 linked_file.file_type = request.data.get('file_type')
                 modified = True
             # check for is_active
@@ -312,7 +312,7 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to PUT/PATCH /experiment-files/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -349,4 +349,4 @@ class ExperimentFileViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, 
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to DELETE /experiment-files/{0}".format(pk))
             except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                catch_exception(exc, request=request)

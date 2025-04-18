@@ -1,0 +1,60 @@
+[
+    {
+      "model": "experiments.aerpawexperiment",
+      "pk": 1,
+      "fields": {
+        "created": "2021-09-02T19:19:12.722Z",
+        "modified": "2021-09-02T21:12:39.272Z",
+        "created_by": "tester1@ncsu.edu",
+        "modified_by": "tester1@ncsu.edu",
+        "canonical_number": 1,
+        "description": "Test Experiment 1",
+        "experiment_creator": 2,
+        "experiment_flags": "000",
+        "experiment_state": "saved",
+        "is_canonical": true,
+        "is_deleted": false,
+        "is_emulation_required": true,
+        "is_retired": false,
+        "name": "TestExp1",
+        "project": 1,
+        "resources_locked": false,
+        "members_locked": false,
+        "uuid": "8927f16a-a95e-41a2-add3-ec5c75503eaf",
+        "experiment_files": [],
+        "resources": [
+          4,
+          5
+        ]
+      }
+    },
+    {
+      "model": "experiments.aerpawexperiment",
+      "pk": 2,
+      "fields": {
+        "created": "2021-09-03T15:49:01.632Z",
+        "modified": "2021-09-03T15:49:01.632Z",
+        "created_by": "tester2@gmail.com",
+        "modified_by": "tester2@gmail.com",
+        "canonical_number": 2,
+        "description": "Test Experiment 2",
+        "experiment_creator": 3,
+        "experiment_flags": "000",
+        "experiment_state": "saved",
+        "is_canonical": true,
+        "is_deleted": false,
+        "is_emulation_required": true,
+        "is_retired": false,
+        "name": "TestExp2",
+        "project": 2,
+        "resources_locked": false,
+        "members_locked": false,
+        "uuid": "b04a8ce9-0bb7-4311-8122-f09233dffa7d",
+        "experiment_files": [],
+        "resources": [
+          4,
+          5
+        ]
+      }
+    }
+]

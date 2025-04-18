@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.projects.models import AerpawProject
 from portal.apps.resources.api.serializers import ResourceSerializerDetail
@@ -111,7 +111,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise PermissionDenied(
                             detail="PermissionDenied: unable to GET /requests list?experiment_id=...")
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             if project_id:
                 # project must exist
                 project = get_object_or_404(AerpawProject, pk=project_id)
@@ -122,7 +122,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise PermissionDenied(
                             detail="PermissionDenied: unable to GET /requests list?project_id=...")
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             if request_type:
                 # user must be site_admin
                 if not request.user.is_site_admin():
@@ -130,7 +130,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise PermissionDenied(
                             detail="PermissionDenied: unable to GET /requests list?request_type=...")
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 # request_type must be experiment, project or role
                 if request_type not in [c[0] for c in AerpawUserRequest.RequestType.choices]:
                     try:
@@ -138,7 +138,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                             detail="ValidationError: request_type must be one of [{0}]".format(
                                 [c[0] for c in AerpawUserRequest.RequestType.choices]))
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             if role_user_id:
                 # user_id must exist as valid user
                 user = get_object_or_404(AerpawUser, pk=role_user_id)
@@ -148,7 +148,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise PermissionDenied(
                             detail="PermissionDenied: unable to GET /requests list?role_user_id=...")
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             if user_id:
                 # user_id must exist as valid user
                 user = get_object_or_404(AerpawUser, pk=user_id)
@@ -158,7 +158,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise PermissionDenied( 
                             detail="PermissionDenied: unable to GET /requests list?user_id=...")
                     except PermissionDenied as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
             # fetch response
             page = self.paginate_queryset(self.get_queryset())
             if page:
@@ -189,7 +189,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /requests list")
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def create(self, request):
         """
@@ -232,14 +232,14 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         detail="ValidationError: request_type: must be one of {0}".format(
                             [c[0] for c in AerpawUserRequest.RequestType.choices]))
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             request_type_id = request.data.get('request_type_id', None)
             if not request_type_id:
                 try:
                     raise ValidationError(
                         detail="ValidationError: must provide valid request_type_id")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             received_by = None
             # validate experiment request
             if request_type == AerpawUserRequest.RequestType.EXPERIMENT:
@@ -250,7 +250,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise ValidationError(
                             detail="ValidationError: user does not have required project membership")
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 received_by = AerpawUser.objects.filter(
                     Q(id__in=experiment.experiment_membership.all()) |
                     Q(id=experiment.experiment_creator.id)
@@ -263,7 +263,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise ValidationError(
                             detail="ValidationError: project is not accepting join requests")
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 received_by = AerpawUser.objects.filter(
                     Q(id__in=project.project_owners()) |
                     Q(id=project.project_creator.id)
@@ -276,7 +276,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                         raise ValidationError(
                             detail="ValidationError: role requests can only be made by the user themselves")
                     except ValidationError as exc:
-                        new_error(exc, request.user)
+                        catch_exception(exc, request=request)
                 received_by = AerpawUser.objects.filter(
                     groups__name=AerpawRolesEnum.SITE_ADMIN.value
                 ).all()
@@ -286,7 +286,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                     raise ValidationError(
                         detail="ValidationError: must provide valid request_type_id")
                 except ValidationError as exc:
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
             else:
                 # create user_request
                 print(f'creating user request')
@@ -310,7 +310,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to POST /requests")
             except PermissionDenied as exc:
-                    new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -360,7 +360,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to GET /requests/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def update(self, request, *args, **kwargs):
         """
@@ -405,7 +405,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to PUT/PATCH /requests/{0} details".format(kwargs.get('pk')))
             except PermissionDenied as exc:
-                new_error(exc, request.user)
+                catch_exception(exc, request=request)
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -444,7 +444,7 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise ValidationError(
                     detail="ValidationError: unable to DELETE /requests/{0} - request is already completed".format(pk))
             except ValidationError as exc:
-                    new_error(exc, request.user)
+                catch_exception(exc, request=request)
         if request.user in user_request.received_by.all() or request.user == user_request.requested_by:
             user_request.completed_by = request.user
             user_request.completed_date = datetime.now(timezone.utc)
@@ -459,4 +459,4 @@ class UserRequestViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upd
                 raise PermissionDenied(
                     detail="PermissionDenied: unable to DELETE /requests/{0}".format(pk))
             except PermissionDenied as exc:
-                    new_error(exc, request.user)
+                catch_exception(exc, request=request)

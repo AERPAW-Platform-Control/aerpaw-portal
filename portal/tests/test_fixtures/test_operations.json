@@ -1,0 +1,24 @@
+[
+    {
+      "model": "operations.canonicalnumber",
+      "pk": 1,
+      "fields": {
+        "created": "2021-09-02T19:19:12.722Z",
+        "modified": "2021-09-02T21:12:39.272Z",
+        "canonical_number": 1,
+        "is_deleted": false,
+        "is_retired": false
+      }
+    },
+    {
+      "model": "operations.canonicalnumber",
+      "pk": 2,
+      "fields": {
+        "created": "2021-09-03T15:49:01.632Z",
+        "modified": "2021-09-03T15:49:01.632Z",
+        "canonical_number": 2,
+        "is_deleted": false,
+        "is_retired": false
+      }
+    }
+]

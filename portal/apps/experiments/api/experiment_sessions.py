@@ -2,7 +2,7 @@ from datetime import datetime, timezone, timedelta
 from django.utils import timezone as tz
 from uuid import uuid4
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, ScheduledSession
 from portal.apps.users.models import AerpawUser
 
@@ -45,8 +45,7 @@ def start_experiment_session(session: OnDemandSession, user: AerpawUser) -> bool
         session.save()
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, user)
+        catch_exception(exc)
     return False
 
 
@@ -59,8 +58,7 @@ def stop_experiment_session(session: OnDemandSession, user: AerpawUser) -> bool:
         session.save()
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, user)
+        catch_exception(exc)
     return False
 
 
@@ -73,8 +71,7 @@ def cancel_experiment_session(session: OnDemandSession, user: AerpawUser) -> boo
         session.save()
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, user)
+        catch_exception(exc)
     return False
 
 
@@ -160,8 +157,7 @@ def schedule_experiment_scheduled_session(request, session: ScheduledSession, us
         session.save()
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, user)
+        catch_exception(exc)
         return False
 
 
@@ -175,8 +171,7 @@ def start_scheduled_session(session: ScheduledSession, user: AerpawUser) -> bool
         session.save()
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, user)
+        catch_exception(exc)
         return False
 
 
@@ -192,8 +187,7 @@ def end_scheduled_session(request, session: ScheduledSession, user: AerpawUser) 
         session.save()
         return True
     except Exception as exc:
-        print('SESSIONS exc',exc)
-        new_error(exc, user)
+        catch_exception(exc)
         return False
 
 
@@ -209,8 +203,7 @@ def cancel_scheduled_session(request, session: ScheduledSession, user: AerpawUse
         session.save()
         return True
     except Exception as exc:
-        print('SESSIONS exc',exc)
-        new_error(exc, user)
+        catch_exception(exc)
         return False
 
 

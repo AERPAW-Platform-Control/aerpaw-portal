@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.request import QueryDict, Request
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.error_handling.decorators import handle_error
 from portal.apps.profiles.api.viewsets import UserProfileViewSet
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
@@ -29,8 +29,7 @@ def profile(request):
     try:
         user = AerpawUser.objects.get(pk=request.user.id)
     except Exception as exc:
-        print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         return redirect('user_not_found')
     if request.method == 'POST':
         try:
@@ -77,7 +76,7 @@ def profile(request):
                     )
                     return response
                 except Exception as exc:
-                    error = new_error(exc, request.user)
+                    error = catch_exception(exc, request=request)
                     message = error.message
             if request.POST.get('delete_credential'):
                 c_api_request = Request(request=HttpRequest())
@@ -90,7 +89,7 @@ def profile(request):
                     response = download_db_user_tokens(user_id=user.id)
                     return response
                 except Exception as exc:
-                    error = new_error(exc, request.user)
+                    error = catch_exception(exc, request=request)
                     message = error.message
             if request.POST.get('request_role_experimenter'):
                 ur_api_request = Request(request=HttpRequest())
@@ -104,7 +103,6 @@ def profile(request):
                 resp = ur.create(request=ur_api_request)
                 return HttpResponseRedirect(reverse('profile'))
             if request.POST.get('request_role_pi'):
-                print(f'request of PI')
                 ur_api_request = Request(request=HttpRequest())
                 ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
@@ -116,7 +114,7 @@ def profile(request):
                 resp = ur.create(request=ur_api_request)
                 return HttpResponseRedirect(reverse('profile'))
         except Exception as exc:
-            error = new_error(exc, request.user)
+            error = catch_exception(exc, request=request)
             message = error.message
     try:        
         # user data
@@ -146,8 +144,7 @@ def profile(request):
         unread_message_count = um.unread_message_count(request=request)
         
     except Exception as exc:
-        print('Exception found in profiles.views profile ', exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         
     return render(request,
                   'profile.html',

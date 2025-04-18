@@ -38,16 +38,12 @@
         {% for message in messages %}
         {% if message.level != 25 %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-           {{message}}
-            {% if message.level == 50 %}
-                <a type="button" class="btn-close" href="{% url 'home' %}"></a>
-            {% else %}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            {% endif %}
+           {{message|safe}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% else %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{message}}
+            {{message|safe}}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
          </div>
          {% endif %}

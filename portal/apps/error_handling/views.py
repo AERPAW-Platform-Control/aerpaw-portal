@@ -1,13 +1,15 @@
-import json
+import json, ast
 from datetime import datetime
-from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 
+from .decorators import handle_error
 from .error_dashboard import new_error, reduce_stored_errors
-from portal.apps.error_handling.models import AerpawThread, AerpawError
+from portal.apps.error_handling.models import AerpawThread, AerpawError, AerpawErrorGroup
 from portal.apps.experiment_info.form_dashboard import upload_old_form_data
 from portal.apps.users.models import AerpawUser
 
@@ -56,8 +58,6 @@ class ErrorHandlingView(View):
                     error.save()
             return JsonResponse({'success':True})
         
-        
-
 class AerpawSSHErrorHandling(View):
 
     def post(self, request):
@@ -196,4 +196,33 @@ class ErrorDashboardView(View):
         }
         return render(request, 'error_handling/error_dashboard.html', context)
 
-        
+@handle_error
+def error_group_report(request, err_group_id):
+    user = request.user
+    is_operator = request.user.is_operator()
+    users = []
+    notice = ''
+    errors = []
+    err_grp = None
+    if is_operator == True:
+        try:
+            err_grp = AerpawErrorGroup.objects.get(id=err_group_id)
+            errors = [error for error in err_grp.errors.all()]
+            for error in errors:
+                error.traceback = ast.literal_eval(error.traceback)
+        except Exception as exc:
+            new_error(exc, user)
+    else:
+        try:
+            raise PermissionDenied('User is not an operator')
+        except PermissionDenied as exc:
+            new_error(exc, user)
+
+    context = {
+            'users':users,
+            'error_group': err_grp,
+            'errors':errors,
+            'notice':notice,
+            'is_operator':is_operator,
+        }
+    return render(request, 'error_handling/error_dashboard.html', context)

@@ -1,10 +1,11 @@
-from datetime import datetime
-from django.http import HttpRequest
+
+from django.http import HttpRequest 
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.request import Request
 
 from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiment_info.form_dashboard import new_field_trip
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, ScheduledSession
 from portal.apps.users.models import AerpawUser
@@ -65,16 +66,12 @@ def check_submit_to_sandbox(user: AerpawUser, experiment: AerpawExperiment):
     LPNs = 0
     SPNs = 0
     for resource in experiment.resources.all():
-        print(f'LPNS= {resource.name[:3]}')
-        print(f'SPNS= {resource.name[:3]}')
         if resource.resource_type == 'AFRN':
             fixed_nodes += 1
         elif resource.resource_type == 'APRN' and resource.name[:3] =='LPN':
             LPNs += 1
         elif resource.resource_type == 'APRN' and resource.name[:3] =='SPN':
             SPNs += 1
-        print(f'# of LPNS= {LPNs}')
-        print(f'# of SPNS= {SPNs}')
     if fixed_nodes > 4:
         return False
     if LPNs > 2:
@@ -250,8 +247,7 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
         return buttons
 
     except Exception as exc:
-        print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         return buttons
 
 
@@ -278,8 +274,6 @@ def evaluate_dashboard_action(request):
             api_request.data.update({'exit_development': True})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_sandbox_submit'):
-            print('request.POST', request.POST)
-            print(f'session date type= {type(request.POST.get("sandbox-calendar-day"))}: {request.POST.get("sandbox-calendar-day")}')
             experiment_id = request.POST.get('b_sandbox_submit')
             api_request.data.update({
                 'next_state': AerpawExperiment.ExperimentState.WAIT_SANDBOX_DEPLOY,
@@ -325,13 +319,10 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
 
     except Exception as exc:
-        print(f'Evaluate Dashbord Actions Exception= {exc}')
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
 
 
 def evaluate_session_dashboard_action(request):
-    print('DASHBOARD evaluate_session_dashboard_action')
-    print('request.POST', request.POST)
     api_request = Request(request=HttpRequest())
     api_request.user = request.user
     api_request.method = 'PUT'
@@ -365,8 +356,6 @@ def evaluate_session_dashboard_action(request):
 
     # Ends testbed session and initiates a new development session
     if request.POST.get('end_testbed_initiate_dev'):
-        print('Ending testbed session and starting a new dev session')
-        print(f'request.POST= {request.POST}')
         experiment = AerpawExperiment.objects.get(id=request.POST.get('end_testbed_initiate_dev'))
         api_request.data.update(request.POST)
         api_request.data.update({
@@ -388,8 +377,6 @@ def evaluate_session_dashboard_action(request):
 
     # Ends Testbed session and does NOT intiate a new development session
     if request.POST.get('end_testbed_only'):
-        print('Ending testbed session without starting a new dev session')
-        print(f'request.POST= {request.POST}')
         api_request.data.update(**request.POST)
         api_request.data.update({'experiment_id':request.POST.get('end_testbed_only')})
         new_field_trip(api_request)
@@ -433,7 +420,6 @@ def evaluate_session_dashboard_action(request):
 
 
     if request.POST.get('start_session'):
-        print('start_session')
         experiment = AerpawExperiment.objects.get(id = request.POST.get('start_session'))
         next_state = next_natural_transition(experiment)
         api_request.data.update({
@@ -443,7 +429,6 @@ def evaluate_session_dashboard_action(request):
         op = e.state(api_request, pk=int(experiment.id))
 
     if request.POST.get('cancel_session'):
-        print('cancel_session')
         experiment = AerpawExperiment.objects.get(id = request.POST.get('cancel_session'))
         is_success = False
         if request.POST.get('session_success') and request.POST.get('session_success') == 'True':
@@ -457,11 +442,13 @@ def evaluate_session_dashboard_action(request):
         op = e.state(api_request, pk=int(experiment.id))
 
         if request.POST.get('reschedule_session') and request.POST.get('reschedule_session') == 'True':
-            print('Rescheduling Session')
+            try:
+                raise MethodNotAllowed(detail='Rescheduling the session after cancelation is currently being worked on and will be come availible soon.')
+            except MethodNotAllowed as exc:
+                catch_exception(exc, request=request)
         
 
 def get_session_dashboard_buttons(request, session_id: int) -> dict:
-    print(f'session id = {session_id}')
     buttons = {
         'start': False,
         'end': False,
@@ -523,8 +510,7 @@ def get_session_dashboard_buttons(request, session_id: int) -> dict:
             return buttons
                 
         except Exception as exc:
-            print(exc)
-            new_error(exc, request.user)
+            catch_exception(exc, request=request)
             buttons['no_actions'] = True
             return buttons
         

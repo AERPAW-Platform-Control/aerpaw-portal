@@ -25,6 +25,19 @@ class AerpawError(BaseModel, models.Model):
     resolved_description = models.TextField(blank=True, null=True)
     uuid = models.CharField(max_length=255, primary_key=False, editable=False)
 
+class AerpawErrorGroup(BaseModel, models.Model):
+    """
+    AerpawErrorGroup (a model to group errors that all occur during the loading of a view function)  
+    - user
+    - datetime
+    - errors
+    - view name?
+    """
+    user = models.ForeignKey(AerpawUser, on_delete=models.SET_NULL, null=True)
+    datetime = models.DateTimeField(auto_now=True)
+    view_name = models.CharField(max_length=255, null=True, blank=True)
+    errors = models.ManyToManyField(AerpawError)
+
 class AerpawThread(BaseModel, models.Model):
     """ 
     AerpawThread

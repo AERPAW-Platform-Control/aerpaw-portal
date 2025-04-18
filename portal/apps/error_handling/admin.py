@@ -1,5 +1,5 @@
 from django.contrib import admin
-from portal.apps.error_handling.models import AerpawError, AerpawThread
+from portal.apps.error_handling.models import AerpawError, AerpawThread, AerpawErrorGroup
 
 class AerpawErrorAdmin(admin.ModelAdmin):
     fieldsets = (
@@ -36,6 +36,22 @@ class AerpawThreadAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('thread_start', 'uuid')
     
+class ErrorsInLine(admin.TabularInline):
+    model = AerpawErrorGroup.errors.through
+    extra = 1 
+
+class AerpawErrorGroupAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ('General Information', {
+            'fields': ('datetime', 'user', 'view_name'),
+        }),
+    )
+    
+    readonly_fields = ['datetime']
+    inlines = [ErrorsInLine]
+    exclude = ['errors']
+
 # Register your models here.
 admin.site.register(AerpawError, AerpawErrorAdmin)
 admin.site.register(AerpawThread, AerpawThreadAdmin)
+admin.site.register(AerpawErrorGroup, AerpawErrorGroupAdmin)

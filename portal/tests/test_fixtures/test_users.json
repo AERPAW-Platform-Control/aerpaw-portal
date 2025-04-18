@@ -1,0 +1,92 @@
+[
+    {
+        "model": "users.aerpawuser",
+        "pk": 1,
+        "fields": {
+          "password": "",
+          "last_login": "2021-12-10T12:53:41.523Z",
+          "is_superuser": true,
+          "username": "admin",
+          "first_name": "aerpaw",
+          "last_name": "ncsu",
+          "email": "aerpaw@gmail.com",
+          "is_staff": true,
+          "is_active": true,
+          "date_joined": "2021-07-01T17:21:34.100Z",
+          "created": "2021-07-01T17:21:34.100Z",
+          "modified": "2022-12-25T18:01:52.100Z",
+          "created_by": "aerpaw@gmail.com",
+          "modified_by": "aerpaw@gmail.com",
+          "display_name": "AERPAW Admin",
+          "openid_sub": "http://cilogon.org/serverA/users/51476771",
+          "profile": 1,
+          "uuid": "8a20fa7a-26e4-4cb0-a610-e1ba61f3a678",
+          "groups": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "user_permissions": []
+        }
+      },
+    {
+      "model": "users.aerpawuser",
+      "pk": 2,
+      "fields": {
+        "password": "test456!",
+        "last_login": "2021-12-10T12:53:41.523Z",
+        "is_superuser": true,
+        "username": "tester1@ncsu.edu",
+        "first_name": "tester",
+        "last_name": "1",
+        "email": "tester1@ncsu.edu",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2021-07-01T17:21:34.100Z",
+        "created": "2021-07-01T17:21:34.100Z",
+        "modified": "2022-12-25T18:01:52.100Z",
+        "created_by": "aerpaw@gmail.com",
+        "modified_by": "aerpaw@gmail.com",
+        "display_name": "AERPAW Tester1",
+        "openid_sub": "",
+        "profile": 2,
+        "uuid": "1257ec8e-9bf3-49a6-b4eb-4d6d92c579db",
+        "groups": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "user_permissions": []
+      }
+    },
+    {
+        "model": "users.aerpawuser",
+        "pk": 3,
+        "fields": {
+          "password": "test123!",
+          "last_login": "2021-12-10T12:53:41.523Z",
+          "is_superuser": false,
+          "username": "tester2@gmail.com",
+          "first_name": "test",
+          "last_name": "er",
+          "email": "tester2@gmail.com",
+          "is_staff": false,
+          "is_active": true,
+          "date_joined": "2021-07-01T17:21:34.100Z",
+          "created": "2021-07-01T17:21:34.100Z",
+          "modified": "2022-12-25T18:01:52.100Z",
+          "created_by": "aerpaw@gmail.com",
+          "modified_by": "aerpaw@gmail.com",
+          "display_name": "AERPAW Tester2",
+          "openid_sub": "",
+          "profile": 3,
+          "uuid": "273400c4-4867-4815-92a2-d8f40c111c14",
+          "groups": [
+            1
+          ],
+          "user_permissions": []
+        }
+      }
+]

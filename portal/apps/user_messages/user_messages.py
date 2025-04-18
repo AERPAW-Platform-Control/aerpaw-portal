@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from django.core.mail import send_mail
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.projects.models import AerpawProject
 from portal.apps.user_messages.models import AerpawUserMessage
@@ -36,8 +36,7 @@ def send_portal_mail_from_message(request, *args, **kwargs) -> bool:
         send_mail(subject, message, from_email, recipient_list)
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         return False
 
 
@@ -70,8 +69,7 @@ def user_message_create(request, *args, **kwargs) -> bool:
         user_message.save()
         return True
     except Exception as exc:
-        print(exc)
-        new_error(exc, request.user)
+        catch_exception(exc, request=request)
         return False
 
 

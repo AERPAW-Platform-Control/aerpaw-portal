@@ -5,7 +5,7 @@ from django.http import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
-from portal.apps.error_handling.error_dashboard import new_error
+from portal.apps.error_handling.api.error_utils import catch_exception
 from portal.apps.error_handling.decorators import handle_error
 from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiment_files.forms import ExperimentFileCreateForm
@@ -47,8 +47,7 @@ def experiment_file_list(request):
                 try:
                     prev_page = prev_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     prev_page = 1
             next_url = experiment_files.get('next', None)
             if next_url:
@@ -56,8 +55,7 @@ def experiment_file_list(request):
                 try:
                     next_page = next_dict['page'][0]
                 except Exception as exc:
-                    print(exc)
-                    new_error(exc, request.user)
+                    catch_exception(exc, request=request)
                     next_page = 1
             count = int(experiment_files.get('count'))
             min_range = int(current_page - 1) * int(REST_FRAMEWORK['PAGE_SIZE']) + 1
@@ -68,7 +66,7 @@ def experiment_file_list(request):
             experiment_files = {}
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
     except Exception as exc:
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         message = error.message
         experiment_files = {}
         item_range = None
@@ -105,7 +103,7 @@ def experiment_file_detail(request, file_id):
                 return redirect('experiment_file_list')
         experiment_file = f.retrieve(request=request, pk=file_id).data
     except Exception as exc:
-        error = new_error(exc, request.user)
+        error = catch_exception(exc, request=request)
         message = error.message
         experiment_file = None
     return render(request,
@@ -137,10 +135,9 @@ def experiment_file_create(request):
                 request.data.update(data_dict)
                 r = ExperimentFileViewSet(request=request)
                 experiment_file = r.create(request=request).data
-                print(experiment_file)
                 return redirect('experiment_file_detail', file_id=experiment_file.get('file_id', 9999))
             except Exception as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 message = error.message
     else:
         form = ExperimentFileCreateForm()
@@ -174,7 +171,7 @@ def experiment_file_edit(request, file_id):
                 experiment_file = r.partial_update(request=request, pk=file_id)
                 return redirect('experiment_file_detail', file_id=file_id)
             except Exception as exc:
-                error = new_error(exc, request.user)
+                error = catch_exception(exc, request=request)
                 message = error.message
     else:
         experiment_file = get_object_or_404(ExperimentFile, id=file_id)
