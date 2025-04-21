@@ -2,7 +2,7 @@ import datetime
 from collections import defaultdict
 from django.contrib import messages
 from django.shortcuts import render
-from django.urls import resolve
+from django.urls import resolve, Resolver404
 from django.utils import timezone
 from functools import wraps
 
@@ -89,27 +89,7 @@ def sort_errors_by_type(errors: list[AerpawError]):
     return error_types
 
 def handle_error(view):
-    """ 
-    Considerations to include
-        Debug|10: 
-            - display messages only to ops
-            - Consolidate the debug functions into one
 
-        Consolidate all errors from a view into one
-            - Order the errors by the time the error was created
-            - Make a list out of the error id#s for the experimenters to send in a message to ops
-        
-        Only show one PermissionDenied error
-            - Need a general message to display to users that encapsulates all permission denied errors
-            or
-            - Need a hierchy of errors so only the top is displayed to experimenters
-
-        Only show one NotFound/Http404 error
-            - Need a general message to display to users that encapsulates all NotFound errors
-            or
-            - Need a hierchy of errors so only the top is displayed to experimenters
-
-    """
     @wraps(view)
     def wrapper(request, *args, **kwargs):
         errors = catch_all_errors_in_view(request, view, *args, **kwargs)
@@ -117,8 +97,11 @@ def handle_error(view):
         
         # Handle any errors that are present
         if errors.count() > 0:
-            view_path = resolve(request.path_info).func
-            view_path = f'{view_path.__module__}.{view_path.__name__}'  # Get the path to the view function
+            try:
+                view_path = resolve(request.path_info).func
+                view_path = f'{view_path.__module__}.{view_path.__name__}'  # Get the path to the view function
+            except Resolver404:
+                view_path = 'unknown'
             error_group = new_error_group(user, view_path, errors)      # Create a new AerpawErrorGroup Instance
             error_types = sort_errors_by_type(errors)                   # Sort all the caught errors by their exception type
             error_page = error_msg(request, error_types, error_group)   # Add the error message to the Django messages framework and get which template to return

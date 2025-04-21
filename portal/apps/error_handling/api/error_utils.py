@@ -6,4 +6,4 @@ def catch_exception(exc, request=None, user=None):
     if not request:
         request = HttpRequest()
         request.user = user if user else None
-    return AerpawErrorViewset().create(exc, request)
+    return AerpawErrorViewset().create(request, exc)
