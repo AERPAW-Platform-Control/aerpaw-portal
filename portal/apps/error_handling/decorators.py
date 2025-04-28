@@ -40,7 +40,7 @@ def catch_all_errors_in_view(request, view, *args, **kwargs):
     start = timezone.now()
     view_repsonse = view(request, *args, **kwargs)
     errors = AerpawError.objects.filter(datetime__gt=start, user=request.user)
-    return errors
+    return errors, view_repsonse
 
 def get_view_name(view):
     if hasattr(view, '__self__') and hasattr(view.__self__, '__class__'):
@@ -92,7 +92,9 @@ def handle_error(view):
 
     @wraps(view)
     def wrapper(request, *args, **kwargs):
-        errors = catch_all_errors_in_view(request, view, *args, **kwargs)
+        start = timezone.now()
+        response = view(request, *args, **kwargs)
+        errors = AerpawError.objects.filter(datetime__gt=start, user=request.user)
         user = request.user
         
         # Handle any errors that are present
@@ -111,10 +113,10 @@ def handle_error(view):
             # Otherwise return the view with the error message at the top
             if error_page:
                 return render(request, 'error_handling/error_template.html')    
-            return view(request, *args, **kwargs)
+            return response
         
         # If there are no errors, then return the view
         else:
-            return view(request, *args, **kwargs)
+            return response
 
     return wrapper

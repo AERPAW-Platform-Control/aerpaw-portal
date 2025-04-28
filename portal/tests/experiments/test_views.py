@@ -11,8 +11,16 @@ from portal.apps.users.models import AerpawUser
 User = get_user_model()
 @unittest.skip("Skipping all tests in this class")
 class TestExperimentListView(TestCase):
-    fixtures = ['aerpaw_roles', 'experiments', 'experiment_files', 'operations', 'profiles', 'projects',  'resources', 'users',]
-    #fixtures = ['aerpaw_roles']
+    fixtures = [
+        'portal/tests/test_fixtures/test_aerpaw_roles.json',
+        'portal/tests/test_fixtures/test_experiment_files.json',
+        'portal/tests/test_fixtures/test_experiments.json',
+        'portal/tests/test_fixtures/test_operations.json',
+        'portal/tests/test_fixtures/test_profiles.json',
+        'portal/tests/test_fixtures/test_projects.json',
+        'portal/tests/test_fixtures/test_resources.json',
+        'portal/tests/test_fixtures/test_users.json'
+        ]
 
     @classmethod
     def setUpTestData(cls):
