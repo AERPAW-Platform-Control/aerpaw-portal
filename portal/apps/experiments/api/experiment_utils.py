@@ -1615,16 +1615,13 @@ def to_retired(request, experiment: AerpawExperiment):
     # get active session
     session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=OnDemandSession.SessionType.DEVELOPMENT.value,
-        start_date_time__isnull=False,
-        started_by__isnull=False,
-        end_date_time__isnull=False,
-        ended_by__isnull=False
-    ).order_by('-created').exists()
+        session_type=OnDemandSession.SessionType.DEVELOPMENT
+    )
 
     print('session = ', session)
     if not session:
         try:
+            print('No session found! Changing experiment state to retired and skipping the retire script in the CF')
             response = f'Experiment {experiment.id} is successfully enjoying retirement!'
             aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
             end_aerpaw_thread(aerpaw_thread, 0, response)
