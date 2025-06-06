@@ -77,4 +77,5 @@ urlpatterns = [
     path('reports/', include('portal.apps.reports.urls')),  # reports app
     path('resources/', include('portal.apps.resources.urls')),  # resources app
     path('requests/', include('portal.apps.user_requests.urls')),  # user_requests app
+    path('threads/', include('portal.apps.threads.urls')),  # threads app
 ]

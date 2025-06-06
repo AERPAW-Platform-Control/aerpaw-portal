@@ -59,7 +59,9 @@ class AerpawThread(BaseModel, models.Model):
         blank=True,
         null=True
         )
-    thread_start = models.DateTimeField(auto_now_add=True)
+    command = models.CharField(max_length=250, blank=True, null=True)
+    thread_created = models.DateTimeField(auto_now_add=True)
+    is_threaded = models.BooleanField(default=False)
     thread_end = models.DateTimeField(auto_now=False, blank=True, null=True)
     exit_code = models.SmallIntegerField(blank=True, null=True)
     response = models.TextField(blank=True, null=True)

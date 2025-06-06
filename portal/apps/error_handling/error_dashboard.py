@@ -1,10 +1,12 @@
-import traceback, logging, datetime, os, uuid
+import traceback, logging, datetime, os, uuid, time
+import threading
 from django.apps import apps
 from django.utils import timezone
 from uuid import uuid4
 
 from portal.apps.error_handling.models import AerpawError, AerpawThread
 from portal.apps.experiments.models import AerpawExperiment
+from portal.apps.experiments.api.experiment_utils import wait_development_deploy
 from portal.apps.users.models import AerpawUser
 
 def portal_error_message(user: AerpawUser, *args, **kwargs) -> bool:
@@ -121,3 +123,37 @@ def reduce_stored_errors():
     for error in errors:
         error.delete()
     
+def que_init_dev_threads(request, mock, user: AerpawUser, action:AerpawThread.ThreadActions):
+    """  
+    This function gathers active threads and place them in order
+    of when they were created to be run one at a time. This is an 
+    effort to prevent server overload by overwhelming it with many 
+    request at once.
+    """
+    # check if this function is currently running
+    # if self.working == True
+    #   return 'Your experiment is currently #[i] in line'
+    # else:
+    #   Run the below lines...
+
+
+
+    # get the thread next in line for init development
+    thread = AerpawThread.objects.filter(action= action, thread_end=None).order_by('thread_start').last()
+    print(f'thread que: {thread}')
+    while thread is not None:
+        
+        if thread.is_threaded == False:
+            # start the thread
+            ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, thread.experiment, thread.command, mock, thread))
+            ssh_thread.start()
+            thread.threaded = True
+            thread.save()
+        if thread.is_threaded == True:
+            # wait 20 seconds for the command script to run and recheck the thread for an ending or get the next thread in line
+            time.sleep(20)
+            thread = AerpawThread.objects.filter(action= AerpawThread.ThreadActions.INITIATE_DEV, thread_end=None).order_by('thread_start').last()
+            
+           
+
+
