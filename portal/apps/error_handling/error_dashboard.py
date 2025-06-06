@@ -1,12 +1,10 @@
-import traceback, logging, datetime, os, uuid, time
-import threading
+import traceback, datetime, uuid
 from django.apps import apps
 from django.utils import timezone
 from uuid import uuid4
 
-from portal.apps.error_handling.models import AerpawError, AerpawThread
-from portal.apps.experiments.models import AerpawExperiment
-from portal.apps.experiments.api.experiment_utils import wait_development_deploy
+from portal.apps.error_handling.models import AerpawError
+
 from portal.apps.users.models import AerpawUser
 
 def portal_error_message(user: AerpawUser, *args, **kwargs) -> bool:
@@ -81,34 +79,7 @@ def new_error(exc: Exception, user: AerpawUser, msg: str=None) -> AerpawError:
 
     return error
 
-def start_aerpaw_thread(user: AerpawUser, experiment:AerpawExperiment, action: AerpawThread.ThreadActions) -> AerpawThread:
-    new_thread = AerpawThread(
-        user=user,
-        uuid=uuid4(),
-        experiment=experiment,
-        displayed=False,
-        action=action,
-    )
-    new_thread.save()
-    print(f'New AerpawThread: thread# {new_thread.id}')
-    return new_thread
-
-def end_aerpaw_thread(thread: AerpawThread, exit_code, response) -> None:
-    
-    thread.thread_end = timezone.now()
-    thread.exit_code = exit_code
-    thread.response = response
-    thread.save()
-    message_components = {
-        'message_body': thread.message, 
-        'message_owner':thread.user.id, 
-        'message_subject':f'{thread.get_action_display()} for Experiment: {thread.experiment.id}',
-        'recieved_by':thread.user.id
-        }
-    portal_error_message(thread.user, None, **message_components)
-    print(f'AerpawThread ended: thread# {thread.id}')
-
-def add_error_to_thread(thread: AerpawThread, error: AerpawError):
+def add_error_to_thread(thread, error: AerpawError):
     thread.error.add(error)
     thread.is_error = True
     thread.save()
@@ -123,37 +94,3 @@ def reduce_stored_errors():
     for error in errors:
         error.delete()
     
-def que_init_dev_threads(request, mock, user: AerpawUser, action:AerpawThread.ThreadActions):
-    """  
-    This function gathers active threads and place them in order
-    of when they were created to be run one at a time. This is an 
-    effort to prevent server overload by overwhelming it with many 
-    request at once.
-    """
-    # check if this function is currently running
-    # if self.working == True
-    #   return 'Your experiment is currently #[i] in line'
-    # else:
-    #   Run the below lines...
-
-
-
-    # get the thread next in line for init development
-    thread = AerpawThread.objects.filter(action= action, thread_end=None).order_by('thread_start').last()
-    print(f'thread que: {thread}')
-    while thread is not None:
-        
-        if thread.is_threaded == False:
-            # start the thread
-            ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, thread.experiment, thread.command, mock, thread))
-            ssh_thread.start()
-            thread.threaded = True
-            thread.save()
-        if thread.is_threaded == True:
-            # wait 20 seconds for the command script to run and recheck the thread for an ending or get the next thread in line
-            time.sleep(20)
-            thread = AerpawThread.objects.filter(action= AerpawThread.ThreadActions.INITIATE_DEV, thread_end=None).order_by('thread_start').last()
-            
-           
-
-

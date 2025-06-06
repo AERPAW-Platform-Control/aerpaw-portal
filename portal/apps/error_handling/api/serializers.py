@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from portal.apps.error_handling.models import AerpawError, AerpawThread
+from portal.apps.error_handling.models import AerpawError
 
 class AerpawErrorSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(source='user.id', read_only=True)

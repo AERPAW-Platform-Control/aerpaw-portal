@@ -15,8 +15,7 @@ from django.utils import timezone as tz
 from rest_framework.exceptions import NotFound, ValidationError
 
 from portal.apps.credentials.models import PublicCredentials
-from portal.apps.error_handling.error_dashboard import new_error, start_aerpaw_thread, end_aerpaw_thread, add_error_to_thread
-from portal.apps.error_handling.models import AerpawThread
+from portal.apps.error_handling.error_dashboard import new_error, add_error_to_thread
 from portal.apps.experiments.api.experiment_sessions import cancel_experiment_session, create_experiment_session, \
     start_experiment_session, stop_experiment_session, create_experiment_scheduled_session, schedule_experiment_scheduled_session, \
         start_scheduled_session, end_scheduled_session, cancel_scheduled_session
@@ -25,6 +24,7 @@ from portal.apps.user_messages.user_messages import generate_user_messages_for_d
     generate_user_messages_for_emulation, generate_user_messages_for_testbed
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
+
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
