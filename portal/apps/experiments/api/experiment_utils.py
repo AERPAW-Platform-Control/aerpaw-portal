@@ -76,8 +76,8 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
 
     # PORTAL CF: saving_development
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
-    # aerpaw ops: ap-cf-saveexit-ve-exp.py
-    
+    # aerpaw ops: ap-cf-ops-saveexit-ve-exp.py
+
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = True
@@ -841,7 +841,7 @@ def wait_emulation_deploy_to_active_emulation(request, experiment: AerpawExperim
             except NotFound as exc:
                 new_error(exc, request.user)
         started = start_scheduled_session(session = ops_session, user=request.user)
-        
+
     else:
         # get active session and start
 
@@ -952,8 +952,8 @@ def wait_emulation_schedule_to_saved(request, experiment: AerpawExperiment):
     is_ops_session = False if 'ops_session' not in request.data else request.data.get('ops_session')
     if is_ops_session == True:
         ops_session = ScheduledSession.objects.filter(
-                experiment=experiment, 
-                session_type=ScheduledSession.SessionType.EMULATION, 
+                experiment=experiment,
+                session_type=ScheduledSession.SessionType.EMULATION,
                 is_active=True
             ).first()
         if not ops_session:
@@ -1531,12 +1531,12 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
     # TODO: determine if any transition should take place based on return value of script
     # next state transition
     if exit_code == 0:
-        # ap-cf-submit-to-tbed.py - success
+        # ap-cf-ops-submit-to-tbed.py - success
         # - do nothing
         print(exit_code)
         end_aerpaw_thread(aerpaw_thread, exit_code, response)
     else:
-        # ap-cf-submit-to-tbed.py- failure
+        # ap-cf-ops-submit-to-tbed.py- failure
         # - do nothing
         print(exit_code)
         try:
@@ -1603,7 +1603,7 @@ def to_retired(request, experiment: AerpawExperiment):
       - Set experiment to retired
       - (Optional) Send message
 
-    Session: update DEVELOPMENT --> no change		#????
+    Session: update DEVELOPMENT --> no change           #????
 
     Permissions:
     - experimenter OR
@@ -1618,7 +1618,8 @@ def to_retired(request, experiment: AerpawExperiment):
         session_type=OnDemandSession.SessionType.DEVELOPMENT
     )
 
-    print('session = ', session)
+
+    print('Session: ',session)
     if not session:
         try:
             print('No session found! Changing experiment state to retired and skipping the retire script in the CF')
@@ -1634,18 +1635,20 @@ def to_retired(request, experiment: AerpawExperiment):
     # UPDATE STATE: save_development if current state is ACTIVE_DEVELOPMENT
     if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
         request.data.exit_development = True
-        active_development_to_saving_development(request, experiment=experiment)
+        #active_development_to_saving_development(request, experiment=experiment)
     # UPDATE STATE: save_sandbox if current state is ACTIVE_SANDBOX
     elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_SANDBOX:
         request.data.exit_sandbox = True
-        active_sandbox_to_saving_sandbox(request, experiment=experiment)
+        #active_sandbox_to_saving_sandbox(request, experiment=experiment)
     # UPDATE STATE: saved if current state is ACTIVE_EMULATION
     elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_EMULATION:
         request.data.emulation_passed = False
-        active_emulation_to_saved(request, experiment=experiment)
+        #active_emulation_to_saved(request, experiment=experiment)
     # UPDATE STATE: saved if current state is ACTIVE_TESTBED
     elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_TESTBED:
-        active_testbed_to_saved(request, experiment=experiment)
+        pass
+        #active_testbed_to_saved(request, experiment=experiment)
+
     # UPDATE STATE: saved (for all other cases)
     if experiment.experiment_state != AerpawExperiment.ExperimentState.SAVED:
         experiment.experiment_state = AerpawExperiment.ExperimentState.SAVED
@@ -1668,7 +1671,3 @@ def to_retired(request, experiment: AerpawExperiment):
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
     ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()
-
-
-
-

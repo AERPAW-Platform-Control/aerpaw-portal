@@ -107,31 +107,30 @@ def create_experiment_scheduled_session(session_type: str, experiment: AerpawExp
 
     Individual Sandbox Sessions run from 10:00 am to 5:00 am 
     """
-    match session_type:
-        case 'development':
-            scheduled_start = None
-            scheduled_end = None
-            session_state = ScheduledSession.SessionStateChoices.SCHEDULED
-        case 'sandbox':
-            scheduled_start = datetime.strptime(f'{scheduled_active_date[0]}T10:00:00.000001', '%Y-%m-%dT%H:%M:%S.%f')
-            scheduled_end = None
-            if len(scheduled_active_date) >1:
-                scheduled_end = datetime.strptime(f'{scheduled_active_date[len(scheduled_active_date)-1]}T05:00:00.000001', '%Y-%m-%dT%H:%M:%S.%f') +timedelta(days=1)
-            else:
-                scheduled_end = scheduled_start + timedelta(hours=19)
-            session_state = ScheduledSession.SessionStateChoices.SCHEDULED
-        case 'emulation':
-            scheduled_start = None
-            scheduled_end = None
-            session_state = ScheduledSession.SessionStateChoices.SCHEDULED
-        case 'testbed':
-            scheduled_start = None
-            scheduled_end = None
-            session_state = ScheduledSession.SessionStateChoices.WAIT_SCHEDULE
-        case _:
-            scheduled_start = None
-            scheduled_end = None
-            session_state = ScheduledSession.SessionStateChoices.WAIT_SCHEDULE
+    if session_type == 'development':
+        scheduled_start = None
+        scheduled_end = None
+        session_state = ScheduledSession.SessionStateChoices.SCHEDULED
+    elif session_type == 'sandbox':
+        scheduled_start = datetime.strptime(f'{scheduled_active_date[0]}T10:00:00.000001', '%Y-%m-%dT%H:%M:%S.%f')
+        scheduled_end = None
+        if len(scheduled_active_date) >1:
+            scheduled_end = datetime.strptime(f'{scheduled_active_date[len(scheduled_active_date)-1]}T05:00:00.000001', '%Y-%m-%dT%H:%M:%S.%f') +timedelta(days=1)
+        else:
+            scheduled_end = scheduled_start + timedelta(hours=19)
+        session_state = ScheduledSession.SessionStateChoices.SCHEDULED
+    elif session_type ==  'emulation':
+        scheduled_start = None
+        scheduled_end = None
+        session_state = ScheduledSession.SessionStateChoices.SCHEDULED
+    elif session_type == 'testbed':
+        scheduled_start = None
+        scheduled_end = None
+        session_state = ScheduledSession.SessionStateChoices.WAIT_SCHEDULE
+    else:
+        scheduled_start = None
+        scheduled_end = None
+        session_state = ScheduledSession.SessionStateChoices.WAIT_SCHEDULE
     session = ScheduledSession()
     session.created_by = user.username
     session.experiment = experiment

@@ -1,5 +1,4 @@
 # Register your models here.
-# Register your models here.
 from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -15,4 +14,3 @@ admin.site.register(AerpawExperiment, AerpawExperimentAdmin)
 admin.site.register(UserExperiment)
 admin.site.register(OnDemandSession)
 admin.site.register(ScheduledSession)
-admin.site.register(CanonicalExperimentResource)

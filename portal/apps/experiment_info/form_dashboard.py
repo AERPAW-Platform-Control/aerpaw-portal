@@ -292,13 +292,8 @@ Thank you,
     experiment_info.questions,
     )
         
-    print('')
-    print(f'message body= \n{message_body}')
-    print('')
     kwargs={'received_by':recieved_by, 'message_subject':message_subject, 'message_body':message_body}
-    sent_mail = send_portal_mail_from_message(request=request, **kwargs)
-    if sent_mail == True:
-        print('Email sent!!')
+    send_portal_mail_from_message(request=request, **kwargs)
 
 def new_experiment_form_dashboard(request, project_id):
     print('request.POST= ', request.POST)
@@ -373,13 +368,10 @@ def upload_old_form_data():
                 public_url=ser.iloc[12] if not pd.isna(ser.iloc[12]) else None,
                 vehicle_behavior=ser.iloc[13] if not pd.isna(ser.iloc[13]) else 'None provided'
             )
-            if exp_fd.experiment.id != 830:
-                print(f'experiment ID= {exp_fd.experiment}')
-                print(f'experiment Name= {exp_fd.title}')
-                print(f'experiment Lead= {exp_fd.lead_experimenter}')
-                print()
-            #exp_fd.save()        
-    #upload_fieldtrips()
+
+            exp_fd.save()        
+    upload_fieldtrips()
+
 
 def get_fieldtrip_operators(op_names: list):
     print(f'op_ids {op_names}')
