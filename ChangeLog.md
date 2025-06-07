@@ -1,14 +1,22 @@
 # AERPAW Portal 
 
+---
+
 *Quick Format Guide*
+
 `## <Version> - <Date>`
+
 `### <Category>` 
+
     `- **Prefix** <change> ([<commit number>](commit link)) (<commit owner>)`
  
 
 *Categories*
+
     The category must be a 3rd level heading 
+
     The category must be one of (in order):
+
         - Changed for changes in existing functionality
         - Added for new functionality
         - Removed for removed functionality
