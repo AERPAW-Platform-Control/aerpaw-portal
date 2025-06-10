@@ -22,7 +22,7 @@
                         <a href="{% url 'experiment_resource_targets' experiment_id=experiment_id %}"
                            class="unlink">Add / Update</a>
                     </button>
-                    <button class="btn btn-secondary mr-2" value="cancel">
+                    <button class="btn btn-primary mr-2" value="cancel">
                         <a href="{% url 'experiment_detail' experiment_id=experiment_id %}" class="unlink">
                             Back to Experiment
                         </a>
@@ -61,7 +61,7 @@
                             <td>{{ resource.node_uhd }}</td>
                             <td>{{ resource.node_vehicle }}</td>
                             <td style="text-align: center">
-                                <button class="btn btn-secondary mr-2" value="modify">
+                                <button class="btn btn-primary mr-2" value="modify">
                                     <a href="{% url 'experiment_resource_target_edit' experiment_id=resource.experiment_id canonical_experiment_resource_id=resource.canonical_experiment_resource_id %}"
                                        class="unlink">Modify</a>
                                 </button>
@@ -72,7 +72,7 @@
             </table>
             <div class="d-flex flex-row align-items-center justify-content-between">
                 {% if prev_page %}
-                    <button type="button" class="btn btn-secondary mr-2">
+                    <button type="button" class="btn btn-primary mr-2">
                         {% if search %}
                             <a href="{% url 'experiment_resource_list' experiment_id=experiment_id %}?page={{ prev_page }}&search={{ search }}"
                                class="unlink">
