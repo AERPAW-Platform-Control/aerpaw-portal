@@ -14,10 +14,20 @@ Experiments
 <div class="container w-85">
     <h2>
         Target: {{ cer.node_display_name }}
+        <a class='fs-6' 
+            target="_blank" 
+            data-bs-toggle="tooltip" 
+            data-bs-title="User Manual 4.7.4"
+            href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.ij9jrj2p6ywj"
+        >
+            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+        </a>
+    </h2>
+    <div>
         <em class="text-primary" style="font-size: medium">
             (Experiment: {{ cer.experiment_id|id_to_experiment_name }})
         </em>
-    </h2>
+    </div>
     <form id="edit-experiment" method="POST" class="post-form">
         {% csrf_token %}
         {{ form.as_p }}
