@@ -35,6 +35,14 @@
 >            - Update links
 >            - Quick bugfix
 
+## hotfix/conf-files - 6/13/25
+
+### Fixed
+
+    - Updated the docker-compose.yml file for production settings
+    - Updated the nginx/default.conf file for production settings
+
+
 
 ## 1.0.0 - 6-7-2025
     - CHANGELOG.md was created and added by Chris Roberts - cjrober5@ncsu.edu
