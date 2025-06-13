@@ -26,7 +26,8 @@ from portal.apps.user_messages.user_messages import generate_user_messages_for_d
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
 
-aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
+#aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
+aerpaw_ops_host='152.14.188.15'
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
@@ -41,7 +42,9 @@ def format_command(command):
     # Tutorial Server (_tut)
     if aerpaw_ops_host == '152.14.188.15':
         split_command = command.split('.')
-        formatted_command = split_command[0] + '_tut.' + split_command[1]
+        variables = split_command[1]
+        script = split_command[0].split(' ')[len(split_command[0].split(' '))-1]
+        formatted_command = 'echo aerpaw | sudo -S python3 ' + script + '_tut.' + variables
 
     # Development Server (_cfdev)
     elif aerpaw_ops_host == '152.14.188.14':
