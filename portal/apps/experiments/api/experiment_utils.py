@@ -24,12 +24,39 @@ from portal.apps.experiments.models import AerpawExperiment, OnDemandSession, Sc
 from portal.apps.user_messages.user_messages import generate_user_messages_for_development, generate_user_messages_for_sandbox,\
     generate_user_messages_for_emulation, generate_user_messages_for_testbed
 from portal.server.ops_ssh_utils import AerpawSsh
-from portal.server.settings import MOCK_OPS, TUT_SERVER, DEV_SERVER
+from portal.server.settings import MOCK_OPS
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
+
+def format_command(command):
+    # This function takes an ssh command and adds the
+    # appropriate suffix as needed for the different 
+    # portal servers using the variable aerpaw_ops-host 
+    # found in the .env file
+    # Chris Roberts - 6/13/25
+
+    # Tutorial Server (_tut)
+    if aerpaw_ops_host == '152.14.188.15':
+        split_command = command.split('.')
+        formatted_command = split_command[0] + '_tut.' + split_command[1]
+
+    # Development Server (_cfdev)
+    elif aerpaw_ops_host == '152.14.188.14':
+        split_command = command.split('.')
+        formatted_command = split_command[0] + '_cfdev.' + split_command[1]
+    
+    # Production Server (no change)
+    elif aerpaw_ops_host == '152.14.188.11':
+        formatted_command = command
+
+    # Local Host
+    elif aerpaw_ops_host =='127.0.0.1':
+        formatted_command = command
+
+    return formatted_command
 
 
 def active_development_to_saving_development(request, experiment: AerpawExperiment):
@@ -81,35 +108,15 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = True
-
-    # DEVELOPMENT SERVER commands
-    if DEV_SERVER:
-        if exit_development:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_cfdev.py {0} save-and-exit".format(
-                experiment.id)
-        else:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_cfdev.py {0} save".format(
-                experiment.id)
-            
-    # TUTORIAL SERVER commands
-    elif TUT_SERVER:
-        if exit_development:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_tut.py {0} save-and-exit".format(
-                experiment.id)
-        else:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp_tut.py {0} save".format(
-                experiment.id)
     
-    # PRODUCTION SERVER commands
+    
+    if exit_development:
+        command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
+            experiment.id))
     else:
-        if exit_development:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
-                experiment.id)
-        else:
-            command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
-                experiment.id)
+        command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
+            experiment.id))
         
-    
     try:
         aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
         ssh_thread = threading.Thread(target=saving_development,
@@ -600,20 +607,8 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
         # DEVELOPMENT - always pass
         mock = False
     
-    # DEVELOPMENT SERVER command
-    if DEV_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp_cfdev.py {0}".format(
-            experiment.id)
-    
-    # TUTORIAL SERVER command
-    elif TUT_SERVER:    
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp_tut.py {0}".format(
-            experiment.id)
-    
-    # PRODUCTION SERVER command
-    else:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
-            experiment.id)
+    command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
+        experiment.id))
         
     print('mock= ', mock)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_DEV)
@@ -655,20 +650,9 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     if MOCK_OPS:
         mock = True
     
-    # DEVELOPMENT SERVER command
-    if DEV_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox_cfdev.py {0}".format(
-            experiment.id)
     
-    # TUTORIAL SERVER command
-    elif TUT_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox_tut.py {0}".format(
-            experiment.id)
-    
-    # PRODUCTION SERVER command
-    else:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox.py {0}".format(
-            experiment.id)
+    command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-schedule-sbox.py {0}".format(
+        experiment.id))
         
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_SB)
     ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command, mock, aerpaw_thread))
@@ -763,20 +747,9 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
         # DEVELOPMENT - always pass
         mock = False
 
-    # DEVELOPMENT SERVER command
-    if DEV_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed_cfdev.py {0}".format(
-            experiment.id)
-    
-    # TUTORIAL SERVER command
-    elif TUT_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed_tut.py {0}".format(
-            experiment.id)
-        
-    # PRODUCTION SERVER command
-    else:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
-                experiment.id)
+   
+    command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
+            experiment.id))
         
         
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_TB)
@@ -1072,17 +1045,7 @@ def wait_sandbox_deploy_to_active_sandbox(request, experiment: AerpawExperiment)
         # DEVELOPMENT - always pass
         mock = False
 
-    # DEVELOPMENT SERVER command
-    if DEV_SERVER:
-        command = ""
-    
-    # TUTORIAL SERVER command
-    elif TUT_SERVER:
-        command = ""
-        
-    # PRODUCTION SERVER command
-    else:
-        command = ""
+    command = format_command("")
 
 
 
@@ -1713,19 +1676,8 @@ def to_retired(request, experiment: AerpawExperiment):
         # DEVELOPMENT - always pass
         mock = True
     
-    # DEVELOPMENT SERVER command
-    if DEV_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp_cfdev.py {0}".format(
-           experiment.id)
-        
-    # TUTORIAL SERVER command
-    elif TUT_SERVER:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp_tut.py {0}".format(
-           experiment.id)
-        
-    # PRODUCTION SERVER command
-    else:
-        command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id)
+    
+    command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id))
         
     print('command = ', command)
     print('Mock = ', mock)

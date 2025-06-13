@@ -39,18 +39,6 @@ if os.getenv('AERPAW_OPS_MOCK').casefold() == 'true':
 else:
     MOCK_OPS = False
 
-# AERPAW_OPS_TUT: If true, runs the code specific to the TUTORIAL SERVER!
-if os.getenv('AERPAW_OPS_TUT').casefold() == 'true':
-    TUT_SERVER = True
-else:
-    TUT_SERVER = False
-
-# AERPAW_OPS_DEV: If true, runs the code specific to the DEVELOPMENT SERVER!
-if os.getenv('AERPAW_OPS_TUT').casefold() == 'true':
-    DEV_SERVER = True
-else:
-    DEV_SERVER = False
-
 # ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
 ALLOWED_HOSTS = [os.getenv('DJANGO_ALLOWED_HOSTS')]
 
