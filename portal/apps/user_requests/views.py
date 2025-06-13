@@ -1,16 +1,21 @@
+import os, json
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, QueryDict
-from django.shortcuts import render
+from django.http import HttpRequest, QueryDict, JsonResponse
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
+
+
 
 from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.user_requests.models import AerpawUserRequest
 from portal.apps.user_requests.user_requests import approve_user_role_request, deny_user_role_request
 from portal.server.settings import DEBUG, REST_FRAMEWORK
+
+
 
 
 @csrf_exempt
@@ -106,3 +111,4 @@ def user_role_reqeust_list(request):
                       'count': count,
                       'debug': DEBUG
                   })
+

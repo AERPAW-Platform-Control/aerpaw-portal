@@ -1260,8 +1260,11 @@ class ScheduledSessionViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin
         if request.user.is_operator() or is_experiment_creator or is_experiment_member:
             # Reomves non-ops sessions if they have an ops session. 
             ops_session_ids = [session.id for session in kwargs['ops_sessions']]
+            print(ops_session_ids)
             sessions = [session for session in kwargs['sessions'] if session.id not in ops_session_ids]
+            print(sessions)
             sessions_queryset = list(chain(kwargs['ops_sessions'], sessions))
+            print(sessions_queryset)
             page = self.paginate_queryset(sessions_queryset)
             if page:
                 serializer = ScheduledSessionSerializerList(page, many=True)

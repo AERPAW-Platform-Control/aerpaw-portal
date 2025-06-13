@@ -31,6 +31,7 @@ aerpaw_ops_host='152.14.188.15'
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
+_TMP_FILE_PATH = '/tmp/aerpaw_files'
 
 def format_command(command):
     # This function takes an ssh command and adds the
@@ -111,8 +112,6 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = True
-    
-    
     if exit_development:
         command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save-and-exit".format(
             experiment.id))
@@ -604,6 +603,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
+
     
     mock = False
     if MOCK_OPS:     
@@ -612,8 +612,9 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
     
     command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
         experiment.id))
+
         
-    print('mock= ', mock)
+    print('mock= ', mock, command)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_DEV)
     ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()
@@ -649,6 +650,7 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     generate_user_messages_for_sandbox(request, experiment=experiment)
 
     # PORTAL CF: wait_sandbox_deploy
+
     mock = False
     if MOCK_OPS:
         mock = True
@@ -660,7 +662,6 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_SB)
     ssh_thread = threading.Thread(target=wait_sandbox_deploy, args=(request, experiment, command, mock, aerpaw_thread))
     ssh_thread.start()
-
 
 
 def saved_to_wait_emulation_schedule(request, experiment: AerpawExperiment):
@@ -744,7 +745,6 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     # PORTAL CF: wait_testbed_schedule
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
     # aerpaw ops: ap-cf-ops-submit-to-tbed.py
-    
     mock = False
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -753,7 +753,7 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
    
     command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-submit-to-tbed.py {0}".format(
             experiment.id))
-        
+
         
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_TB)
     ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock, aerpaw_thread))
@@ -1313,11 +1313,11 @@ def saving_development(request, experiment: AerpawExperiment, command: str, exit
         
 
     
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(5)
         print('response: ' + str(response))
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # next state transition
     if exit_code == 0:
@@ -1365,11 +1365,11 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
     #   error = new_error(exc, request.user)
     #   add_error_to_thread(aerpaw_thread, error)
     #   exit_code = 1
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(5)
         print('response: ' + response)
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # next state transition
     if exit_code == 0:
@@ -1415,11 +1415,11 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str,
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
 
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + str(response))
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # next state transition
     if exit_code == 0:
@@ -1456,11 +1456,11 @@ def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str, moc
     #    exit_code = 1
 
 
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + response)
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # next state transition
     if exit_code == 0:
@@ -1492,11 +1492,11 @@ def active_sandbox(experiment: AerpawExperiment, command: str, mock: bool, aerpa
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
 
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + str(response))
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # next state transition
     if exit_code == 0:
@@ -1543,11 +1543,11 @@ def wait_testbed_schedule(request, experiment: AerpawExperiment, command: str, m
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
 
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + str(response))
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # TODO: determine if any transition should take place based on return value of script
     # next state transition
@@ -1582,11 +1582,11 @@ def retired(request, experiment: AerpawExperiment, command: str, mock: bool, aer
         add_error_to_thread(aerpaw_thread, error)
         exit_code = 1
     
-    if MOCK_OPS:
+    """ if MOCK_OPS:
         # add sleep when using mock to simulate remote processing delay
         time.sleep(10)
         print('response: ' + str(response))
-        print('exit code: ' + str(exit_code))
+        print('exit code: ' + str(exit_code)) """
 
     # TODO: determine if any transition should take place based on return value of script
     # next state transition
@@ -1636,18 +1636,21 @@ def to_retired(request, experiment: AerpawExperiment):
     # get active session
     session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=OnDemandSession.SessionType.DEVELOPMENT,
-        is_active=True
-    ).first()
+        session_type=OnDemandSession.SessionType.DEVELOPMENT
+    )
 
 
     print('Session: ',session)
     if not session:
         try:
-            raise NotFound(
-                detail="NotFound: unable to find active session for /experiments/{0}/state".format(experiment.id))
-        except NotFound as exc:
+            print('No session found! Changing experiment state to retired and skipping the retire script in the CF')
+            response = f'Experiment {experiment.id} is successfully enjoying retirement!'
+            aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
+            end_aerpaw_thread(aerpaw_thread, 0, response)
+            return True
+        except Exception as exc:
             new_error(exc, request.user)
+            return False
 
     print('experiment.experiment_state = ', experiment.experiment_state)
     # UPDATE STATE: save_development if current state is ACTIVE_DEVELOPMENT
@@ -1674,6 +1677,7 @@ def to_retired(request, experiment: AerpawExperiment):
         experiment.save()
 
     # Invoke retire script to cleanup all experiment files
+
     mock = False
     if MOCK_OPS:
         # DEVELOPMENT - always pass
@@ -1682,6 +1686,7 @@ def to_retired(request, experiment: AerpawExperiment):
     
     command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id))
         
+
     print('command = ', command)
     print('Mock = ', mock)
     aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
