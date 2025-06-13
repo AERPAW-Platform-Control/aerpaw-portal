@@ -1,5 +1,8 @@
 ### Project exclusions
 
+# change log file
+CHANGELOG.md
+
 # environment file
 .env
 
