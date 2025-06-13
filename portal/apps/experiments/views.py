@@ -2,16 +2,16 @@ import calendar, traceback, sys, re
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.http import HttpRequest, QueryDict, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.request import Request
+
 from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard, field_trip_form
-
 from portal.apps.experiments.api.experiment_utils import to_retired
-
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, ExperimentViewSet, ScheduledSessionViewSet
 from portal.apps.experiments.calendar import SandboxCalendar
 from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons, get_session_dashboard_buttons
@@ -253,8 +253,17 @@ def experiment_detail(request, experiment_id):
 @csrf_exempt
 @login_required
 def experiment_create(request):
+    print('4 ',Group.objects.get(id=4))
+    print('3 ',Group.objects.get(id=3))
+    print('2 ',Group.objects.get(id=2))
+    print('1 ',Group.objects.get(id=1))
     message = None
     project = None
+    form = None
+    project_id = request.GET.get('project_id')
+    p = ProjectViewSet()
+    project = p.retrieve(request=request, pk=project_id).data
+    
     if request.method == "POST":
         try:
             project_id = request.GET.get('project_id')
@@ -268,12 +277,6 @@ def experiment_create(request):
         except Exception as exc:
             new_error(exc, request.user)
     else:
-        print('GET request', request.GET)
-        project_id = request.GET.get('project_id')
-        p = ProjectViewSet()
-        project = p.retrieve(request=request, pk=project_id).data
-        #form = ExperimentCreateForm(initial={'project_id': project_id})
-
         form = new_experiment_form_dashboard(request, project_id)
         form = form['template']
     return render(request,
@@ -621,6 +624,7 @@ def experiment_sessions(request, experiment_id):
     experiment = get_object_or_404(AerpawExperiment, id=experiment_id)
     user = request.user
     is_operator = False
+    dashboard_buttons = None
     if user.groups.filter(name='operator').exists():
         try:
             is_operator = True
@@ -650,7 +654,7 @@ def experiment_sessions(request, experiment_id):
 
         # Combines and retrieves data for ScheduledSessions and OnDemandSessions
         all_sessions = scheduled_e.sessions_list(request=request, many=True, ops_sessions=scheduled_sessions, sessions=sessions)
-
+        
 
 
 
@@ -662,6 +666,8 @@ def experiment_sessions(request, experiment_id):
         max_range = 0
         if all_sessions.data:
             all_sessions = dict(all_sessions.data)
+            print(f'all sessions= {all_sessions}')
+            dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
             results = all_sessions['results']
             all_sessions['results'] = sorted(results, key=lambda x: x['session_id'], reverse=True)
             prev_url = all_sessions.get('previous', None)
@@ -690,8 +696,8 @@ def experiment_sessions(request, experiment_id):
                 max_range = count
         else:
             all_sessions = {}
+            dashboard_buttons = get_session_dashboard_buttons(request, session_id=None)
         item_range = '{0} - {1}'.format(str(min_range), str(max_range))
-        dashboard_buttons = get_session_dashboard_buttons(request, session_id=all_sessions['results'][0]['session_id'] )
         
     except Exception as exc:
         error = new_error(exc, request.user)

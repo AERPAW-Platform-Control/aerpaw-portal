@@ -149,11 +149,15 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
             os.path.join(BASE_DIR, 'templates/credentials'),
+            os.path.join(BASE_DIR, 'templates/error_handling'),
             os.path.join(BASE_DIR, 'templates/experiment_files'),
+            os.path.join(BASE_DIR, 'templates/experiment_info'),
             os.path.join(BASE_DIR, 'templates/experiments'),
             os.path.join(BASE_DIR, 'templates/portal'),
             os.path.join(BASE_DIR, 'templates/profiles'),
             os.path.join(BASE_DIR, 'templates/projects'),
+            os.path.join(BASE_DIR, 'templates/registration'),
+            os.path.join(BASE_DIR, 'templates/reports'),
             os.path.join(BASE_DIR, 'templates/resources'),
             os.path.join(BASE_DIR, 'templates/rest_framework'),
             os.path.join(BASE_DIR, 'templates/user_messages'),
@@ -262,7 +266,7 @@ OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = int(os.getenv('OIDC_RENEW_ID_TOKEN_EXPIRY_S
 OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
 
 # AERPAW Email for development (use only 1 email backend at a time)
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # AERPAW Email for production (use only 1 email backend at a time)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -283,43 +287,13 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
-        'project_level_handler': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/project_level_log'
-        },
-        'apps_handler': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/apps_log'
-        },
-        'ssh_handler': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/ssh_log'
-        },
+        
     },
     'loggers': {
         'mozilla_django_oidc': {
             'handlers': ['console'],
             'level': 'DEBUG'
         },
-        'django':{
-            'handlers':['project_level_handler'],
-            'level':'WARNING',
-            'propagate':True,
-        },
-        'apps_logger':{
-            'handlers':['apps_handler'],
-            'level':'INFO',
-            'propagate':True,
-        },
-        'ssh_logger':{
-            'handlers':['ssh_handler'],
-            'level': 'INFO',
-            'propagate': True,
-        }
-        
     },
 }
 

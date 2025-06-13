@@ -10,3 +10,4 @@ class AerpawProjectResource(resources.ModelResource):
 class AerpawProjectAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     resource_class = AerpawProjectResource
 admin.site.register(AerpawProject, AerpawProjectAdmin)
+admin.site.register(UserProject)

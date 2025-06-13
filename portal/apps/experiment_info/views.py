@@ -53,7 +53,6 @@ class FieldTripView(View):
                 'message':message,
                 'is_operator':is_operator,
                 'field_trips':field_trips,
-                'form':form,
             }
             return render(request, 'experiment_info/field_trip_dashboard.html', context)
         else:
@@ -90,6 +89,7 @@ class FieldTripView(View):
                 exps_new_tb_session = request.POST.getlist('reschedule-testbed') if 'reschedule-testbed' in request.POST else []
                 for exp_id in experiments:
                     print()
+                    experiment = AerpawExperiment.objects.get(id=int(exp_id))
                     api_request = Request(request=HttpRequest())
                     api_request.user = request.user
                     api_request.method = 'PUT'
@@ -163,7 +163,6 @@ class FieldTripView(View):
                 'message':message,
                 'is_operator':is_operator,
                 'field_trips':field_trips,
-                'form':form,
             }
             return render(request, 'experiment_info/field_trip_dashboard.html', context)
         else:

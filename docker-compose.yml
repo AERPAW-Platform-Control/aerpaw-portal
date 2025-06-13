@@ -1,7 +1,7 @@
 # compose/docker-compose.yml.docker
 # - nginx port 8080, 8443 exposed to host (http, https) - self signed certs by default
 
-version: '3.9'
+
 services:
 
   database:
@@ -17,8 +17,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: ${PGDATA}
-#    volumes:
-#      - ${HOST_DB_DATA}:/var/lib/postgresql/data
+    volumes:
+      - ${HOST_DB_DATA}:/var/lib/postgresql/data
     restart: unless-stopped
 
   nginx:
@@ -34,34 +34,34 @@ services:
       - .:/code
       - ./portal/static:/code/static
       - ./portal/media:/code/media
-      - /home/aerpawops/acme_files:/data/letsencrypt    #For certbot renewal
+      #- /home/aerpawops/acme_files:/data/letsencrypt    #For certbot renewal
       - ${NGINX_DEFAULT_CONF}:/etc/nginx/conf.d/default.conf
       - ${NGINX_NGINX_CONF}:/etc/nginx/nginx.conf
-      - ${NGINX_SSL_CERTS_DIR}:/etc/letsencrypt:ro
+      - ${NGINX_SSL_CERTS_DIR}:/etc/ssl:ro
     restart: unless-stopped
 
-  django:
+#  django:
     # default port 8000
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    container_name: portal-django
-    networks:
-      - portal-network
+#    build:
+#      context: ./
+#      dockerfile: Dockerfile
+#    container_name: portal-django
+#    networks:
+#      - portal-network
 #    ports:
 #      - "8000:8000"
-    depends_on:
-      - database
-    volumes:
-      - ./:/code
-      - ./portal/static:/code/portal/static
-      - ./portal/media:/code/portal/media
-    environment:
-      - UWSGI_UID=${UWSGI_UID}
-      - UWSGI_GID=${UWSGI_GID}
-      - LOAD_FIXTURES=${LOAD_FIXTURES:-0}
-      - MAKE_MIGRATIONS=${MAKE_MIGRATIONS:-0}
-    restart: unless-stopped
+#    depends_on:
+#      - database
+#    volumes:
+#      - ./:/code
+#      - ./portal/static:/code/portal/static
+#      - ./portal/media:/code/portal/media
+#    environment:
+#      - UWSGI_UID=${UWSGI_UID}
+#      - UWSGI_GID=${UWSGI_GID}
+#      - LOAD_FIXTURES=${LOAD_FIXTURES:-0}
+#      - MAKE_MIGRATIONS=${MAKE_MIGRATIONS:-0}
+#    restart: unless-stopped
 
 networks:
   portal-network:

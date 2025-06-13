@@ -178,3 +178,8 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+#Google credentials
+aerpaw-123-bfe462f8182f.json
+client_secret.apps.googleusercontent.com.json
+oauth2_user_token.json
+service_account_key.json

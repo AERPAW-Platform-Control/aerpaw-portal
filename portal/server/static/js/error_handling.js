@@ -15,7 +15,6 @@ function getCookie(name) {
 
 // setInterval variables: further defined in the functions below
 let incompleteThreadInterval;
-let errorInterval;
 
 
 class AerpawThread{
@@ -34,7 +33,7 @@ class AerpawThread{
     }
 
     static findThreads(){
-        fetch('http://127.0.0.1:8000/error_handling/ssh_error_handling',{
+        fetch('https://tutorial-portal.aerpaw.ncsu.edu//error_handling/ssh_error_handling',{
             method: 'POST',
             headers: {
                 'Content-Type':'application/json',
@@ -131,7 +130,7 @@ class AerpawThread{
     }
 
     static fetchIncompleteThreads(){
-        fetch('http://127.0.0.1:8000/error_handling/ssh_error_handling',{
+        fetch('https://tutorial-portal.aerpaw.ncsu.edu//error_handling/ssh_error_handling',{
             method: 'POST',
             headers: {
                 'Content-Type':'application/json',
@@ -180,7 +179,7 @@ class AerpawThread{
             }
         })
         if(displayedThreads.length > 0 ){
-            fetch('http://127.0.0.1:8000/error_handling/ssh_error_handling',{
+            fetch('https://tutorial-portal.aerpaw.ncsu.edu//error_handling/ssh_error_handling',{
                 method: 'POST',
                 headers: {
                     'Content-Type':'application/json',
@@ -197,97 +196,8 @@ class AerpawThread{
 
 }
 
-class AerpawError{
-    static allErrors = []
-    static displayedErrors = []
-
-    constructor(id, message, isDisplayed){
-        this.id = id
-        this.message = message
-        this.isDisplayed = isDisplayed
-    }
-
-    static getErrors(){
-        fetch('http://127.0.0.1:8000/error_handling/error_handling',{
-            method: 'POST',
-            headers: {
-                'Content-Type':'application/json',
-                'X-CSRFToken':getCookie('csrftoken')
-            },
-            body: JSON.stringify({'action':'get_undisplayed_errors'})
-        })
-        .then(response => response.json())
-        .then(data => {
-            let errors = data['errors']
-            $(errors).each((index, error)=>{
-                let newError = new AerpawError(error['id'], error['message'], false)
-                AerpawError.allErrors.push(newError)
-            })
-            AerpawError.displayErrorMessages()
-        })
-    }
-    
-    static displayErrorMessages(){
-        $(AerpawError.allErrors).each((index, error)=>{
-            if( error.isDisplayed == false){
-                $('#aerpaw-messages').append(`<p id=${error.id} class='text-danger'>${error.message}</p>`)
-                error.isDisplayed = true
-                AerpawError.displayedErrors.push(error)
-            }
-        })
-        AerpawError.markErrorsDisplayed()
-    }
-
-    static markErrorsDisplayed(){
-        // create a list of the error ids of the errors that have been displayed
-        // the Aerpaw.displayedErrors list is not json stringifiable becuase it is a list of objects
-        let allErrors = AerpawError.displayedErrors
-        let displayedErrorIds = []
-        
-        if(allErrors.length > 0){
-            $(AerpawError.displayedErrors).each((index, error)=>{
-                displayedErrorIds.push(error.id)
-            })
-            
-
-            if(displayedErrorIds.length > 0){
-                // send the displayed error ids to the backend
-                fetch('http://127.0.0.1:8000/error_handling/error_handling',{
-                    method: 'POST',
-                    headers: {
-                        'Content-Type':'application/json',
-                        'X-CSRFToken':getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        'action':'mark_errors_displayed',
-                        'error_ids':displayedErrorIds
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(`Is marking the errors as displayed a success? ${data['success']}`)
-                    
-                    //Reset the displayedErrors list so that this function does not keep running
-                    AerpawError.displayedErrors = []
-                })
-            }else{
-                console.log(`There are no errors that are marked displayed`)
-            }
-        }
-    }
-
-    static startIntervalGetErrors(){
-        let count = 0
-        errorInterval = setInterval(() => {
-            count += 1
-            AerpawError.getErrors()
-        }, 2000)
-    }
-}
 
 AerpawThread.findThreads()
-AerpawError.markErrorsDisplayed()
-AerpawError.startIntervalGetErrors()
 $(document).ready(()=>{
     $('button').each((btnIndex, btn) => {
         if($(btn).hasClass('thread')){
