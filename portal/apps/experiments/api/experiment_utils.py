@@ -30,6 +30,7 @@ aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
+_TMP_FILE_PATH = '/tmp/aerpaw_files'
 
 
 def active_development_to_saving_development(request, experiment: AerpawExperiment):
@@ -579,6 +580,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
+    # aerpaw ops: ap-cf-deploy-ve-exp.py
     command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-deploy-ve-exp.py {0}".format(
         experiment.id)
     if MOCK_OPS:
@@ -1613,17 +1615,14 @@ def to_retired(request, experiment: AerpawExperiment):
     # get active session
     session = OnDemandSession.objects.filter(
         experiment_id=experiment.id,
-        session_type=OnDemandSession.SessionType.DEVELOPMENT.value,
-        start_date_time__isnull=False,
-        started_by__isnull=False,
-        end_date_time__isnull=False,
-        ended_by__isnull=False
-    ).order_by('-created').exists()
+        session_type=OnDemandSession.SessionType.DEVELOPMENT
+    )
 
 
     print('Session: ',session)
     if not session:
         try:
+            print('No session found! Changing experiment state to retired and skipping the retire script in the CF')
             response = f'Experiment {experiment.id} is successfully enjoying retirement!'
             aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
             end_aerpaw_thread(aerpaw_thread, 0, response)
@@ -1657,7 +1656,8 @@ def to_retired(request, experiment: AerpawExperiment):
         experiment.save()
 
     # Invoke retire script to cleanup all experiment files
-    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(experiment.id)
+    command = "sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-retire-exp.py {0}".format(
+           experiment.id)
     if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = True

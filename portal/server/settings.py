@@ -267,7 +267,7 @@ OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = int(os.getenv('OIDC_RENEW_ID_TOKEN_EXPIRY_S
 OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
 
 # AERPAW Email for development (use only 1 email backend at a time)
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # AERPAW Email for production (use only 1 email backend at a time)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

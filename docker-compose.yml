@@ -1,3 +1,4 @@
+
 # compose/docker-compose.yml.docker
 # - nginx port 8080, 8443 exposed to host (http, https) - self signed certs by default
 
@@ -28,8 +29,8 @@ services:
     networks:
       - portal-network
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - .:/code
       - ./portal/static:/code/static
