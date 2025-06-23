@@ -24,6 +24,8 @@ from portal.apps.user_messages.user_messages import generate_user_messages_for_d
     generate_user_messages_for_emulation, generate_user_messages_for_testbed
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
+from portal.apps.threads.models import AerpawThread
+from portal.apps.threads.api.viewsets import AerpawThreadViewset
 
 
 aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
@@ -593,9 +595,13 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
         mock = False
         
     print('mock= ', mock, command)
-    aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_DEV)
-    ssh_thread = threading.Thread(target=wait_development_deploy, args=(request, experiment, command, mock, aerpaw_thread))
-    ssh_thread.start()
+    print(f'thread = AerpawThreadViewset()')
+    thread = AerpawThreadViewset()
+    print(f'creating new thread')
+    new_thread = thread.create(request, exp_id=experiment.id, target='wait_development_deploy', command=command)
+    que_number = thread.add_to_que(request, id=new_thread.id)
+    print(f'new thread: {new_thread.id} | {new_thread.target}')
+    return que_number
 
 
 def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
@@ -735,9 +741,10 @@ def saved_to_wait_testbed_schedule(request, experiment: AerpawExperiment):
     else:
         # PRODUCTION
         mock = False
-        
-    aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.INITIATE_TB)
-    ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock, aerpaw_thread))
+
+    thread = AerpawThreadViewset()
+    new_thread = thread.create(request.user, experiment, AerpawThread.ThreadActions.INITIATE_TB)
+    ssh_thread = threading.Thread(target=wait_testbed_schedule, args=(request, experiment, command, mock, new_thread))
     ssh_thread.start()
     
 
@@ -1381,7 +1388,7 @@ def saving_sandbox(request, experiment: AerpawExperiment, command: str, exit_san
 
 
 def wait_development_deploy(request, experiment: AerpawExperiment, command: str, mock: bool, aerpaw_thread: AerpawThread) -> None:
-    
+    print(f'wait_development_deploy is running for thread {aerpaw_thread.id}')
     exit_code = 0
     response = ''
     try:
@@ -1400,12 +1407,14 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str,
         print('response: ' + str(response))
         print('exit code: ' + str(exit_code)) """
 
+    thread_viewset = AerpawThreadViewset()
     # next state transition
     if exit_code == 0:
         # apcf_deploy_ve_exp - success
         # - wait_development_deploy --> active_development
         wait_development_deploy_to_active_development(request=request, experiment=experiment)
-        end_aerpaw_thread(aerpaw_thread, exit_code, response)
+        thread_viewset.update(pk=aerpaw_thread.id, exit_code=exit_code, response=response)
+        thread_viewset.remove_from_que(request, id=aerpaw_thread.id)
     else:
         # apcf_deploy_ve_exp - failure
         # - wait_development_deploy --> saved
@@ -1416,7 +1425,8 @@ def wait_development_deploy(request, experiment: AerpawExperiment, command: str,
         except NotFound as exc:
                 error = new_error(exc, request.user)
                 add_error_to_thread(aerpaw_thread, error)
-                end_aerpaw_thread(aerpaw_thread, exit_code, response)
+                thread_viewset.update(pk=aerpaw_thread.id, exit_code=exit_code, response=response)
+                thread_viewset.remove_from_que(request, id=aerpaw_thread.id)
 
 
 def wait_sandbox_deploy(request, experiment: AerpawExperiment, command: str, mock: bool, aerpaw_thread: AerpawThread):
@@ -1668,6 +1678,7 @@ def to_retired(request, experiment: AerpawExperiment):
         mock = False
     print('command = ', command)
     print('Mock = ', mock)
-    aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
-    ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock, aerpaw_thread))
+    thread = AerpawThreadViewset()
+    new_thread = thread.create(request.user, experiment, AerpawThread.ThreadActions.RETIRE)
+    ssh_thread = threading.Thread(target=retired, args=(request, experiment, command, mock, new_thread))
     ssh_thread.start()

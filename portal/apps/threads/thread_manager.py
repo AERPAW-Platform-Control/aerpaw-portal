@@ -21,14 +21,14 @@ def end_aerpaw_thread(thread: AerpawThread, exit_code, response) -> None:
     message_components = {
         'message_body': thread.message, 
         'message_owner':thread.user.id, 
-        'message_subject':f'{thread.get_action_display()} for Experiment: {thread.experiment.id}',
+        'message_subject':f'{thread.get_target_display()} for Experiment: {thread.experiment.id}',
         'recieved_by':thread.user.id
         }
     portal_error_message(thread.user, None, **message_components)
     print(f'AerpawThread ended: thread# {thread.id}')
             
 def add_to_que(self, request):
-        threadQ = ThreadQue.objects.get(name=str(self.action))
+        threadQ = ThreadQue.objects.get(name=str(self.target))
         if self not in threadQ.threads.all():
             threadQ.threads.add(self)
             threadQ.save()

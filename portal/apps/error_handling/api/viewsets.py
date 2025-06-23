@@ -5,7 +5,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework import permissions
 
 
-from portal.apps.error_handling.api.serializers import AerpawErrorSerializer, AerpawThreadSerializer
+from portal.apps.error_handling.api.serializers import AerpawErrorSerializer
 from portal.apps.error_handling.models import AerpawError
 
 class AerpawErrorViewset(GenericViewSet):
