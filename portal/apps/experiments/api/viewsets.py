@@ -28,6 +28,8 @@ from portal.apps.resources.models import AerpawResource
 from portal.apps.user_messages.user_messages import generate_user_messages_from_experiment_membership
 from portal.apps.users.models import AerpawUser
 
+#from portal.apps.experiments.api.experiment_utils import to_retired	#Experimental
+
 # constants
 EXPERIMENT_MIN_NAME_LEN = 5
 EXPERIMENT_MIN_DESC_LEN = 5
@@ -345,6 +347,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
             # check for is_retired
             if str(request.data.get('is_retired')).casefold() in ['true', 'false']:
                 is_retired = str(request.data.get('is_retired')).casefold() == 'true'
+#                to_retired(request, experiment)	#Experimental
                 experiment.is_retired = is_retired
                 modified = True
             # check for name

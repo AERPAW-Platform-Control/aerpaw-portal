@@ -21,7 +21,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
-from portal.apps.error_handling.api.viewsets import AerpawErrorViewset, AerpawThreadViewset
+from portal.apps.error_handling.api.viewsets import AerpawErrorViewset
 from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
@@ -29,6 +29,7 @@ from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
 from portal.apps.profiles.views import session_expired
 from portal.apps.projects.api.viewsets import ProjectViewSet, UserProjectViewSet
 from portal.apps.resources.api.viewsets import ResourceViewSet
+from portal.apps.threads.api.viewsets import AerpawThreadViewset
 from portal.apps.user_messages.api.viewsets import UserMessageViewSet
 from portal.apps.user_requests.api.viewsets import UserRequestViewSet
 from portal.apps.users.api.viewsets import UserViewSet
@@ -77,4 +78,5 @@ urlpatterns = [
     path('reports/', include('portal.apps.reports.urls')),  # reports app
     path('resources/', include('portal.apps.resources.urls')),  # resources app
     path('requests/', include('portal.apps.user_requests.urls')),  # user_requests app
+    path('threads/', include('portal.apps.threads.urls')),  # threads app
 ]

@@ -1,7 +1,15 @@
 ### Project exclusions
 
+# change log file
+CHANGELOG.md
+
 # environment file
 .env
+
+# local files
+docker-compose.yml
+nginx/default.conf
+portal/server/settings.py
 
 # demo_id_rsa files
 ssh/

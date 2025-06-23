@@ -1,5 +1,4 @@
 import calendar, traceback, sys, re
-
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
@@ -13,12 +12,10 @@ from rest_framework.request import Request
 from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.experiment_info.form_dashboard import new_experiment_form_dashboard, field_trip_form
 from portal.apps.experiments.api.experiment_utils import to_retired
-from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
-    ExperimentViewSet, ScheduledSessionViewSet
+from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, ExperimentViewSet, ScheduledSessionViewSet
 from portal.apps.experiments.calendar import SandboxCalendar
 from portal.apps.experiments.dashboard import evaluate_dashboard_action, evaluate_session_dashboard_action, get_dashboard_buttons, get_session_dashboard_buttons
-from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, \
-    ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
+from portal.apps.experiments.forms import ExperimentCreateForm, ExperimentEditForm, ExperimentFilesForm, ExperimentMembershipForm, ExperimentResourceTargetModifyForm, ExperimentResourceTargetsForm
 from portal.apps.experiments.models import AerpawExperiment, CanonicalExperimentResource, OnDemandSession, ScheduledSession
 from portal.apps.projects.api.viewsets import ProjectViewSet
 from portal.apps.resources.models import AerpawResource
@@ -176,6 +173,7 @@ def experiment_detail(request, experiment_id):
                 except Exception as exc:
                     new_error(exc, request.user)
             elif request.POST.get('retire_experiment') == "true":
+                print('VIEWS.py Retiring Experiment: ', experiment)
                 request.data = QueryDict('', mutable=True)
                 request.data.update({'is_retired': 'true'})
                 e = ExperimentViewSet(request=request)
@@ -255,10 +253,6 @@ def experiment_detail(request, experiment_id):
 @csrf_exempt
 @login_required
 def experiment_create(request):
-    print('4 ',Group.objects.get(id=4))
-    print('3 ',Group.objects.get(id=3))
-    print('2 ',Group.objects.get(id=2))
-    print('1 ',Group.objects.get(id=1))
     message = None
     project = None
     form = None

@@ -1,4 +1,3 @@
-# Register your models here.
 from django.contrib import admin
 from portal.apps.experiment_files.models import ExperimentFile
 

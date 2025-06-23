@@ -1,10 +1,10 @@
-import traceback, logging, datetime, os, uuid
+import traceback, datetime, uuid
 from django.apps import apps
 from django.utils import timezone
 from uuid import uuid4
 
-from portal.apps.error_handling.models import AerpawError, AerpawThread
-from portal.apps.experiments.models import AerpawExperiment
+from portal.apps.error_handling.models import AerpawError
+
 from portal.apps.users.models import AerpawUser
 
 def portal_error_message(user: AerpawUser, *args, **kwargs) -> bool:
@@ -79,34 +79,7 @@ def new_error(exc: Exception, user: AerpawUser, msg: str=None) -> AerpawError:
 
     return error
 
-def start_aerpaw_thread(user: AerpawUser, experiment:AerpawExperiment, action: AerpawThread.ThreadActions) -> AerpawThread:
-    new_thread = AerpawThread(
-        user=user,
-        uuid=uuid4(),
-        experiment=experiment,
-        displayed=False,
-        action=action,
-    )
-    new_thread.save()
-    print(f'New AerpawThread: thread# {new_thread.id}')
-    return new_thread
-
-def end_aerpaw_thread(thread: AerpawThread, exit_code, response) -> None:
-    
-    thread.thread_end = timezone.now()
-    thread.exit_code = exit_code
-    thread.response = response
-    thread.save()
-    message_components = {
-        'message_body': thread.message, 
-        'message_owner':thread.user.id, 
-        'message_subject':f'{thread.get_action_display()} for Experiment: {thread.experiment.id}',
-        'recieved_by':thread.user.id
-        }
-    portal_error_message(thread.user, None, **message_components)
-    print(f'AerpawThread ended: thread# {thread.id}')
-
-def add_error_to_thread(thread: AerpawThread, error: AerpawError):
+def add_error_to_thread(thread, error: AerpawError):
     thread.error.add(error)
     thread.is_error = True
     thread.save()

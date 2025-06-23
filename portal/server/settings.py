@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'portal.apps.credentials',  # credentials
     'portal.apps.user_messages',  # user messages
     'portal.apps.user_requests',  # user requests
+    'portal.apps.threads',  # threads
 
 ]
 
@@ -152,12 +153,15 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
             os.path.join(BASE_DIR, 'templates/credentials'),
+            os.path.join(BASE_DIR, 'templates/error_handling'),
             os.path.join(BASE_DIR, 'templates/experiment_files'),
+            os.path.join(BASE_DIR, 'templates/experiment_info'),
             os.path.join(BASE_DIR, 'templates/experiments'),
-            os.path.join(BASE_DIR, 'templates/google_group'),
             os.path.join(BASE_DIR, 'templates/portal'),
             os.path.join(BASE_DIR, 'templates/profiles'),
             os.path.join(BASE_DIR, 'templates/projects'),
+            os.path.join(BASE_DIR, 'templates/registration'),
+            os.path.join(BASE_DIR, 'templates/reports'),
             os.path.join(BASE_DIR, 'templates/resources'),
             os.path.join(BASE_DIR, 'templates/rest_framework'),
             os.path.join(BASE_DIR, 'templates/user_messages'),

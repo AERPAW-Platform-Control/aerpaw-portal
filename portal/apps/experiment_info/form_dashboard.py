@@ -368,13 +368,10 @@ def upload_old_form_data():
                 public_url=ser.iloc[12] if not pd.isna(ser.iloc[12]) else None,
                 vehicle_behavior=ser.iloc[13] if not pd.isna(ser.iloc[13]) else 'None provided'
             )
-            if exp_fd.experiment.id != 830:
-                print(f'experiment ID= {exp_fd.experiment}')
-                print(f'experiment Name= {exp_fd.title}')
-                print(f'experiment Lead= {exp_fd.lead_experimenter}')
-                print()
-            #exp_fd.save()        
-    #upload_fieldtrips()
+
+            exp_fd.save()        
+    upload_fieldtrips()
+
 
 def get_fieldtrip_operators(op_names: list):
     print(f'op_ids {op_names}')

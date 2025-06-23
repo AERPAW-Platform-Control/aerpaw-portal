@@ -32,7 +32,7 @@
                 {% endif %}
                 {% if not experiment.is_deleted or experiment.is_retired %}
                     <div class="d-flex flex-row align-items-right">
-                        {% if not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
+                        {% if not experiment.is_retired %}
                             <button class="btn btn-success mr-2" style="margin-left: 10px">
                                 <a href="{% url 'experiment_edit' experiment_id=experiment.experiment_id %}"
                                    class="unlink">Edit</a>
