@@ -1,0 +1,70 @@
+[
+    {
+      "model": "experiment_files.experimentfile",
+      "pk": 1,
+      "fields": {
+        "created": "2023-01-03T02:32:42.888Z",
+        "modified": "2023-01-03T02:32:42.919Z",
+        "created_by": "aerpaw@gmail.com",
+        "modified_by": "aerpaw@gmail.com",
+        "is_active": true,
+        "is_deleted": false,
+        "file_location": "/home/aerpawops/experiments/8927f16a-a95e-41a2-add3-ec5c75503eaf/Manifest.txt",
+        "file_name": "Manifest.txt",
+        "file_type": "ip_list",
+        "file_notes": null,
+        "uuid": "59feafe7-b6e7-49c3-8b97-1a58ff819cc8"
+      }
+    },
+    {
+      "model": "experiment_files.experimentfile",
+      "pk": 2,
+      "fields": {
+        "created": "2023-01-03T02:32:42.903Z",
+        "modified": "2023-01-03T02:32:42.934Z",
+        "created_by": "aerpaw@gmail.com",
+        "modified_by": "aerpaw@gmail.com",
+        "is_active": true,
+        "is_deleted": false,
+        "file_location": "/home/aerpawops/experiments/8927f16a-a95e-41a2-add3-ec5c75503eaf/aerpaw-XM-X0004-common.ovpn",
+        "file_name": "aerpaw-XM-X0004-common.ovpn",
+        "file_type": "ovpn",
+        "file_notes": null,
+        "uuid": "135b6377-ddc0-486f-aef0-e797574dcba7"
+      }
+    },
+    {
+      "model": "experiment_files.experimentfile",
+      "pk": 3,
+      "fields": {
+        "created": "2023-01-03T02:32:42.903Z",
+        "modified": "2023-01-03T02:32:42.934Z",
+        "created_by": "aerpaw@gmail.com",
+        "modified_by": "aerpaw@gmail.com",
+        "is_active": true,
+        "is_deleted": false,
+        "file_location": "/home/aerpawops/experiments/b04a8ce9-0bb7-4311-8122-f09233dffa7d/Manifest.txt",
+        "file_name": "Manifest.txt",
+        "file_type": "ip_list",
+        "file_notes": null,
+        "uuid": "b9b0ca42-d5b0-431c-9316-a5740d487467"
+      }
+    },
+    {
+      "model": "experiment_files.experimentfile",
+      "pk": 4,
+      "fields": {
+        "created": "2023-01-03T02:32:42.903Z",
+        "modified": "2023-01-03T02:32:42.934Z",
+        "created_by": "aerpaw@gmail.com",
+        "modified_by": "aerpaw@gmail.com",
+        "is_active": true,
+        "is_deleted": false,
+        "file_location": "/home/aerpawops/experiments/b04a8ce9-0bb7-4311-8122-f09233dffa7d/aerpaw-XM-X0004-common.ovpn",
+        "file_name": "aerpaw-XM-X0004-common.ovpn",
+        "file_type": "ovpn",
+        "file_notes": null,
+        "uuid": "cf76cbaa-8736-4b8b-9e48-06ea80689881"
+      }
+    }
+]

@@ -1,0 +1,50 @@
+[
+    {
+      "model": "profiles.aerpawuserprofile",
+      "pk": 1,
+      "fields": {
+        "created": "2021-07-01T17:21:34.200Z",
+        "modified": "2022-12-25T18:01:52.200Z",
+        "created_by": "admin",
+        "modified_by": "admin",
+        "access_token": null,
+        "employer": null,
+        "position": null,
+        "refresh_token": null,
+        "research_field": null,
+        "uuid": "fb051400-4189-4f24-884e-3c283468f68d"
+      }
+    },
+    {
+      "model": "profiles.aerpawuserprofile",
+      "pk": 2,
+      "fields": {
+        "created": "2021-07-01T17:24:08.200Z",
+        "modified": "2022-12-25T18:01:52.200Z",
+        "created_by": "tester1@ncsu.edu",
+        "modified_by": "tester1@ncsu.edu",
+        "access_token": null,
+        "employer": null,
+        "position": null,
+        "refresh_token": null,
+        "research_field": null,
+        "uuid": "9ba0ebde-7631-479a-aaca-813f04dbd258"
+      }
+    },
+    {
+      "model": "profiles.aerpawuserprofile",
+      "pk": 3,
+      "fields": {
+        "created": "2021-07-01T17:46:54.499Z",
+        "modified": "2022-12-25T18:01:52.200Z",
+        "created_by": "tester2@ncsu.edu",
+        "modified_by": "tester2@ncsu.edu",
+        "access_token": null,
+        "employer": null,
+        "position": null,
+        "refresh_token": null,
+        "research_field": null,
+        "uuid": "f00f293e-9df6-4979-a995-62a6c75049ea"
+      }
+    }
+]
