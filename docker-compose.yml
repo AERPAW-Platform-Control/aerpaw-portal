@@ -38,7 +38,7 @@ services:
       - /home/aerpawops/acme_files:/data/letsencrypt    #For certbot renewal
       - ${NGINX_DEFAULT_CONF}:/etc/nginx/conf.d/default.conf
       - ${NGINX_NGINX_CONF}:/etc/nginx/nginx.conf
-      - ${NGINX_SSL_CERTS_DIR}:/etc/letsencrypt:ro
+      - ${NGINX_SSL_CERTS_DIR}:/etc/ssl/
     restart: unless-stopped
 
   django:
