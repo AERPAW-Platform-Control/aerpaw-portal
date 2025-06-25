@@ -127,17 +127,18 @@ class ThreadQueViewset(GenericViewSet):
     def get_queryset(self , **kwargs):
         que_target = kwargs.get('target', None)
         print(f'que_target: {que_target}')
-        queryset = None
+        threadQ = None
         if que_target:
             try:
-                queryset = ThreadQue.objects.get(target=que_target.lower())
-                print(f'threadQ(s): {queryset}')
+                threadQ = ThreadQue.objects.get(target=que_target)
+                print(f'threadQ(s): {threadQ}')
             except Exception as exc:
+                print(f'Exception when getting threadQ: \n {exc}\n')
                 print(f' NOT FOUND! ThreadQue with target: {que_target}')
-            print(f'threadQ(s): {queryset}')
+            print(f'threadQ(s): {threadQ}')
         if kwargs.get('pk'):
-            queryset = ThreadQue.objects.get(id=kwargs.get('pk'))
-        return queryset
+            threadQ = ThreadQue.objects.get(id=kwargs.get('pk'))
+        return threadQ
     
     def update(self, **kwargs):
         """  
@@ -176,8 +177,10 @@ class ThreadQueViewset(GenericViewSet):
                 detail="PermissionDenied: unable to GET /aerpaw_thread/{0} details".format(kwargs.get('pk')))
 
     def run_que(self, request, **kwargs):
+        if kwargs.get('target') == None:
+                print(f'The thread is all done Threading!')
         threadQ = self.get_queryset(target=kwargs.get('target'))
-        print(f'ThreadQ retrieved is: {threadQ.target}')
+        print(f'ThreadQ retrieved is: {threadQ}')
         print(f'ThreadQ is running: {threadQ.is_threading}')
         if threadQ.is_threading == False:
             threadQ.is_threading = True

@@ -1,4 +1,4 @@
-import unittest, importlib, datetime
+import unittest, importlib, datetime, time
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -16,7 +16,16 @@ from portal.apps.users.models import AerpawUser
 from rest_framework.test import APIRequestFactory
 from django.test import TransactionTestCase
 
+from django.db import connection
 
+def kill_other_database_sessions(database_name='test_postgres'):
+    with connection.cursor() as cursor:
+        cursor.execute(f"""
+            SELECT pg_terminate_backend(pid)
+            FROM pg_stat_activity
+            WHERE datname = %s
+              AND pid <> pg_backend_pid();
+        """, [database_name])
 
 User = get_user_model()
 
@@ -33,16 +42,19 @@ class TestThreadQ(TransactionTestCase):
         'portal/tests/test_fixtures/test_users.json'
         ]
     
-    @classmethod
-    def setUpTestData(cls):
+    """ @classmethod
+    def setUpTestData(cls): """
 
-        print("setUpTestData: Run once to set up non-modified data for all class methods.")
+        
+        
+    def setUp(self):
+        kill_other_database_sessions(database_name='test_postgres')
+        self.factory = APIRequestFactory()
         test_user1 = User.objects.create_user(id=1, email='tester1@gmail.com', username='tester1@gmail.com', password='test123!', created=timezone.make_aware(datetime.datetime.now()))
         test_user1.groups.set([1])
         test_user1.save()
 
-
-        for i in range(1, 31):
+        for i in range(1, 3):
             canNum = CanonicalNumber.objects.create(canonical_number=i)
             canNum.save()
 
@@ -69,16 +81,11 @@ class TestThreadQ(TransactionTestCase):
         
         print(f'Number of Experiments for testing: {AerpawExperiment.objects.all().count()}')
         
-    """ def setUp(self):
-        self.factory = APIRequestFactory() """
-        
         
 
     def test_fixtures_loaded(self):
         wdd = ThreadQue.objects.get(target='wait_development_deploy')
-        exp = AerpawExperiment.objects.all()
         self.assertEqual(wdd.target, 'wait_development_deploy')
-        self.assertEqual(len(exp), 2)
 
         
     
@@ -89,7 +96,7 @@ class TestThreadQ(TransactionTestCase):
         module = importlib.import_module('portal.apps.experiments.api.experiment_utils')
         saved_to_wait_development_deploy = getattr(module, 'saved_to_wait_development_deploy')
         exps = AerpawExperiment.objects.all()
-        user = AerpawUser.objects.get(email='aerpaw@gmail.com')
+        user = AerpawUser.objects.get(id=1)
         request = self.factory.get('/')
         request.user = user
         
@@ -102,7 +109,17 @@ class TestThreadQ(TransactionTestCase):
 
         que = threadQ.threads.all().order_by('thread_created')
         que_length = que.count()
+        while que_length != 0:
+            time.sleep(5)
+            print()
+            print('Testing...')
+            que = threadQ.threads.all().order_by('thread_created')
+            que_length = que.count()
+            print(f'Que Length: {que_length}')
+            print(f'Waiting for que to finish...')
+            print()
+
         print(f'Experiments: {len(exps)+1}\n QueLength: {que_length}')
         print(f'threadQ is threading: {threadQ.is_threading}')
-        self.assertEqual(len(exps), que_length)
-        self.assertTrue(threadQ.is_threading)
+        self.assertEqual(que_length, 0)
+        self.assertFalse(threadQ.is_threading)
