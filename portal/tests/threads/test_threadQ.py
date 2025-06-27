@@ -7,6 +7,10 @@ from urllib.parse import urlencode
 from django.test import TestCase
 from django.test import RequestFactory
 from django.urls import reverse
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
+from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from portal.apps.credentials.models import PublicCredentials
 from portal.apps.experiments.models import AerpawExperiment
 from portal.apps.projects.models import AerpawProject
 from portal.apps.operations.models import CanonicalNumber
@@ -33,7 +37,7 @@ class TestThreadQ(TransactionTestCase):
     fixtures = [
         'portal/tests/test_fixtures/test_aerpaw_roles.json',
         'portal/tests/test_fixtures/test_experiment_files.json',
-        'portal/tests/test_fixtures/test_experiments.json',
+        #'portal/tests/test_fixtures/test_experiments.json',
         'portal/tests/test_fixtures/test_operations.json',
         'portal/tests/test_fixtures/test_profiles.json',
         'portal/tests/test_fixtures/test_projects.json',
@@ -86,6 +90,7 @@ class TestThreadQ(TransactionTestCase):
     def test_fixtures_loaded(self):
         wdd = ThreadQue.objects.get(target='wait_development_deploy')
         self.assertEqual(wdd.target, 'wait_development_deploy')
+        self.assertEqual(30, AerpawExperiment.objects.count())
 
         
     
@@ -96,12 +101,14 @@ class TestThreadQ(TransactionTestCase):
         module = importlib.import_module('portal.apps.experiments.api.experiment_utils')
         saved_to_wait_development_deploy = getattr(module, 'saved_to_wait_development_deploy')
         exps = AerpawExperiment.objects.all()
-        user = AerpawUser.objects.get(id=1)
-        request = self.factory.get('/')
-        request.user = user
         
         for exp in exps:
             try: 
+                user = exp.experiment_creator
+                print(f'USER is Experimenter: {user.groups.all()}')
+                request = self.factory.get('/')
+                request.user = user
+                print(f'USER= {user}')
                 que_number=saved_to_wait_development_deploy(request, exp)
                 print(f'QUE NUMBER: {que_number}')
             except Exception as exc:
