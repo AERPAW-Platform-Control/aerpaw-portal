@@ -12,7 +12,8 @@
     {% if user.is_authenticated and project %}
         <div class="container w-85">
             <div class="d-flex flex-row align-items-center justify-content-between">
-                <h2>{{ project.name }}
+                <h2>
+                    {{ project.name }}
                     {% if project.is_public %}
                         <em class="text-success" style="font-size: medium">(public)</em>
                     {% else %}
@@ -26,6 +27,13 @@
                     {% if project.is_deleted %}
                         <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                     {% endif %}
+                    <a class='fs-6' style="text-decoration: none;" target="_blank"  
+                        data-bs-toggle="tooltip" 
+                        data-bs-title="Go to User Manual 4.7.3"
+                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects" 
+                        >
+                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>&nbsp;
+                    </a>
                 </h2>
                 {% if not project.is_deleted %}
                     <div class="d-flex flex-row align-items-right">
@@ -92,6 +100,13 @@
                                         <a href="{% url 'project_members' project_id=project.project_id %}"
                                            class="unlink">Update</a>
                                     </button>
+                                    <a class='fs-6' style="text-decoration: none;" target="_blank"  
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-title="Go to User Manual 4.7.3"
+                                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects#h.woicwkzbiqbc" 
+                                        >
+                                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>&nbsp;
+                                    </a>
                                 {% endif %}
                             {% endif %}
                         </td>
@@ -113,6 +128,13 @@
                                         <a href="{% url 'experiment_create' %}?project_id={{ project.project_id }}"
                                            class="unlink">Create</a>
                                     </button>
+                                    <a class='fs-6' style="text-decoration: none;" target="_blank"  
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-title="Go to User Manual 4.7.4"
+                                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.62ms5qg19jjb" 
+                                        >
+                                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>&nbsp;
+                                    </a>
                                 {% endif %}
                             {% endif %}
                         </td>
@@ -223,10 +245,25 @@
         </div>
         {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
-            <pre><strong>project:</strong><br>{{ project|pprint }}</pre>
-            <pre><strong>experiments:</strong><br>{{ experiments|pprint }}</pre>
-            <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
-            <br>
+            <div class="mb-5">
+                <div class="accordion" id="accordionPanelsStayOpenExample">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
+                          API Data
+                        </button>
+                      </h2>
+                      <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <pre><strong>project:</strong><br>{{ project|pprint }}</pre>
+                            <pre><strong>experiments:</strong><br>{{ experiments|pprint }}</pre>
+                            <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
+                            <br>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>    
         {% endif %}
     {% else %}
         <p>You are not allowed to view this project or are not logged in</p>
