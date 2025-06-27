@@ -25,7 +25,11 @@
         <div class="row">
             <div class="col">
                 <div name="details" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
-                    <h3>Details</h3>
+                    <h3>Details 
+                        <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank"  data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.2">
+                            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                        </a>
+                    </h3>
                     <hr class="w-100"> 
                     <form id="profile_details_form" action="#" method="post">
                         {% csrf_token %}
@@ -85,7 +89,11 @@
                                 </tr>
                             </form>
                             <tr>
-                                <td>Roles</td>
+                                <td>Roles 
+                                    <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles#h.h9exflk3it0r" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.2">
+                                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                                    </a>
+                                </td>
                                 <td>
                                     <table class="table">
                                         <tbody>
@@ -309,6 +317,9 @@
                 <div name="public-credentials" class="h-100 w-85 border p-2 rounded mb-3 bg-light-subtle shadow-sm">
                     <form method="POST" class="post-form">
                         <h3>Public Credentials
+                            <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles#h.b7zx5bsw18bh" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.2">
+                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                            </a>
                                 {% csrf_token %}
                                 <button class="message-btn btn btn-success btn-sm float-end me-3 mt-1">
                                     <a href="{% url 'credential_create' %}" class="unlink">

@@ -6,7 +6,11 @@
 
 {% block content %}
     {% if not user.is_authenticated %}
-        <h3 class="text-center mt-4">Please log in to gain full access of AERPAW testbed.</h3>
+        <h3 class="text-center mt-4">Please log in to gain full access of AERPAW testbed.
+            <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-1-account-creation-and-authentication#h.a02mit7l17ps" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.1">
+                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+            </a>
+        </h3>
     {% endif %}
     <div class="homepage">
         <img class="rounded my-4 img-fluid" width="25%"
