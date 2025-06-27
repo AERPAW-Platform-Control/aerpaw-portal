@@ -25,11 +25,15 @@
         <div class="row">
             <div class="col">
                 <div name="details" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
-                    <h3>Details 
-                        <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank"  data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.2">
-                            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                        </a>
-                    </h3>
+                    
+                        <h3>
+                            <a href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank" data-bs-title="Go to User Manual 4.7.2">
+                            <button class="position-relative text-dark bg-transparent border border-0" >Details
+                                    <span style="font-size: 40%; top: 15%; left: 102%;" class="position-absolute translate-middle badge rounded-circle border border-1 text-primary"><i class="fa-solid fa-question"></i></span>
+                            </button>
+                            </a>
+                        </h3>
+                    
                     <hr class="w-100"> 
                     <form id="profile_details_form" action="#" method="post">
                         {% csrf_token %}
