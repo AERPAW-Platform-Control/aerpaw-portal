@@ -1,0 +1,498 @@
+[
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 1,
+  "fields": {
+    "created": "2025-06-24T21:12:02.914Z",
+    "modified": "2025-06-25T17:39:08.098Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "cjrober5@ncsu.edu",
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUwOTU5NTQ3LCJpYXQiOjE3NTA4NzMxNDcsImp0aSI6IjE5MjAwMDQ5ZmE0MjQwZmNhOTIwZGU1OWZjOGI4MDJmIiwidXNlcl9pZCI6MX0.wmP2ljPnotldPPznd3B1Mq8KY_WpDYaGJvJScUsNbXg",
+    "employer": null,
+    "position": null,
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1MzQ2NTE0NywiaWF0IjoxNzUwODczMTQ3LCJqdGkiOiIxYjhhYWQ1YjBiMzM0OWEwOGRlNjE0MjZlOTUyZDE0MSIsInVzZXJfaWQiOjF9.A7z-oxt0zVIGlxJZei7FfiAYiml5ciX0Po32Q2Di52I",
+    "research_field": null,
+    "uuid": "127d6060-ec46-42ee-88fd-4face72f28d5"
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 2,
+  "fields": {
+    "created": "2025-06-25T17:51:16.568Z",
+    "modified": "2025-06-25T17:51:16.568Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_0",
+    "position": "researcher_0",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 3,
+  "fields": {
+    "created": "2025-06-25T17:51:16.572Z",
+    "modified": "2025-06-25T17:51:16.572Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_1",
+    "position": "researcher_1",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 4,
+  "fields": {
+    "created": "2025-06-25T17:51:16.573Z",
+    "modified": "2025-06-25T17:51:16.573Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_2",
+    "position": "researcher_2",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 5,
+  "fields": {
+    "created": "2025-06-25T17:51:16.575Z",
+    "modified": "2025-06-25T17:51:16.575Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_3",
+    "position": "researcher_3",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 6,
+  "fields": {
+    "created": "2025-06-25T17:51:16.576Z",
+    "modified": "2025-06-25T17:51:16.576Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_4",
+    "position": "researcher_4",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 7,
+  "fields": {
+    "created": "2025-06-25T17:51:16.578Z",
+    "modified": "2025-06-25T17:51:16.578Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_5",
+    "position": "researcher_5",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 8,
+  "fields": {
+    "created": "2025-06-25T17:51:16.580Z",
+    "modified": "2025-06-25T17:51:16.580Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_6",
+    "position": "researcher_6",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 9,
+  "fields": {
+    "created": "2025-06-25T17:51:16.581Z",
+    "modified": "2025-06-25T17:51:16.581Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_7",
+    "position": "researcher_7",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 10,
+  "fields": {
+    "created": "2025-06-25T17:51:16.583Z",
+    "modified": "2025-06-25T17:51:16.583Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_8",
+    "position": "researcher_8",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 11,
+  "fields": {
+    "created": "2025-06-25T17:51:16.584Z",
+    "modified": "2025-06-25T17:51:16.584Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_9",
+    "position": "researcher_9",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 12,
+  "fields": {
+    "created": "2025-06-25T17:51:16.585Z",
+    "modified": "2025-06-25T17:51:16.585Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_10",
+    "position": "researcher_10",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 13,
+  "fields": {
+    "created": "2025-06-25T17:51:16.586Z",
+    "modified": "2025-06-25T17:51:16.587Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_11",
+    "position": "researcher_11",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 14,
+  "fields": {
+    "created": "2025-06-25T17:51:16.588Z",
+    "modified": "2025-06-25T17:51:16.588Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_12",
+    "position": "researcher_12",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 15,
+  "fields": {
+    "created": "2025-06-25T17:51:16.589Z",
+    "modified": "2025-06-25T17:51:16.589Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_13",
+    "position": "researcher_13",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 16,
+  "fields": {
+    "created": "2025-06-25T17:51:16.590Z",
+    "modified": "2025-06-25T17:51:16.590Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_14",
+    "position": "researcher_14",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 17,
+  "fields": {
+    "created": "2025-06-25T17:51:16.591Z",
+    "modified": "2025-06-25T17:51:16.591Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_15",
+    "position": "researcher_15",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 18,
+  "fields": {
+    "created": "2025-06-25T17:51:16.592Z",
+    "modified": "2025-06-25T17:51:16.592Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_16",
+    "position": "researcher_16",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 19,
+  "fields": {
+    "created": "2025-06-25T17:51:16.593Z",
+    "modified": "2025-06-25T17:51:16.593Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_17",
+    "position": "researcher_17",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 20,
+  "fields": {
+    "created": "2025-06-25T17:51:16.594Z",
+    "modified": "2025-06-25T17:51:16.594Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_18",
+    "position": "researcher_18",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 21,
+  "fields": {
+    "created": "2025-06-25T17:51:16.596Z",
+    "modified": "2025-06-25T17:51:16.596Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_19",
+    "position": "researcher_19",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 22,
+  "fields": {
+    "created": "2025-06-25T17:51:16.597Z",
+    "modified": "2025-06-25T17:51:16.597Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_20",
+    "position": "researcher_20",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 23,
+  "fields": {
+    "created": "2025-06-25T17:51:16.598Z",
+    "modified": "2025-06-25T17:51:16.598Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_21",
+    "position": "researcher_21",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 24,
+  "fields": {
+    "created": "2025-06-25T17:51:16.599Z",
+    "modified": "2025-06-25T17:51:16.599Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_22",
+    "position": "researcher_22",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 25,
+  "fields": {
+    "created": "2025-06-25T17:51:16.600Z",
+    "modified": "2025-06-25T17:51:16.600Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_23",
+    "position": "researcher_23",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 26,
+  "fields": {
+    "created": "2025-06-25T17:51:16.602Z",
+    "modified": "2025-06-25T17:51:16.602Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_24",
+    "position": "researcher_24",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 27,
+  "fields": {
+    "created": "2025-06-25T17:51:16.603Z",
+    "modified": "2025-06-25T17:51:16.603Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_25",
+    "position": "researcher_25",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 28,
+  "fields": {
+    "created": "2025-06-25T17:51:16.604Z",
+    "modified": "2025-06-25T17:51:16.604Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_26",
+    "position": "researcher_26",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 29,
+  "fields": {
+    "created": "2025-06-25T17:51:16.605Z",
+    "modified": "2025-06-25T17:51:16.605Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_27",
+    "position": "researcher_27",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 30,
+  "fields": {
+    "created": "2025-06-25T17:51:16.606Z",
+    "modified": "2025-06-25T17:51:16.606Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_28",
+    "position": "researcher_28",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+},
+{
+  "model": "profiles.aerpawuserprofile",
+  "pk": 31,
+  "fields": {
+    "created": "2025-06-25T17:51:16.607Z",
+    "modified": "2025-06-25T17:51:16.607Z",
+    "created_by": "cjrober5@ncsu.edu",
+    "modified_by": "",
+    "access_token": null,
+    "employer": "university_29",
+    "position": "researcher_29",
+    "refresh_token": null,
+    "research_field": "networking",
+    "uuid": ""
+  }
+}
+]

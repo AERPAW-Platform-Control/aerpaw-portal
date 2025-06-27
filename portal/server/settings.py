@@ -42,6 +42,9 @@ else:
 # ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
 ALLOWED_HOSTS = [os.getenv('DJANGO_ALLOWED_HOSTS')]
 
+# ADMINS
+ADMINS = [('Chris', 'cjrober5@ncsu.edu')]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -71,6 +74,7 @@ INSTALLED_APPS = [
     'portal.apps.credentials',  # credentials
     'portal.apps.user_messages',  # user messages
     'portal.apps.user_requests',  # user requests
+    'portal.apps.threads',  # threads
 
 ]
 

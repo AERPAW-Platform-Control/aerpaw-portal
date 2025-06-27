@@ -253,10 +253,6 @@ def experiment_detail(request, experiment_id):
 @csrf_exempt
 @login_required
 def experiment_create(request):
-    print('4 ',Group.objects.get(id=4))
-    print('3 ',Group.objects.get(id=3))
-    print('2 ',Group.objects.get(id=2))
-    print('1 ',Group.objects.get(id=1))
     message = None
     project = None
     form = None
