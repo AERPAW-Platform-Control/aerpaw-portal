@@ -26,26 +26,28 @@
     {% if user.is_authenticated %}
         {% if is_project_creator or is_project_owner %}
             <div class="container w-85">
-                <div class="d-flex flex-row align-items-center justify-content-between">
-                    <h2>{{ project_id|id_to_project_name }}
-                        <em class="text-primary" style="font-size: large">(edit owners)</em>
-                        <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects" target="_blank"  data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.3">
-                            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                        </a>
-                    </h2>
-                    <div>
-                        <button class="btn btn-success mr-2" type="submit" form="create-project" value="save">Save
-                        </button>
-                        <button class="btn btn-secondary mr-2" value="cancel">
-                            <a href="{% url 'project_detail' project_id=project_id %}" class="unlink">Back</a>
-                        </button>
+                <div class="mb-3">
+                    <h2 class="text-center">{{ project_id|id_to_project_name }}</h2>
+                    <div class="border border-1 rounded shadow-sm bg-success p-1">
+                        <div class="bg-light p-3">
+                            <h4 class="text-center">Add or Remove Project Owners</h4>
+                            <hr>
+                            <form id="create-project" method="POST" class="post-form mb-3">
+                                {% csrf_token %}
+                                {{ form.project_owners }}
+                            </form>
+                        </div>
                     </div>
                 </div>
                 <div>
-                    <form id="create-project" method="POST" class="post-form">
-                        {% csrf_token %}
-                        {{ form.project_owners }}
-                    </form>
+                    <button class="btn btn-success mr-2" type="submit" form="create-project" value="save">Save
+                    </button>
+                    <button class="btn btn-secondary mr-2" value="cancel">
+                        <a href="{% url 'project_detail' project_id=project_id %}" class="unlink">Back</a>
+                    </button>
+                    <a class="text-primary float-end" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects" target="_blank">
+                        <em><u>Need help? Visit section 4.7.3 in the User Manual.</u></em>
+                    </a>
                 </div>
             </div>
         {% else %}

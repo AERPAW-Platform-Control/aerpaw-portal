@@ -95,6 +95,7 @@ def profile(request):
                 ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
                 ur_api_request.method = 'POST'
+                print(f'request.user.id: {request.user.id}')
                 ur_api_request.data.update(
                     {'request_type': AerpawUserRequest.RequestType.ROLE.value,
                      'request_type_id': request.user.id,

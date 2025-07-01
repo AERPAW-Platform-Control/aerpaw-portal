@@ -22,260 +22,344 @@
         {% endif %}
             
         </h1>
-        <div class="row">
+        <div class="row gx-5">
             <div class="col">
-                <div name="details" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
+                <!-- Profile Details -->
+                <div class="row">
+                    <div name="details" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
+                        <h3>My Details</h3>
+                        <hr class="w-100">
+                        <form id="profile_details_form" action="#" method="post">
+                            {% csrf_token %}
+                            <table class="table table-striped table-bordered my-4">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 25%">Username</td>
+                                        <td style="width: 75%"><strong>{{ user_data.username }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 25%">Display Name</td>
+                                        <td style="width: 75%;">
+                                            <input type="text" name="display_name" size="40" value="{{ user_data.display_name }}" required>
                     
-                        <h3>
-                            <a href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank" data-bs-title="Go to User Manual 4.7.2">
-                            <button class="position-relative text-dark bg-transparent border border-0" >Details
-                                    <span style="font-size: 40%; top: 15%; left: 102%;" class="position-absolute translate-middle badge rounded-circle border border-1 text-primary"><i class="fa-solid fa-question"></i></span>
-                            </button>
-                            </a>
-                        </h3>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email</td>
+                                        <td><strong>{{ user_data.email }}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="table table-striped table-bordered my-4">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 25%">Employer/Organization</td>
+                                        <td style="width: 75%;">
+                                            {% if user_profile.employer %}
+                                                <input type="text" name="employer" size="40" value="{{ user_profile.employer }}" required>
+                                            {% else %}
+                                                <input type="text" name="employer" size="40"
+                                                        placeholder="required for experimenter role..." required>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 25%">Position/Title</td>
+                                        <td style="width: 75%;">
+                                            {% if user_profile.position %}
+                                                <input type="text" name="position" size="40" value="{{ user_profile.position }}" required>
+                                            {% else %}
+                                                <input type="text" name="position" size="40"
+                                                        placeholder="required for experimenter role..." required>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 25%">Field of Research</td>
+                                        <td style="width: 75%;">
+                                            {% if user_profile.research_field %}
+                                                <input type="text" name="research_field" size="40"
+                                                        value="{{ user_profile.research_field }}" required>
+                                            {% else %}
+                                                <input type="text" name="research_field" size="40" placeholder="optional..." required>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </form>
                     
-                    <hr class="w-100"> 
-                    <form id="profile_details_form" action="#" method="post">
-                        {% csrf_token %}
-                        <table class="table table-striped table-bordered my-4">
-                            <tbody>
-                                <tr>
-                                    <td style="width: 25%">Username</td>
-                                    <td style="width: 75%"><strong>{{ user_data.username }}</strong></td>
-                                </tr>
-                                <tr>
-                                    <td style="width: 25%">Display Name</td>
-                                    <td style="width: 75%;">
-                                        <input type="text" name="display_name" size="40" value="{{ user_data.display_name }}" required>
-                                        
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Email</td>
-                                    <td><strong>{{ user_data.email }}</strong></td>
-                                </tr>
                             </tbody>
                         </table>
+                        <button form="profile_details_form" type="submit" class="btn btn-success btn-sm" >
+                            <em class="fa fa-fw fa-pencil"></em> save updates
+                        </button>
+                        <a class="float-end text-primary" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank">
+                            <em>Need help? Visit section 4.7.2 in the User Manual.</em>
+                        </a>
+                    </div>
+                </div>
+                <!-- Messages -->
+                <div class="row">
+                    <div name="messages" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
+                    <div class="d-flex flex-row align-items-center justify-content-between">
+                        <h3>
+                            <a href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank" data-bs-title="Go to User Manual 4.7.2">
+                                <button type="button" class="position-relative text-dark bg-transparent border border-0 " >
+                                    Unread Messages
+                                    <span style="font-size: 35%; top: 15%; left: 102%;" class="position-absolute translate-middle badge rounded-circle border border-1 border-primary bg-primary text-light"><i class="fa-solid fa-question"></i></span>
+                                </button>
+                            </a>
+                        </h3>
+                        <a class="btn btn-sm btn-primary float-end position-relative me-3" href="{% url 'user_message_list' %}">
+                            View All Messages
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{unread_message_count}}
+                            <span class="visually-hidden">unread messages</span>
+                        </span>
+                        </a>
+                    </div>
+                    <hr class="w-100">
+                    <table class="table table-striped table-bordered my-4">
+                        <tbody>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Sent by</th>
+                            <th>Date</th>
+
+                            {% for um in user_messages.results|slice:":5" %}
+                                <tr>
+                                    <td>{{ um.message_subject|truncatechars:60 }}</td>
+                                    <td>{{ um.sent_by|id_to_display_name }}</td>
+                                    <td>{{ um.sent_date|str_to_datetime }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="col">
+                <!-- User Roles -->
+                <div class="row">
+                    <div name="user-roles" class="container border p-2 rounded mb-4 bg-light-subtle shadow-sm">
+                        <h3>My Roles</h3>
+                        <hr class="w-100"> 
                         <table class="table table-striped table-bordered my-4">
                             <tbody>
                                 <tr>
-                                    <td style="width: 25%">Employer/Organization</td>
-                                    <td style="width: 75%;">
-                                        {% if user_profile.employer %}
-                                            <input type="text" name="employer" size="40" value="{{ user_profile.employer }}" required>
-                                        {% else %}
-                                            <input type="text" name="employer" size="40"
-                                                    placeholder="required for experimenter role..." required>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="width: 25%">Position/Title</td>
-                                    <td style="width: 75%;">
-                                        {% if user_profile.position %}
-                                            <input type="text" name="position" size="40" value="{{ user_profile.position }}" required>
-                                        {% else %}
-                                            <input type="text" name="position" size="40"
-                                                    placeholder="required for experimenter role..." required>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="width: 25%">Field of Research</td>
-                                    <td style="width: 75%;">
-                                        {% if user_profile.research_field %}
-                                            <input type="text" name="research_field" size="40"
-                                                    value="{{ user_profile.research_field }}" required>
-                                        {% else %}
-                                            <input type="text" name="research_field" size="40" placeholder="optional..." required>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            </form>
-                            <tr>
-                                <td>Roles 
-                                    <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles#h.h9exflk3it0r" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.2">
-                                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                                    </a>
-                                </td>
-                                <td>
-                                    <table class="table">
-                                        <tbody>
-                                            <form id='profile-roles-form' method="POST" class="post-form">
-                                                {% csrf_token %}
-                                                <tr>
-                                                    <td>
-                                                        {% if user.is_experimenter %}
-                                                            <strong>Experimenter</strong>
-                                                        {% elif user.id|pending_experimenter_request %}
-                                                            <em>Experimenter role requested</em>
-                                                            <em class="text-success" style="font-size: medium">
-                                                                ({{ user.id|pending_experimenter_request }})
-                                                            </em>
-                                                        {% else %}
-                                                            <span class="text-danger">No Roles Found</span>
-                                                            {% if user_profile|profile_check %}
-                                                                <button type="submit" class="message-btn btn btn-success"
-                                                                        style="float: right; margin-left: 10px"
-                                                                        name="request_role_experimenter" value="{{ user_data.user_id }}"
-                                                                >
-                                                                    <em class="fa fa-fw fa-person-circle-plus"></em>
-                                                                    request Experimenter role
-                                                                </button>
-                                                            {% else %}
-                                                                <button type="submit" class="message-btn btn btn-danger"
-                                                                        style="float: right; margin-left: 10px"
-                                                                        name="request_role_experimenter" value="{{ user_data.user_id }}"
-                                                                        disabled
-                                                                >
-                                                                    <em class="fa fa-fw fa-person-circle-plus"></em>
-                                                                    n/a Experimenter role
-                                                                </button>
-                                                            {% endif %}
-                                                            <button class="btn btn-primary mr-2"
-                                                                    style="float: right; margin-left: 10px">
-                                                                <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-lifecycle-workflows/2-5-acceptable-use-policy-aup"
-                                                                    target="_blank" class="unlink">
-                                                                    <em class="fa fa-fw fa-book-open-reader"></em> review the AERPAW AUP
-                                                                    first
-                                                                </a>
-                                                            </button>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% if user.is_pi %}
+                                    <td>Roles</td>
+                                    <td>
+                                        <table class="table">
+                                            <tbody>
+                                                <form id='profile-roles-form' method="POST" class="post-form">
+                                                    {% csrf_token %}
                                                     <tr>
                                                         <td>
-                                                            <strong>Principal Investigator</strong>
-                                                        </td>
-                                                    </tr>
-                                                {% elif user.is_experimenter %}
-                                                    <tr>
-                                                        <td>
-                                                            {% if user.id|pending_pi_request %}
-                                                                <em>Principal Investigator role requested</em>
+                                                            {% if user.is_experimenter %}
+                                                                <strong>Experimenter</strong>
+                                                            {% elif user.id|pending_experimenter_request %}
+                                                                <em>Experimenter role requested</em>
                                                                 <em class="text-success" style="font-size: medium">
-                                                                    ({{ user.id|pending_pi_request }})
+                                                                    ({{ user.id|pending_experimenter_request }})
                                                                 </em>
                                                             {% else %}
                                                                 {% if user_profile|profile_check %}
-                                                                    <button type="submit" class="message-btn btn btn-success"
+                                                                    <button type="submit" class="message-btn btn btn-success btn-sm"
                                                                             style="float: right; margin-left: 10px"
-                                                                            name="request_role_pi" value="{{ user_data.user_id }}"
+                                                                            name="request_role_experimenter" value="{{ user_data.user_id }}"
                                                                     >
                                                                         <em class="fa fa-fw fa-person-circle-plus"></em>
-                                                                        request PI role   
+                                                                        request Experimenter role
                                                                     </button>
                                                                 {% else %}
                                                                     <button type="submit" class="message-btn btn btn-danger"
                                                                             style="float: right; margin-left: 10px"
-                                                                            name="request_role_pi" value="{{ user_data.user_id }}"
+                                                                            name="request_role_experimenter" value="{{ user_data.user_id }}"
                                                                             disabled
                                                                     >
                                                                         <em class="fa fa-fw fa-person-circle-plus"></em>
-                                                                        n/a PI role
+                                                                        n/a Experimenter role
                                                                     </button>
                                                                 {% endif %}
-                                                                <button class="btn btn-primary mr-2"
+                                                                <button class="btn btn-primary mr-2 btn-sm"
                                                                         style="float: right; margin-left: 10px">
                                                                     <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-lifecycle-workflows/2-5-acceptable-use-policy-aup"
                                                                         target="_blank" class="unlink">
-                                                                        <em class="fa fa-fw fa-book-open-reader"></em> review the AERPAW
-                                                                        AUP first
+                                                                        <em class="fa fa-fw fa-book-open-reader"></em> review the AERPAW AUP
+                                                                        first
                                                                     </a>
                                                                 </button>
                                                             {% endif %}
                                                         </td>
                                                     </tr>
-                                                {% endif %}
-                                                {% if user.is_operator %}
-                                                    <tr>
-                                                        <td>
-                                                            <strong>Operator</strong>
-                                                        </td>
-                                                    </tr>
-                                                {% endif %}
-                                                {% if user.is_site_admin %}
-                                                    <tr>
-                                                        <td>
-                                                            <strong>Site Admin</strong>
-                                                        </td>
-                                                    </tr>
-                                                {% endif %}
-                                            </form>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button form="profile_details_form" type="submit" class="btn btn-success btn-sm" >
-                        <em class="fa fa-fw fa-pencil"></em> save updates
-                    </button>
+                                                    {% if user.is_pi %}
+                                                        <tr>
+                                                            <td>
+                                                                <strong>Principal Investigator</strong>
+                                                            </td>
+                                                        </tr>
+                                                    {% elif user.is_experimenter %}
+                                                        <tr>
+                                                            <td>
+                                                                {% if user.id|pending_pi_request %}
+                                                                    <em>Principal Investigator role requested</em>
+                                                                    <em class="text-success" style="font-size: medium">
+                                                                        ({{ user.id|pending_pi_request }})
+                                                                    </em>
+                                                                {% else %}
+                                                                    {% if user_profile|profile_check %}
+                                                                        <button type="submit" class="message-btn btn btn-success"
+                                                                                style="float: right; margin-left: 10px"
+                                                                                name="request_role_pi" value="{{ user_data.user_id }}"
+                                                                        >
+                                                                            <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                                            request PI role
+                                                                        </button>
+                                                                    {% else %}
+                                                                        <button type="submit" class="message-btn btn btn-danger"
+                                                                                style="float: right; margin-left: 10px"
+                                                                                name="request_role_pi" value="{{ user_data.user_id }}"
+                                                                                disabled
+                                                                        >
+                                                                            <em class="fa fa-fw fa-person-circle-plus"></em>
+                                                                            n/a PI role
+                                                                        </button>
+                                                                    {% endif %}
+                                                                    <button class="btn btn-primary mr-2"
+                                                                            style="float: right; margin-left: 10px">
+                                                                        <a href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-lifecycle-workflows/2-5-acceptable-use-policy-aup"
+                                                                            target="_blank" class="unlink">
+                                                                            <em class="fa fa-fw fa-book-open-reader"></em> review the AERPAW
+                                                                            AUP first
+                                                                        </a>
+                                                                    </button>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    {% if user.is_operator %}
+                                                        <tr>
+                                                            <td>
+                                                                <strong>Operator</strong>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    {% if user.is_site_admin %}
+                                                        <tr>
+                                                            <td>
+                                                                <strong>Site Admin</strong>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </form>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <a class="float-end text-primary" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank">
+                            <em>Need help? Visit section 4.7.2 in the User Manual.</em>
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <div name="messages" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
-                <div class="d-flex flex-row align-items-center justify-content-between">
-                    <h3>Unread Messages
-                        <em class="text-success" style="font-size: medium">
-                            {% if user_messages.count > 0 %}
-                                ({{ user_messages.count }})
+                <!-- Public Credentials -->
+                <div class="row">
+                    <div name="public-credentials" class="container border p-2 rounded mb-4 bg-light-subtle shadow-sm">
+                        <form method="POST" class="post-form">
+                            <h3>My Credentials
+                                {% csrf_token %}
+                                <button class="message-btn btn btn-success btn-sm float-end me-3 mt-1">
+                                    <a href="{% url 'credential_create' %}" class="unlink">
+                                        <em class="fa fa-fw fa-gears"></em> generate
+                                    </a>
+                                </button>
+                                <button class="message-btn btn btn-success btn-sm float-end me-1 mt-1">
+                                    <a href="{% url 'credential_add' %}" class="unlink">
+                                        <em class="fa fa-fw fa-upload"></em> add your own
+                                    </a>
+                                </button>
+                            </h3>
+                            <hr class="w-100">
+                        </form>
+                        <table class="table table-striped table-bordered my-4">
+                            <tbody>
+                            {% if user_credentials %}
+                                {% for c in user_credentials %}
+                                    <tr>
+                                        <form id="public-credentials-form" action="#" method="post">
+                                            <td style="width: 25%">
+                                                {{ c.public_key_name }}
+                                                <br>
+                                                <span class="text-muted" style="font-size: small">
+                                                    Exp: {{ c.public_key_expiration|str_to_datetime }}
+                                                </span>
+                                                <br>
+                                                <button form="public-credentials-form" type="submit" class="message-btn btn btn-success btn-sm"
+                                                        name="download_credential" value="{{ c.public_key_id }}">
+                                                    <em class="fa fa-fw fa-download"></em> download
+                                                </button>
+                                                <button form="public-credentials-form" type="submit" class="message-btn btn btn-danger btn-sm my-2 "
+                                                        name="delete_credential" value="{{ c.public_key_id }}">
+                                                    <a onclick="return confirm('Are you sure you want to delete this credential?')">
+                                                        <em class="fa fa-fw fa-remove"></em> delete
+                                                    </a>
+                                                </button>
+                                            </td>
+                                            <td style="width: 75%">
+                                                <strong>
+                                                    <textarea type="text" class="w-100" rows="7" value="{{ c.public_key_credential }}" disabled>
+                                                        {{ c.public_key_credential }}
+                                                    </textarea>
+                                                </strong>
+                                                {% csrf_token %}
+            
+                                        </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
                             {% else %}
-                                (0)
+                                <tr>
+                                    <td class="p-3">
+                                        <h4 class="text-danger text-center">Important!</h4>
+                                        <p class="text-danger text-center">You need to generate or add credentials to be able to Initiate Development in any Experiment</p>
+                                    </td>
+                                </tr>
                             {% endif %}
-                        </em>
-                    </h3>
-                    <a class="btn btn-sm btn-primary float-end position-relative me-3" href="{% url 'user_message_list' %}">
-                        View All Messages
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{unread_message_count}}
-                        <span class="visually-hidden">unread messages</span>
-                      </span>
-                    </a>
+                            </tbody>
+                        </table>
+                        <p class="text-end">
+                                <a class="text-primary" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank">
+                                <em><u>Need help? Visit section 4.7.2 in the User Manual.</u></em>
+                            </a>
+                        </p>
+                    </div>
                 </div>
-                <hr class="w-100">
-                <table class="table table-striped table-bordered my-4">
-                    <tbody>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Sent by</th>
-                        <th>Date</th>
-
-                        {% for um in user_messages.results|slice:":5" %}
-                            <tr>
-                                <td>{{ um.message_subject|truncatechars:60 }}</td>
-                                <td>{{ um.sent_by|id_to_display_name }}</td>
-                                <td>{{ um.sent_date|str_to_datetime }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                </div>
-                <div name="pending-requests" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
-                    <h3>Pending Requests
-                        <em class="text-success" style="font-size: medium">
-                            {% if user_requests.count > 0 %}
-                                ({{ user_requests.count }})
-                            {% else %}
-                                (0)
-                            {% endif %}
-                        </em>
-                    </h3>
-                    <hr class="w-100">
-                    <table class="table table-striped table-bordered my-4">
-                        <tbody>
-                        <tr>
-                            <th>Type</th>
-                            <th>Note</th>
-                            <th>Date</th>
-                            <th>Requested by</th>
-                            <th>Received by</th>
-                            <th>Options</th>
-    
-                            {% for ur in user_requests.results %}
+                <!-- Pending Requests -->
+                <div class="row">
+                    <div name="pending-requests" class="w-85 border p-2 rounded mb-4 bg-light-subtle shadow-sm">
+                        <h3>
+                            <a href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank" data-bs-title="Go to User Manual 4.7.2">
+                                <button type="button" class="position-relative text-dark bg-transparent border border-0">
+                                    Pending Requests
+                                    <span style="font-size: 35%; top: 15%; left: 102%;" class="position-absolute translate-middle badge rounded-circle border border-1 border-primary bg-primary text-light"><i class="fa-solid fa-question"></i></span>
+                                </button>
+                            </a>
+                        </h3>
+                        <hr class="w-100">
+                        <table class="table table-striped table-bordered my-4">
+                            <tbody>
+                                {% if user_requests.results %}
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Note</th>
+                                    <th>Date</th>
+                                    <th>Requested by</th>
+                                    <th>Received by</th>
+                                    <th>Options</th>
+            
+                                    {% for ur in user_requests.results %}
+                                </tr>
                                 <tr>
                                     <td>{{ ur.request_type }}</td>
                                     <td>{{ ur.request_note|truncatechars:40 }}</td>
@@ -310,164 +394,111 @@
                                         {% endif %}
                                     </td>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td>
+                                        <p class="text-center">No pending requests at this time</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        <p class="text-end">
+                            <a class="text-primary" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles" target="_blank">
+                                <em><u>Need help? Visit section 4.7.2 in the User Manual.</u></em>
+                            </a>
+                        </p>
+                    </div>
                 </div>
+                
             </div>
         </div>
         <div class="row">
+            
+        </div>
+        {% if user.is_operator or user.is_site_admin %}
+        <div class="row">
             <div class="col">
-                <div name="public-credentials" class="h-100 w-85 border p-2 rounded mb-3 bg-light-subtle shadow-sm">
+                <div name="access-tokens" class="h-100 w-85 border p-2 rounded mb-3 bg-light-subtle shadow-sm">
                     <form method="POST" class="post-form">
-                        <h3>Public Credentials
-                            <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-2-account-authorization-and-roles#h.b7zx5bsw18bh" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.2">
-                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                            </a>
-                                {% csrf_token %}
-                                <button class="message-btn btn btn-success btn-sm float-end me-3 mt-1">
-                                    <a href="{% url 'credential_create' %}" class="unlink">
-                                        <em class="fa fa-fw fa-gears"></em> generate
-                                    </a>
+                        <h3>Authorization Tokens
+                            {% csrf_token %}
+                            <button type="submit" class="message-btn btn btn-success float-end btn-sm me-3 mt-1"
+                                    name="generate_tokens" value="generate_tokens">
+                                <em class="fa fa-fw fa-gears"></em> generate
+                            </button>
+                            {% if user_tokens.access_token %}
+                                <button type="submit" class="message-btn btn btn-success float-end btn-sm me-1 mt-1"
+                                        name="download_tokens" value="download_tokens">
+                                    <em class="fa fa-fw fa-download"></em> download
                                 </button>
-                                <button class="message-btn btn btn-success btn-sm float-end me-1 mt-1">
-                                    <a href="{% url 'credential_add' %}" class="unlink">
-                                        <em class="fa fa-fw fa-upload"></em> add your own
-                                    </a>
+                            {% else %}
+                                <button type="submit" class="message-btn btn btn-success float-end btn-sm me-1 mt-1"
+                                        name="download_tokens" value="download_tokens" disabled>
+                                    <em class="fa fa-fw fa-download"></em> download
                                 </button>
-                            </h3>
-                            <hr class="w-100">
-                        </form>
+                            {% endif %}
+                        </h3>
+                        <hr class="w-100">
+                    </form>
                     <table class="table table-striped table-bordered my-4">
                         <tbody>
-                        {% if user_credentials %}
-                            {% for c in user_credentials %}
-                                <tr>
-                                    <form id="public-credentials-form" action="#" method="post">
-                                        <td style="width: 25%">
-                                            {{ c.public_key_name }}
-                                            <br>
-                                            <span class="text-muted" style="font-size: small">
-                                                Exp: {{ c.public_key_expiration|str_to_datetime }}
-                                            </span>
-                                            <br>
-                                            <button form="public-credentials-form" type="submit" class="message-btn btn btn-success btn-sm"
-                                                    name="download_credential" value="{{ c.public_key_id }}">
-                                                <em class="fa fa-fw fa-download"></em> download
-                                            </button>
-                                            <button form="public-credentials-form" type="submit" class="message-btn btn btn-danger btn-sm my-2 "
-                                                    name="delete_credential" value="{{ c.public_key_id }}">
-                                                <a onclick="return confirm('Are you sure you want to delete this credential?')">
-                                                    <em class="fa fa-fw fa-remove"></em> delete
-                                                </a>
-                                            </button>
-                                        </td>
-                                        <td style="width: 75%">
-                                            <strong>
-                                                <textarea type="text" class="w-100" rows="7" value="{{ c.public_key_credential }}" disabled>
-                                                    {{ c.public_key_credential }}
-                                                </textarea>
-                                            </strong>
-                                            {% csrf_token %}
-                                            
+                        <tr>
+                            <td style="width: 25%">Access
+                                {% if user_tokens.access_token %}
+                                    <br>
+                                    <span class="text-muted" style="font-size: small">
+                                    Exp: {{ user_tokens.access_token|token_expiry }}
+                                </span>
+                                {% endif %}
+                                <br>
+                                <button type="submit" form="refresh-access-token-form"
+                                        class="message-btn btn btn-primary mt-2 btn-sm"
+                                        name="refresh_access_token" value="refresh_access_token">
+                                            <em class="fa fa-fw fa-refresh"></em> refresh
+                                </button>
+                            </td>
+                            <td style="width: 75%">
+                                {% if user_tokens.access_token %}
+                                    <form id="refresh-access-token-form" method="POST" class="post-form">
+                                        {% csrf_token %}
+                                        <textarea type="text" value="{{ user_tokens.access_token }}"
+                                                id="access_token" class="w-100" rows="4"
+                                                disabled>{{ user_tokens.access_token }}</textarea>
+                                        
                                     </form>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td style="width: 25%"></td>
-                                <td style="width: 75%">
-                                    <span class="text-danger">No Credentials</span>
-                                </td>
-                            </tr>
-                        {% endif %}
+                                {% else %}
+                                    <span class="text-danger">No Access Token</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 25%">Refresh
+                                {% if user_tokens.refresh_token %}
+                                    <br>
+                                    <span class="text-muted" style="font-size: small">
+                                    Exp: {{ user_tokens.refresh_token|token_expiry }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td style="width: 75%">
+                                {% if user_tokens.refresh_token %}
+                                    <textarea type="text" size="40" value="{{ user_tokens.refresh_token }}"
+                                        id="refresh_token" class="w-100" rows="4" 
+                                        disabled>{{ user_tokens.refresh_token }}</textarea>
+                                {% else %}
+                                    <span class="text-danger">No Refresh Token</span>
+                                {% endif %}
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
-                    
                 </div>
             </div>
-            <div class="col">
-                {% if user.is_operator or user.is_site_admin %}
-                    <div name="access-tokens" class="h-100 w-85 border p-2 rounded mb-3 bg-light-subtle shadow-sm">
-                        <form method="POST" class="post-form">
-                            <h3>Authorization Tokens
-                                {% csrf_token %}
-                                <button type="submit" class="message-btn btn btn-success float-end btn-sm me-3 mt-1"
-                                        name="generate_tokens" value="generate_tokens">
-                                    <em class="fa fa-fw fa-gears"></em> generate
-                                </button>
-                                {% if user_tokens.access_token %}
-                                    <button type="submit" class="message-btn btn btn-success float-end btn-sm me-1 mt-1"
-                                            name="download_tokens" value="download_tokens">
-                                        <em class="fa fa-fw fa-download"></em> download
-                                    </button>
-                                {% else %}
-                                    <button type="submit" class="message-btn btn btn-success float-end btn-sm me-1 mt-1"
-                                            name="download_tokens" value="download_tokens" disabled>
-                                        <em class="fa fa-fw fa-download"></em> download
-                                    </button>
-                                {% endif %}
-                            </h3>
-                            <hr class="w-100">
-                        </form>
-                        <table class="table table-striped table-bordered my-4">
-                            <tbody>
-                            <tr>
-                                <td style="width: 25%">Access
-                                    {% if user_tokens.access_token %}
-                                        <br>
-                                        <span class="text-muted" style="font-size: small">
-                                        Exp: {{ user_tokens.access_token|token_expiry }}
-                                    </span>
-                                    {% endif %}
-                                    <br>
-                                    <button type="submit" form="refresh-access-token-form"
-                                            class="message-btn btn btn-primary mt-2 btn-sm"
-                                            name="refresh_access_token" value="refresh_access_token">
-                                                <em class="fa fa-fw fa-refresh"></em> refresh
-                                    </button>
-                                </td>
-                                <td style="width: 75%">
-                                    {% if user_tokens.access_token %}
-                                        <form id="refresh-access-token-form" method="POST" class="post-form">
-                                            {% csrf_token %}
-                                            <textarea type="text" value="{{ user_tokens.access_token }}"
-                                                    id="access_token" class="w-100" rows="4"
-                                                    disabled>{{ user_tokens.access_token }}</textarea>
-                                            
-                                        </form>
-                                    {% else %}
-                                        <span class="text-danger">No Access Token</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="width: 25%">Refresh
-                                    {% if user_tokens.refresh_token %}
-                                        <br>
-                                        <span class="text-muted" style="font-size: small">
-                                        Exp: {{ user_tokens.refresh_token|token_expiry }}
-                                    </span>
-                                    {% endif %}
-                                </td>
-                                <td style="width: 75%">
-                                    {% if user_tokens.refresh_token %}
-                                        <textarea type="text" size="40" value="{{ user_tokens.refresh_token }}"
-                                            id="refresh_token" class="w-100" rows="4" 
-                                            disabled>{{ user_tokens.refresh_token }}</textarea>
-                                    {% else %}
-                                        <span class="text-danger">No Refresh Token</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                {% endif %}  
-            </div>
         </div>
-    </div>
+        </div>
+        {% endif %}  
 
         {% if debug or user.is_operator or user.is_site_admin %}
             <hr>

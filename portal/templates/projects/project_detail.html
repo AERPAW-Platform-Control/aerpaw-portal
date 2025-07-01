@@ -27,13 +27,6 @@
                     {% if project.is_deleted %}
                         <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                     {% endif %}
-                    <a class='fs-6' style="text-decoration: none;" target="_blank"  
-                        data-bs-toggle="tooltip" 
-                        data-bs-title="Go to User Manual 4.7.3"
-                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects" 
-                        >
-                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>&nbsp;
-                    </a>
                 </h2>
                 {% if not project.is_deleted %}
                     <div class="d-flex flex-row align-items-right">
@@ -59,6 +52,9 @@
                     </div>
                 {% endif %}
             </div>
+            <a class="text-primary float-end" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects" target="_blank">
+                <em><u>Need help? Visit section 4.7.3 in the User Manual.</u></em>
+            </a>
             <table class="table table-striped table-bordered my-4">
                 <tbody>
                 <tr>
@@ -100,13 +96,6 @@
                                         <a href="{% url 'project_members' project_id=project.project_id %}"
                                            class="unlink">Update</a>
                                     </button>
-                                    <a class='fs-6' style="text-decoration: none;" target="_blank"  
-                                        data-bs-toggle="tooltip" 
-                                        data-bs-title="Go to User Manual 4.7.3"
-                                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects#h.woicwkzbiqbc" 
-                                        >
-                                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>&nbsp;
-                                    </a>
                                 {% endif %}
                             {% endif %}
                         </td>
@@ -128,13 +117,6 @@
                                         <a href="{% url 'experiment_create' %}?project_id={{ project.project_id }}"
                                            class="unlink">Create</a>
                                     </button>
-                                    <a class='fs-6' style="text-decoration: none;" target="_blank"  
-                                        data-bs-toggle="tooltip" 
-                                        data-bs-title="Go to User Manual 4.7.4"
-                                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.62ms5qg19jjb" 
-                                        >
-                                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>&nbsp;
-                                    </a>
                                 {% endif %}
                             {% endif %}
                         </td>

@@ -11,24 +11,333 @@
     {% endif %}
     {% if user.is_authenticated %}
         <div class=" w-85">
-            <div class="d-flex flex-row align-items-center justify-content-between">
-                <h2>Resources</h2>
-                <form type="get" action="." style="margin: 0">
-                    {% csrf_token %}
-                    {% if search %}
-                        <input id="search" type="text" name="search" value="{{ search }}">
-                    {% else %}
-                        <input id="search" type="text" name="search" placeholder="search...">
-                    {% endif %}
-                    <button class="btn btn-primary mr-2" id="search_submit" type="submit">Search</button>
-                </form>
-                {% if user.is_operator %}
-                    <button class="btn btn-success mr-2">
-                        <a href="{% url 'resource_create' %}" class="unlink">Create New Resource</a>
-                    </button>
-                {% endif %}
+            <div class="d-flex flex-row align-items-center justify-content-between mb-4">
+                <div>
+                    <h2>AERPAW Resources</h2>
+                     <a class="text-primary" style="font-size: smaller;" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#:~:text=List%20of%20Testbed,the%20Navigation%20Bar%3A" target="_blank">
+                        <em><u>Need help? Visit section 4.7.4 in the User Manual.</u></em>
+                    </a>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        {% if user.is_operator %}
+                            <div class="row mb-2">
+                                <button class="btn btn-success mr-2">
+                                    <a href="{% url 'resource_create' %}" class="unlink">Create New Resource</a>
+                                </button>
+                            </div>
+                        {% endif %}
+                        <div class="row">
+                            <form type="get" action="." style="margin: 0">
+                                {% csrf_token %}
+                                {% if search %}
+                                    <input id="search" type="text" name="search" value="{{ search }}">
+                                {% else %}
+                                    <input id="search" type="text" name="search" placeholder="search...">
+                                {% endif %}
+                                <button class="btn btn-primary mr-2" id="search_submit" type="submit">Search</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <table class="table table-striped table-bordered my-4">
+            
+            <div class="row">
+                <!-- Fixed Nodes -->
+                <div class="col">
+                    <div name="fixed-nodes" class="w-85 border py-1 px-3 rounded mb-4 bg-light-subtle shadow-sm mb-4">
+                        <h3 class="text-center">Fixed Nodes</h3>
+                        <hr>
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="text-center">Lake Wheeler</h5>
+                                <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Active</th>
+                                        </tr>
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:2" == "LW" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.location }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col">
+                                <h5 class="text-center">Centennial Campus</h5>
+                                <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Active</th>
+                                        </tr>
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:2" == "CC" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.location }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <h5 class="text-center"><b>AERPAW Cloud</b></h5>
+                                    <table class="table table-striped table-bordered my-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Active</th>
+                                        </tr>
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:3" == "ACN" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.location }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Portable Nodes -->
+                <div class="col">
+                    <div name="portable-nodes" class="w-85 border py-1 px-3 rounded mb-4 bg-light-subtle shadow-sm mb-4">
+                        <h3 class="text-center">Portable Nodes</h3>
+                        <hr>
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="text-center">Large Portable Nodes</h5>
+                                    <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Active</th>
+                                        </tr>
+                        
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:3" == "LPN" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.location }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col">
+                                <h5 class="text-center">Small Portable Nodes</h5>
+                                    <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Active</th>
+                                        </tr>
+                        
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:3" == "SPN" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.location }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--  Vehicles -->
+            <div class="row">
+                <div class="col">
+                    <div name="vehicles" class="w-85 border p-1 rounded mb-4 bg-light-subtle shadow-sm mb-4">
+                        <h3 class="text-center">Vehicles</h3>
+                        <hr>
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="text-center">Large UAV</h5>
+                                <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Active</th>
+                                        </tr>
+                                
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:3" == "LAM" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col">
+                                <h5 class="text-center">Small UAV</h5>
+                                <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Active</th>
+                                        </tr>
+                        
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:3" == "SAM" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="text-center">Rovers</h5>
+                                <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Active</th>
+                                        </tr>
+                        
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:3" == "FAR" or resource.name|slice:"0:3" == "SAR"%}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col">
+                                <h5 class="text-center">Helikite</h5>
+                                <table class="table table-striped table-bordered mb-4">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Active</th>
+                                        </tr>
+                        
+                                        {% for resource in resources.results %}
+                                        {% if resource.name|slice:"0:2" == "" %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'resource_detail' resource_id=resource.resource_id %}">
+                                                    {{ resource.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ resource.resource_type }}</td>
+                                            <td>{{ resource.description|truncatechars:40 }}</td>
+                                            <td>{{ resource.is_active }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+        
+        
+            
+            <!-- <table class="table table-striped table-bordered my-4">
                 <tbody>
                 <tr>
                     <th>Name</th>
@@ -55,7 +364,7 @@
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table> -->
             <div class="d-flex flex-row align-items-center justify-content-between">
                 {% if prev_page %}
                     <button type="button" class="btn btn-secondary mr-2">

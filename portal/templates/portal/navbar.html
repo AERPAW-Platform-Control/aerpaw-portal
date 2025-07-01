@@ -93,20 +93,42 @@
                     </li>
                 {% endif %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-auto-close="outside" data-bs-toggle="dropdown">
                         Help
                     </a>
                     <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" target="_blank" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/">
+                        <li class="dropend">
+                            <a class="dropdown-item dropdown-toggle " href="#" role="button" data-bs-auto-close="outside" data-bs-toggle="dropdown" aria-expanded="false">
                                 User Manual
                             </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" traget="_blank">Overview</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Login/out</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Profile</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Roles</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Messages</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Credentials</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Projects</a></li>
+                                <li class="dropend">
+                                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Experiments</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" traget="_blank">Creation</a></li>
+                                        <li><a class="dropdown-item" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" traget="_blank">Canonical vs. Non-Canonical</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Selecting Resources</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Adding Members</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Initiating Development</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Accessing Development</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Going to the Testbed</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">In the Testbed</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Retirement</a></li>
+                                    </ul>
+                                </li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Resources</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">AERPAW Errors</a></li>
+                            </ul>
                         </li>
-                        <li>
-                            <a class="dropdown-item" target="_blank" href="https://groups.google.com/a/ncsu.edu/g/group-aerpaw-users">
-                                AERPAW Forum
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item" target="_blank" href="https://groups.google.com/a/ncsu.edu/g/group-aerpaw-users">AERPAW Forum</a></li>
+                        <li><a class="dropdown-item" target="_blank" href="#">FAQs</a></li>
                     </ul>
                 </li>
             </ul>
@@ -118,6 +140,45 @@
                 </form>
             </div>
         {% else %}
+            <ul class="navbar-nav me-auto order-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-auto-close="outside" data-bs-toggle="dropdown">
+                        Help
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="dropend">
+                            <a class="dropdown-item dropdown-toggle " href="#" role="button" data-bs-auto-close="outside" data-bs-toggle="dropdown" aria-expanded="false">
+                                User Manual
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" traget="_blank">Overview</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Login/out</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Profile</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Roles</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Messages</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Credentials</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Projects</a></li>
+                                <li class="dropend">
+                                    <a class="dropdown-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Experiments</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" traget="_blank">Creation</a></li>
+                                        <li><a class="dropdown-item" href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" traget="_blank">Canonical vs. Non-Canonical</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Selecting Resources</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Adding Members</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Initiating Development</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Accessing Development</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Going to the Testbed</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">In the Testbed</a></li>
+                                        <li><a class="dropdown-item" href="" traget="_blank">Retirement</a></li>
+                                    </ul>
+                                </li>
+                                <li><a class="dropdown-item" href="" traget="_blank">Resources</a></li>
+                                <li><a class="dropdown-item" href="" traget="_blank">AERPAW Errors</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item {{ login_page }}">
                     <a class="nav-link" href="{% url 'rest_framework:login' %}">
