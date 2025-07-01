@@ -384,14 +384,6 @@
                     <tr>
                         <td style="width: 25%">
                             Linked Files
-                            <a class='fs-6' 
-                                target="_blank" 
-                                data-bs-toggle="tooltip" 
-                                data-bs-title="Go to User Manual 4.7.5"
-                                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-5-canonical-experiment-access#h.h81zxn2zuk0h"
-                            >
-                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                            </a>
                             {% if not experiment.is_retired %}
                                 {% if user.is_operator %}
                                     <button class="btn btn-primary mr-2" style="float: right">
@@ -402,45 +394,41 @@
                             {% endif %}
                         </td>
                         <td style="width: 75%">
-                            {% for f in experiment.experiment_files %}
-                                <form action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
-                                      method="POST">
-                                    {% csrf_token %}
-                                    <strong>{{ f.file_name }}</strong>
-                                    <em class="text-secondary" style="font-size: medium">
-                                        (type: {{ f.file_type }}, notes: {{ f.file_notes|truncatechars:30 }})
-                                    </em>
-                                    {% if f.is_active %}
-                                        <button class="btn btn-success mr-2"
-                                                style="float: right; font-size: small; padding: 0"
-                                                type="submit"
-                                        >
-                                            download
-                                        </button>
-                                        <input type="hidden" name="file_id" value="{{ f.file_id }}">
-                                    {% else %}
-                                        <button class="btn btn-secondary mr-2"
-                                                style="float: right; font-size: small; padding: 0" disabled>
-                                            <a href=""
-                                               class="unlink">not available</a>
-                                        </button>
-                                    {% endif %}
-                                </form>
-                                <br>
-                            {% endfor %}
+                            {% if experiment.experiment_files %}
+                                {% for f in experiment.experiment_files %}
+                                    <form action="{% url 'experiment_detail' experiment_id=experiment.experiment_id %}"
+                                        method="POST">
+                                        {% csrf_token %}
+                                        <strong>{{ f.file_name }}</strong>
+                                        <em class="text-secondary" style="font-size: medium">
+                                            (type: {{ f.file_type }}, notes: {{ f.file_notes|truncatechars:30 }})
+                                        </em>
+                                        {% if f.is_active %}
+                                            <button class="btn btn-success mr-2"
+                                                    style="float: right; font-size: small; padding: 0"
+                                                    type="submit"
+                                            >
+                                                download
+                                            </button>
+                                            <input type="hidden" name="file_id" value="{{ f.file_id }}">
+                                        {% else %}
+                                            <button class="btn btn-secondary mr-2"
+                                                    style="float: right; font-size: small; padding: 0" disabled>
+                                                <a href=""
+                                                class="unlink">not available</a>
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                    <br>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-secondary">Experiment files will appear here once development is successfully initiated.</p>
+                            {% endif %}
                         </td>
                     </tr>
                     <tr>
                         <td style="width: 25%">
                             Members
-                            <a class='fs-6' 
-                                target="_blank" 
-                                data-bs-toggle="tooltip" 
-                                data-bs-title="Go to User Manual 4.7.4"
-                                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.ks7skuui8cs4"
-                            >
-                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                            </a>
                             {% if not experiment.is_retired %}
                             {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
                                 {% if experiment.members_locked == False %}
@@ -456,12 +444,14 @@
                                             data-bs-title="Unable to update members!"
                                             data-bs-content="The experiment has been initiated and its memberships can no longer be modified">
                                             <button class="btn btn-secondary mr-2" type="button" style="float: right" disabled>
-                                                Update
+                                                Locked
                                             </button>
                                         </span>
                                     {% endif %}
                                 {% endif %}
                             {% endif %}
+                            <br>
+                            <span class="text-danger" style="font-size: 75%;">*Members cannot be changed once development is intiated</span>
                         </td>
                         <td style="width: 75%">
                             {% for p in experiment.experiment_members %}
@@ -475,14 +465,6 @@
                     <tr>
                         <td style="width: 25%">
                             Targeted Resources
-                            <a class='fs-6' 
-                                target="_blank" 
-                                data-bs-toggle="tooltip" 
-                                data-bs-title="Go to User Manual 4.7.4"
-                                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.sbkhvxrogci8"
-                            >
-                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                            </a>
                             {% if not experiment.is_retired %}
                                 {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
                                     {% if not experiment.resources_locked %}
@@ -498,6 +480,8 @@
                                     {% endif %}
                                 {% endif %}
                             {% endif %}
+                            <br>
+                            <span class="text-danger" style="font-size: 75%;">*Resources cannot be modified once development is initiated</span>
                         </td>
                         <td style="width: 75%">
                             {% for resource in resources %}

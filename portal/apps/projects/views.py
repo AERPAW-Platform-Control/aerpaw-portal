@@ -49,6 +49,7 @@ def project_list(request):
         request.query_params.update(data_dict)
         p = ProjectViewSet(request=request)
         projects = p.list(request=request)
+
         # get prev, next and item range
         next_page = None
         prev_page = None
