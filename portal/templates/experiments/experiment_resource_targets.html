@@ -27,16 +27,7 @@
         {% if is_experiment_creator or is_experiment_member %}
             <div class="container w-85">
                 <div class="d-flex flex-row align-items-center justify-content-between">
-                    <h2>{{ experiment_id|id_to_experiment_name }}
-                        <a class='fs-6' 
-                            target="_blank" 
-                            data-bs-toggle="tooltip" 
-                            data-bs-title="Go to User Manual 4.7.4"
-                            href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.xhpjej5nlp37"
-                        >
-                            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
-                        </a>
-                    </h2>
+                    <h2>{{ experiment_id|id_to_experiment_name }}</h2>
                     <div>
                         <button class="btn btn-success mr-2" type="submit" form="create-project" value="save">Save
                         </button>
@@ -45,6 +36,9 @@
                         </button>
                     </div>
                 </div>
+                
+                    
+                
                 <div>
                     <form id="create-project" method="POST" class="post-form">
                         
