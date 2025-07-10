@@ -117,7 +117,6 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     else:
         command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
             experiment.id))
-        
     try:
         aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
         ssh_thread = threading.Thread(target=saving_development,
@@ -605,7 +604,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
 
     
     mock = False
-    if MOCK_OPS:     
+    if MOCK_OPS:
         # DEVELOPMENT - always pass
         mock = False
     
@@ -649,7 +648,6 @@ def saved_to_wait_sandbox_deploy(request, experiment: AerpawExperiment):
     generate_user_messages_for_sandbox(request, experiment=experiment)
 
     # PORTAL CF: wait_sandbox_deploy
-
     mock = False
     if MOCK_OPS:
         mock = True
@@ -1676,7 +1674,6 @@ def to_retired(request, experiment: AerpawExperiment):
         experiment.save()
 
     # Invoke retire script to cleanup all experiment files
-
     mock = False
     if MOCK_OPS:
         # DEVELOPMENT - always pass
