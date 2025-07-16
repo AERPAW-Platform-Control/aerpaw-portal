@@ -77,11 +77,11 @@ def save_non_canonical_experiment_info(request, project_id):
         exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
         exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else 'none'
         exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else 'none'
-        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') != 'null' else 'none'
+        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else 'none'
         exp_info.description = 'none'
-        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') != 'null' else 'none'
-        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') != 'null' else 'none'
-        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') != 'null' else 'none'
+        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') else 'none'
+        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') else 'none'
+        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') else 'none'
         exp_info.uuid = uuid4()
         exp_info.save()
         return {'success':True, 'experiment_info':exp_info}

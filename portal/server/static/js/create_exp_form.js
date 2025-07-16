@@ -432,6 +432,7 @@ class FormButton{
             'description',
             'hardware',
             'software',
+            'leadExperimenterEmail',
         ]
         let formInputList = FormInput.getMultipleInputById(dependentQuestionIds)
         
@@ -443,8 +444,8 @@ class FormButton{
             $(formInputList).each((index, input)=>{
                 input.required = false
                 input.validate = false
-                $(input.ipnut).removeAttr('required')
-                $(input.ipnut).attr({'data-validate': false})
+                $(input.input).removeAttr('required')
+                $(input.input).attr({'data-validate': false})
             })
         }
         //non canonical experiment
@@ -457,8 +458,8 @@ class FormButton{
                 input.validate = true
                 console.log(`${input.id} will now be validated: ${input.validate} `)
                 console.log(`${input.id} is now required: ${input.required}`)
-                $(input.ipnut).prop('required',true)
-                $(input.ipnut).attr({'data-validate': true})
+                $(input.input).prop('required',true)
+                $(input.input).attr({'data-validate': true})
             })
         }
         //No experiment type selected
