@@ -1,6 +1,3 @@
-console.log('create experiment form js')
-
-
 class FormMessage{
     static allMessages = []
     constructor(id, parentElement, message,){
@@ -116,7 +113,6 @@ class FormInput{
         let inputList = []
         $(idList).each((index, id)=>{
             let inputToGet = FormInput.allFormInputs.find(inp => inp.id === id)
-            console.log(`inputToGet= ${inputToGet} ${inputToGet.id}`)
             inputList.push(inputToGet)
         })
         return inputList
@@ -191,7 +187,6 @@ class FormInput{
             // check if it is marked checked
             // change the object value - checked
             if(checkbox == this){
-                console.log(`b checked= ${this.checked}`)
                 if($(checkbox).is(':checked')){
                     this.checked = false
                 }else{
@@ -212,7 +207,6 @@ class FormInput{
                     }
                 }
             }else{
-                console.log(`c checked= ${this.checked}`)
                 if($(checkbox).is(':checked')){
                     $(checkbox.input).prop('checked', false)
                     checkbox.checked = false
@@ -306,7 +300,6 @@ class FormInput{
                 this.removeMessages()
                 return true
             }else{
-                console.log('Input not valid!')
                 if(nonBlankInput == false){
                     this.addRequiredMessage()
                 }
@@ -358,7 +351,6 @@ class FormInput{
         }else if(this.type == 'checkbox'){
             let group = this.findCheckboxGroup()
             $(group.messages).each((index, message)=>{
-                console.log(`message to remove= ${message.id}`)
                 message.removeMessage()
             })
             group.messages=[]
@@ -467,8 +459,6 @@ class FormButton{
             $(formInputList).each((index, input)=>{
                 input.required = true
                 input.validate = true
-                console.log(`${input.id} will now be validated: ${input.validate} `)
-                console.log(`${input.id} is now required: ${input.required}`)
                 $(input.input).prop('required',true)
                 $(input.input).attr({'data-validate': true})
                 $("label[for='" + $(input.id) + "']").append($('span[name=required-asterisk]'))
@@ -487,14 +477,14 @@ class FormButton{
         if( this.isActive ){
             $(this.button).addClass('disabled')
             this.isActive = false
-        }else{console.log('button is already deactivated')}
+        }
     }
     
     activateButton(){
         if( !this.isActive ){
             $(this.button).removeClass('disabled')
             this.isActive = true
-        }else{console.log('button is already activated')}
+        }
     }
 
     showButton(){
@@ -527,7 +517,6 @@ class FormValidation{
                     isValid = input.validateCheckBox()
                 }
             }
-            console.log(`${input.id} is ${isValid}`)
             if(isValid != true){validInputCount+=1}
         })
 
@@ -611,7 +600,6 @@ $(document).ready(()=>{
     })
     $('form#create-experiment').on('submit', (e)=>{
     
-            console.log('Form Submitted!')
             const newValidation = new FormValidation($('#create-experiment'))
             let isValid = newValidation.validateForm()
             if(isValid == false){
