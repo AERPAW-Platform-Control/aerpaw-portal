@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'portal.apps.experiment_files',  # experiment files
     'portal.apps.experiment_info', # experiment form data
     'portal.apps.experiments',  # experiments
+    'portal.apps.google_group', # google group
     'portal.apps.operations',  # operations
     'portal.apps.portal_home', # portal home
     'portal.apps.credentials',  # credentials

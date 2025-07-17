@@ -1,8 +1,10 @@
 import os, json, webbrowser
+import google_auth_oauthlib.flow
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from google_auth_oauthlib.flow import Flow
+from django.urls import reverse
+from google_auth_oauthlib.flow import Flow, InstalledAppFlow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
@@ -10,7 +12,12 @@ from portal.apps.error_handling.error_dashboard import new_error
 from portal.apps.google_group.models import GoogleGroupMembership
 from portal.apps.google_group.group_dashboard import credentials_to_dict, user_gave_consent, user_declined_group, list_group_members
 
-SCOPES = ["https://www.googleapis.com/auth/admin.directory.group.member", "https://www.googleapis.com/auth/admin.directory.group", 'https://www.googleapis.com/auth/apps.groups.settings']
+SCOPES = [
+    "https://www.googleapis.com/auth/apps.groups.settings",
+    "https://www.googleapis.com/auth/cloud-identity.groups",
+    "https://www.googleapis.com/auth/admin.directory.group",
+    "https://www.googleapis.com/auth/admin.directory.group.member"
+]
 SERVICE_ACCOUNT_KEY = 'service_account_key.json'
 CLIENT_ID = '20527554357-6ur6tdml35k0g54m5mhg6bptetc2580e.apps.googleusercontent.com'
 OAUTH_REDIRECT_URI = 'http://127.0.0.1:8000/oauth2callback/'
@@ -34,27 +41,59 @@ def join_google_group(request):
     print(f'state= {state}')
     return redirect(authorization_url)
 
+def start_flow(request):
+    print('starting flow')
+    request.session.pop('credentials', None)
+    request.session.pop('state', None)
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        'client_secret.apps.googleusercontent.com.json',
+        scopes=SCOPES,
+        )
+    flow.redirect_uri = OAUTH_REDIRECT_URI
+
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    request.session['oauth_state'] = state
+    print(f'authorization_url= {authorization_url}')
+    print(f'state= {state}')
+    print()
+    print()
+    print()
+    return authorization_url
+
 def oauth2_callback(request):
     # Redirect to a view that adds users to the group
-    try:
-        state = request.session.pop('oauth_state', '')
+    try: 
+        state = request.session.get('oauth_state')
+        print(f'state= ',state)
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+        print('STARTING FLOW')
+        
         flow = Flow.from_client_secrets_file(
             CLIENT_SECRET,
-            scopes=['https://www.googleapis.com/auth/cloud-identity.groups', 'https://www.googleapis.com/auth/apps.groups.settings'],
-            redirect_uri=OAUTH_REDIRECT_URI,
+            scopes=SCOPES,
             state=state
         )
-
-        flow.fetch_token(authorization_response=request.build_absolute_uri())
-
+        print('FLOW STARTED')
+        flow.redirect_uri = request.build_absolute_uri(reverse('oauth2_callback'))
+        print(flow.redirect_uri)
+        print(f'AUTHORIZATION URI= {request.build_absolute_uri()}')
+        authorization_response = request.build_absolute_uri()
+        flow.fetch_token(authorization_response=authorization_response)
+        print('TOKEN FETCHED')
         credentials = flow.credentials
+        print(f'CREDENTIALS= {credentials}')
         with open(TOKEN_FILE, "w") as token_file:
             json.dump(credentials_to_dict(credentials), token_file, indent=4)
         print(f'credentials= {credentials}')
         request.session['google_credentials'] = credentials_to_dict(credentials)
     except Exception as exc:
-        print(f'oauth2_callback exc= {exc}')
+        print()
+        print(f'EXCEPTION oauth2_callback= {exc}')
+        print()
     return redirect('profile')
 
 @login_required
@@ -95,7 +134,7 @@ def google_group_forum(request):
         'ask_consent':ask_consent,
         'prevent_navigation': prevent_navigation,
     }
-    return render(request, 'google_group_consent.html', context)
+    return render(request, 'google_group/google_group_consent.html', context)
         
 
 

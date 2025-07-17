@@ -26,6 +26,7 @@ from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
 from portal.apps.google_group.api.viewsets import GoogleGroupMembershipViewSet
+from portal.apps.google_group.views import oauth2_callback
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
 from portal.apps.profiles.views import session_expired
 from portal.apps.projects.api.viewsets import ProjectViewSet, UserProjectViewSet
@@ -74,6 +75,7 @@ urlpatterns = [
     path('operators/experiment-files/', include('portal.apps.experiment_files.urls')),  # experiment_files app
     path('operators/experiment-info/', include('portal.apps.experiment_info.urls')),  # experiment_files app
     path('experiments/', include('portal.apps.experiments.urls')),  # experiments app
+    path('google_group/', include('portal.apps.google_group.urls')),  # google_group app
     path('messages/', include('portal.apps.user_messages.urls')),  # user_messages app
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app
