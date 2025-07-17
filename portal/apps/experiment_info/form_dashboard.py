@@ -17,6 +17,7 @@ from portal.apps.experiments.api.viewsets import ExperimentViewSet
 from portal.apps.resources.models import AerpawResource
 from portal.apps.users.models import AerpawUser, AerpawRolesEnum
 from portal.apps.user_messages.user_messages import send_portal_mail_from_message
+from portal.server.settings import MOCK_OPS
 
 def create_canonical_experiment(request, project_id):
     print('creating new general availibility experiment')
@@ -38,18 +39,18 @@ def create_canonical_experiment(request, project_id):
         exp_info.experiment_type = ExperimentFormData.ExperimentType.CANONICAL
         exp_info.experiment = AerpawExperiment.objects.get(id=exp.data.get("experiment_id"))
         exp_info.title = request.POST.get('title')
-        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
-        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
-        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else None
-        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else None 
-        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else None
-        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
-        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') else None
-        exp_info.location = request.POST.get('location') if request.POST.get('location') else None
+        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else 'none'
+        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else 'none'
+        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else 'none'
+        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else 'none' 
+        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else 'none'
+        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else 'none'
+        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') else 'none'
+        exp_info.location = request.POST.get('location') if request.POST.get('location') else 'none'
         exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
-        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
-        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else None
-        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else None
+        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else 'none'
+        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') else 'none'
+        exp_info.vehicle_behavior = 'none'
         exp_info.uuid = uuid4()
         exp_info.save()
         return exp
@@ -61,27 +62,26 @@ def create_canonical_experiment(request, project_id):
 def save_non_canonical_experiment_info(request, project_id):
     print('Creating new non-canonical experiment')
 
-    
-
     try:
         exp_info = ExperimentFormData()
         exp_info.experiment_type = ExperimentFormData.ExperimentType.NON_CANONICAL
         exp_info.title = request.POST.get('title')
-        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
-        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
-        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else None
-        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else None 
-        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else None
-        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
-        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') != 'null' else None
-        exp_info.location = request.POST.get('location') if request.POST.get('location') != 'null' else None
-        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
-        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else None
-        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') != 'null' else None
-        exp_info.description = request.POST.get('description') if request.POST.get('description') else None
-        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') != 'null' else None
-        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') != 'null' else None
-        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') != 'null' else None
+        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else 'none'
+        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else 'none'
+        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else 'none'
+        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else 'none' 
+        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else 'none'
+        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else 'none'
+        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') != 'null' else 'none'
+        exp_info.location = request.POST.get('location') if request.POST.get('location') != 'null' else 'none'
+        exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
+        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else 'none'
+        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else 'none'
+        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else 'none'
+        exp_info.description = 'none'
+        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') else 'none'
+        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') else 'none'
+        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') else 'none'
         exp_info.uuid = uuid4()
         exp_info.save()
         return {'success':True, 'experiment_info':exp_info}
@@ -114,15 +114,13 @@ def save_custom_experiment_info(request, project_id):
 
 def notify_aerpaw_ops(request, experiment_info, experiment_type: str):
     print('sending message to aerpaw-ops')
-    try:
-        lead_experimenter_id = AerpawUser.objects.filter(email=experiment_info.lead_email)
-    except Exception as exc:
-        new_error(exc, request.user)
-        print(f'Exception in portal.apps.experiment_info.form_dashboard notify_aerpaw_ops: {exc}')
 
-    recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # aerpaw_ops?
-    """ recieved_by.append(lead_experimenter_id)
-    recieved_by.append(request.user.id) """
+    recieved_by = [u.id for u in AerpawUser.objects.filter(groups__in=[3]).all()]  # all users with operator status 
+    recieved_by.append(request.user.id)
+    
+    if MOCK_OPS:
+        recieved_by = [u.id for u in AerpawUser.objects.filter(email='cjrober5@ncsu.edu')] # developer email for testing so that all the operators do not get their email's spammed
+    
 
     message_subject = ''
     message_body = ''
@@ -295,13 +293,8 @@ Thank you,
     experiment_info.questions,
     )
         
-    print('')
-    print(f'message body= \n{message_body}')
-    print('')
     kwargs={'received_by':recieved_by, 'message_subject':message_subject, 'message_body':message_body}
-    sent_mail = send_portal_mail_from_message(request=request, **kwargs)
-    if sent_mail == True:
-        print('Email sent!!')
+    send_portal_mail_from_message(request=request, **kwargs)
 
 def new_experiment_form_dashboard(request, project_id):
     print('request.POST= ', request.POST)
@@ -376,13 +369,10 @@ def upload_old_form_data():
                 public_url=ser.iloc[12] if not pd.isna(ser.iloc[12]) else None,
                 vehicle_behavior=ser.iloc[13] if not pd.isna(ser.iloc[13]) else 'None provided'
             )
-            if exp_fd.experiment.id != 830:
-                print(f'experiment ID= {exp_fd.experiment}')
-                print(f'experiment Name= {exp_fd.title}')
-                print(f'experiment Lead= {exp_fd.lead_experimenter}')
-                print()
-            #exp_fd.save()        
-    #upload_fieldtrips()
+
+            exp_fd.save()        
+    upload_fieldtrips()
+
 
 def get_fieldtrip_operators(op_names: list):
     print(f'op_ids {op_names}')

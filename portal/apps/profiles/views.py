@@ -1,7 +1,7 @@
-from django.http import HttpRequest
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 from rest_framework.request import QueryDict, Request
 
 from portal.apps.credentials.api.viewsets import CredentialViewSet
@@ -101,7 +101,9 @@ def profile(request):
                      'request_type_id': request.user.id,
                      'request_note': '[{0}] - role request'.format(AerpawRolesEnum.EXPERIMENTER.value)})
                 resp = ur.create(request=ur_api_request)
+                return HttpResponseRedirect(reverse('profile'))
             if request.POST.get('request_role_pi'):
+                print(f'request of PI')
                 ur_api_request = Request(request=HttpRequest())
                 ur = UserRequestViewSet(request=ur_api_request)
                 ur_api_request.user = request.user
@@ -111,10 +113,11 @@ def profile(request):
                      'request_type_id': request.user.id,
                      'request_note': '[{0}] - role request'.format(AerpawRolesEnum.PI.value)})
                 resp = ur.create(request=ur_api_request)
+                return HttpResponseRedirect(reverse('profile'))
         except Exception as exc:
             error = new_error(exc, request.user)
             message = error.message
-    try:        
+    try:
         # user data
         api_request = Request(request=HttpRequest())
         api_request.user = request.user
