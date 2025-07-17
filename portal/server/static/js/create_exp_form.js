@@ -199,8 +199,17 @@ class FormInput{
                 }
                 if( this.id == 'expTypeCan' && this.checked ){
                     FormButton.manageSubmitButtons(true)
+
+                    /* Remove the asterisk next to the lead experimenter email input to signify it is not required for canonical experiments */
+                    $("label[for='leadExperimenterEmail'] span").remove()
                 }else if( this.id == 'expTypeNon' && this.checked ){
                     FormButton.manageSubmitButtons(false)
+
+                    /* Add the asterisk next to the lead experimenter email to signify it is required for non-canonical experiments */
+                    let asterisk = $("label[for='leadExperimenterEmail']").children('span')
+                    if(asterisk.length == 0){
+                        $("label[for='leadExperimenterEmail']").append('<span class="text-danger fs-4">*</span>')
+                    }
                 }
             }else{
                 console.log(`c checked= ${this.checked}`)
@@ -297,6 +306,7 @@ class FormInput{
                 this.removeMessages()
                 return true
             }else{
+                console.log('Input not valid!')
                 if(nonBlankInput == false){
                     this.addRequiredMessage()
                 }
@@ -446,6 +456,7 @@ class FormButton{
                 input.validate = false
                 $(input.input).removeAttr('required')
                 $(input.input).attr({'data-validate': false})
+                $("label[for='" + $(input.id) + "']").remove($('span[name=required-asterisk]'))
             })
         }
         //non canonical experiment
@@ -460,6 +471,7 @@ class FormButton{
                 console.log(`${input.id} is now required: ${input.required}`)
                 $(input.input).prop('required',true)
                 $(input.input).attr({'data-validate': true})
+                $("label[for='" + $(input.id) + "']").append($('span[name=required-asterisk]'))
             })
         }
         //No experiment type selected
@@ -590,7 +602,7 @@ FormInput.init($('#create-experiment'))
 FormButton.init('create-experiment')
 
 $(document).ready(()=>{
-    // on every ipnut change and checkbox check, validate the answer
+    // on every input change and checkbox check, validate the answer
     $(FormInput.allFormInputs).each((formInputIndex, formInput)=>{
         let validated = formInput.activeValidations()
         if(validated == true){
@@ -599,7 +611,7 @@ $(document).ready(()=>{
     })
     $('form#create-experiment').on('submit', (e)=>{
     
-            
+            console.log('Form Submitted!')
             const newValidation = new FormValidation($('#create-experiment'))
             let isValid = newValidation.validateForm()
             if(isValid == false){
