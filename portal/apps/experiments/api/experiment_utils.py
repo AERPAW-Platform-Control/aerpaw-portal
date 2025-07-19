@@ -26,7 +26,8 @@ from portal.apps.user_messages.user_messages import generate_user_messages_for_d
 from portal.server.ops_ssh_utils import AerpawSsh
 from portal.server.settings import MOCK_OPS
 
-aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
+#aerpaw_ops_host = os.getenv('AERPAW_OPS_HOST')
+aerpaw_ops_host='152.14.188.15'
 aerpaw_ops_port = os.getenv('AERPAW_OPS_PORT')
 aerpaw_ops_user = os.getenv('AERPAW_OPS_USER')
 aerpaw_ops_key_file = os.getenv('AERPAW_OPS_KEY_FILE')
@@ -117,6 +118,7 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
     else:
         command = format_command("sudo python3 /home/aerpawops/AERPAW-Dev/DCS/platform_control/utils/ap-cf-ops-saveexit-ve-exp.py {0} save".format(
             experiment.id))
+
     try:
         aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
         ssh_thread = threading.Thread(target=saving_development,
@@ -601,6 +603,7 @@ def saved_to_wait_development_deploy(request, experiment: AerpawExperiment):
 
     # PORTAL CF:
     # TODO: Portal to manage next_state transition - normally this would be an Operator call
+
 
     
     mock = False
