@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static projects_tags %}
+
+{% block title %}
+    Experiments
+{% endblock %}
+
+{% block content %}
+    {% if message %}
+        <div class="text-danger" style="font-size: large">{{ message }}</div>
+    {% endif %}
+    {% if user.is_authenticated %}
+        {% if ask_consent == True %}
+        
+        
+            {% if prevent_navigation == True %}
+            <div class="bg-body-secondary fade show modal border" id="GoogleGroupModal" data-bs-backdrop="static" data-bs-keyboard="false"  tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog" aria-model="true" style="display:block; --bs-bg-opacity: .5;">
+                {% else %}
+            <div class="" id="GoogleGroupModal">
+                {% endif %}
+                <div class="modal-dialog modal-lg modal-dialog-centered ">
+                    <div class="modal-content border rounded-3">
+                        <div class="modal-heading p-2 bg-dark w-100 rounded-top-3">
+                        <h1 class="fs-5 text-light w-100" id="GoogleGroupModalLabel">AERPAW Users Forum</h1>
+                        </div>
+                        <div class="modal-body px-2 mt-1">
+                            <form id="join-google-group-form" action="{% url 'user_consent_view' %}" method="post">
+                                {% csrf_token %}
+                                <p class="mt-3">
+                                    If you use AERPAW, or intend to use it, or are just interested in staying in touch with AERPAW preparatory to potentially using it, 
+                                    please join this forum.  The AERPAW team will post informational messages and announcements here that are relevant for users of AERPAW.  
+                                    Specific questions about AERPAW experiments or usage may also be posted here, and may receive responses from the AERPAW team, or other users.  
+                                    However <b>please note</b> that: 
+                                    <ul>
+                                            <li>
+                                                (i) this is not the appropriate source to gather general information about AERPAW - navigate to the User Manual at <a class="text-primary" href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual">aerpaw.org</a> for that;
+                                            </li>
+                                            <li>
+                                                (ii) this is not the forum for requesting specific help for issues with specific experiments - please use 
+                                                the ticketing system as provided to you as an active AERPAW Experimenter.
+                                            </li>
+                                        </ul>
+                                
+                                </p>
+                                <p class="mt-3">
+                                    Would you like to join the AERPAW Users forum?
+                                </p>
+                                <div class="mb-3 ps-3">
+                                    <button name="join_group" type="subimt" form="join-google-group-form" class="btn btn-primary">Join</button>
+                                    <button name="decline_group" type="subimt" form="join-google-group-form" class="btn btn-primary">Decline</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <p>You are not logged in</p>
+        <a href="{% url 'login' %}">
+            <button class="message-btn btn btn-success">Login</button>
+        </a>
+    {% endif %}
+{% endblock %}

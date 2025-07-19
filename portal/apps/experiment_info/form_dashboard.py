@@ -66,21 +66,22 @@ def save_non_canonical_experiment_info(request, project_id):
         exp_info = ExperimentFormData()
         exp_info.experiment_type = ExperimentFormData.ExperimentType.NON_CANONICAL
         exp_info.title = request.POST.get('title')
-        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else None
-        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else None
-        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else None
-        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else None 
-        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else None
-        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else None
-        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') != 'null' else None
-        exp_info.location = request.POST.get('location') if request.POST.get('location') != 'null' else None
-        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else None
-        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else None
-        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') != 'null' else None
-        exp_info.description = None
-        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') != 'null' else None
-        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') != 'null' else None
-        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') != 'null' else None
+        exp_info.host_institution = request.POST.get('host_institution') if request.POST.get('host_institution') else 'none'
+        exp_info.lead_experimenter = request.POST.get('lead_experimenter') if request.POST.get('lead_experimenter') else 'none'
+        exp_info.lead_email = request.POST.get('lead_email') if request.POST.get('lead_email') else 'none'
+        exp_info.is_urgent = request.POST.get('urgency') if request.POST.get('urgency') != 'null' else 'none' 
+        exp_info.sponsored_project = request.POST.get('sponsored_project') if request.POST.get('sponsored_project') != 'null' else 'none'
+        exp_info.grant_number = request.POST.get('grant_number') if request.POST.get('grant_number') != 'null' else 'none'
+        exp_info.keywords = request.POST.get('keywords') if request.POST.get('keywords') != 'null' else 'none'
+        exp_info.location = request.POST.get('location') if request.POST.get('location') != 'null' else 'none'
+        exp_info.is_shared = request.POST.get('is_shared') if request.POST.get('is_shared') else ExperimentFormData.ExtendedBoolean.NOT_SURE
+        exp_info.public_url = request.POST.get('sharable_url') if request.POST.get('sharable_url') != 'null' else 'none'
+        exp_info.goal = request.POST.get('goal') if request.POST.get('goal') != 'null' else 'none'
+        exp_info.vehicle_behavior = request.POST.get('vehicle_behavior') if request.POST.get('vehicle_behavior') else 'none'
+        exp_info.description = 'none'
+        exp_info.byod_hardware = request.POST.get('byod_hardware') if request.POST.get('byod_hardware') else 'none'
+        exp_info.byod_software = request.POST.get('byod_software') if request.POST.get('byod_software') else 'none'
+        exp_info.questions = request.POST.get('questions') if request.POST.get('questions') else 'none'
         exp_info.uuid = uuid4()
         exp_info.save()
         return {'success':True, 'experiment_info':exp_info}
