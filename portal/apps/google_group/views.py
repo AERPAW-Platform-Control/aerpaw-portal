@@ -29,7 +29,7 @@ GROUP_NAME = "groups/02lwamvv2t79se1"
 def join_google_group(request):
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRET,
-        scopes = ['https://www.googleapis.com/auth/cloud-identity.groups', 'https://www.googleapis.com/auth/apps.groups.settings'],
+        scopes = SCOPES,
         redirect_uri=OAUTH_REDIRECT_URI
     )
     authorization_url, state = flow.authorization_url(

@@ -16,6 +16,7 @@ def home_view(request):
         google_group.save()
 
     if google_group.member == False and google_group.consent_asked == False:
+        
         return redirect('forum')
 
     context={}
