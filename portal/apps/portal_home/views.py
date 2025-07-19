@@ -9,17 +9,21 @@ from portal.apps.google_group.models import GoogleGroupMembership
 def home_view(request):
     
     user = request.user
+    print(f'user email: {user.email}')
     google_group, created = GoogleGroupMembership.objects.get_or_create(user=user)
     is_member = user.email in list_group_members(request)
+    print(f'is_member: {is_member}')
+
     if created:
         google_group.member=is_member
         google_group.save()
 
-    if google_group.member == False and google_group.consent_asked == False:
-        
+    if google_group.member == True or google_group.consent_asked == True:
+        context={}
+        return render(request, 'home.html', context)
+    
+    elif google_group.consent_asked == False:
         return redirect('forum')
 
-    context={}
-
-    return render(request, 'home.html', context)
+    
     
