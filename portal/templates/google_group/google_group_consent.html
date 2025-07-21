@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static projects_tags %}
+<link rel="stylesheet" href="{% static 'css/main.css' %}"/>
 
 {% block title %}
     Experiments
@@ -19,35 +20,61 @@
             <div class="" id="GoogleGroupModal">
                 {% endif %}
                 <div class="modal-dialog modal-lg modal-dialog-centered ">
-                    <div class="modal-content border rounded-3">
+                    <div class="modal-content border rounded-3 border border-secondary shadow">
                         <div class="modal-heading p-2 bg-dark w-100 rounded-top-3">
-                        <h1 class="fs-5 text-light w-100" id="GoogleGroupModalLabel">AERPAW Users Forum</h1>
+                            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                                <a class="navbar-brand navbar" href="{% url 'home' %}">
+                                    <img src="{% static 'images/logo/aerpaw-brand.png' %}" alt="aerpaw logo" height="40"/>
+                                </a>
+                            </nav>
+                        <!-- <h1 class="fs-5 text-light w-100" id="GoogleGroupModalLabel">AERPAW Users Forum</h1> -->
                         </div>
                         <div class="modal-body px-2 mt-1">
                             <form id="join-google-group-form" action="{% url 'user_consent_view' %}" method="post">
                                 {% csrf_token %}
-                                <p class="mt-3">
+                                <h2 class="text-center aerpaw-green"><b>Join the AERPAW Users Forum</b></h2>
+                                <p class="mt-3 px-2">
                                     If you use AERPAW, or intend to use it, or are just interested in staying in touch with AERPAW preparatory to potentially using it, 
                                     please join this forum.  The AERPAW team will post informational messages and announcements here that are relevant for users of AERPAW.  
                                     Specific questions about AERPAW experiments or usage may also be posted here, and may receive responses from the AERPAW team, or other users.  
-                                    However <b>please note</b> that: 
-                                    <ul>
-                                            <li>
-                                                (i) this is not the appropriate source to gather general information about AERPAW - navigate to the User Manual at <a class="text-primary" href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual">aerpaw.org</a> for that;
-                                            </li>
-                                            <li>
-                                                (ii) this is not the forum for requesting specific help for issues with specific experiments - please use 
-                                                the ticketing system as provided to you as an active AERPAW Experimenter.
-                                            </li>
-                                        </ul>
+                                    <hr class="mx-5">
+                                    <div class="px-5" style="font-size: 90%;">
+                                        However, <b>please note</b> that:
+                                        <ul>
+                                                <li class="mb-1">
+                                                    (i) this is not the appropriate source to gather general information about AERPAW - navigate to the User Manual at <a class="text-primary" href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual">aerpaw.org</a> for that;
+                                                </li>
+                                                <li>
+                                                    (ii) this is not the forum for requesting specific help for issues with specific experiments - please use
+                                                    one of the following methods instead:
+                                                    <div class="ms-5">
+                                                        <a href="https://aerpaw.org/office-hours/" target="_blank" class="list-group-item list-group-item-action">
+                                                            <span class="text-primary text-decoration-underline">Aerpaw Office Hours</span> - one-on-one help session
+                                                        </a>
+                                                        <a href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/3-user-resources-and-policies/3-2-user-support?authuser=0" target="_blank" class="list-group-item list-group-item-action">
+                                                            <span class="text-primary text-decoration-underline">Aerpaw Bug Bash</span> - drop-in help session
+                                                        </a>
+                                                        <a href="mailto:aerpaw-contact@ncsu.edu" target="_blank" class="list-group-item list-group-item-action">
+                                                            <span class="text-primary text-decoration-underline">Send us an email</span> - reach out to aerpaw-contact@ncsu.edu
+                                                        </a>
+                                                    </div>
+                                                    <!-- <ul>
+                                                        <li>Office Hours - <a href="https://aerpaw.org/office-hours/" target="_blank">https://aerpaw.org/office-hours/</a></li>
+                                                        <li>Bug Bash</li>
+                                                        <li></li>
+                                                    </ul> -->
+                                                </li>
+                                            </ul>
+                                        </div>
                                 
                                 </p>
-                                <p class="mt-3">
+                                <hr class="mx-5">
+                               <!--  <p class="mt-3">
                                     Would you like to join the AERPAW Users forum?
-                                </p>
-                                <div class="mb-3 ps-3">
-                                    <button name="join_group" type="subimt" form="join-google-group-form" class="btn btn-primary">Join</button>
-                                    <button name="decline_group" type="subimt" form="join-google-group-form" class="btn btn-primary">Decline</button>
+                                </p> -->
+                                <div class="mb-3 ps-3 text-center">
+                                    <button name="join_group" type="subimt" form="join-google-group-form" class="btn aerpaw-green-bg text-light btn-lg mt-3 mx-2">Join</button>
+                                    <button name="decline_group" type="subimt" form="join-google-group-form" class="btn aerpaw-green-bg text-light btn-lg mt-3 mx-2">Decline</button>
                                 </div>
                             </form>
                         </div>
