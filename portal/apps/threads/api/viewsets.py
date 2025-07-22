@@ -94,7 +94,7 @@ class AerpawThreadViewset(GenericViewSet):
         print('running thread que')
         que_thread = threading.Thread(target=threadQ.run_que, args=[request], kwargs={'target':thread.target})
         que_thread.start()
-        que_number_thread = threading.Thread(target=func, args=(request, thread1.experiment, thread1.command, MOCK_OPS, thread1))
+        """ que_number_thread = threading.Thread(target=func, args=(request, thread1.experiment, thread1.command, MOCK_OPS, thread1)) """
         threads=threadQ.get_queryset(target=thread.target).threads.all().order_by('thread_created')
         que_number = list(threads).index(thread)
         print(f'Que Number: {que_number}')

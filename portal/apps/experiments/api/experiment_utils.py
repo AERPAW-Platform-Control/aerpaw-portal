@@ -122,9 +122,10 @@ def active_development_to_saving_development(request, experiment: AerpawExperime
             experiment.id))
 
     try:
-        aerpaw_thread = start_aerpaw_thread(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
+        thread = AerpawThreadViewset()
+        new_thread = thread.create(request.user, experiment, AerpawThread.ThreadActions.SAVE_DEVELOPMENT)
         ssh_thread = threading.Thread(target=saving_development,
-                                    args=(request, experiment, command, exit_development, mock, aerpaw_thread))
+                                    args=(request, experiment, command, exit_development, mock, new_thread))
         ssh_thread.start()
         
     except Exception as exc:
