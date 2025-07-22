@@ -13,20 +13,28 @@
         <div class="container w-85">
             <div class="d-flex flex-row align-items-center justify-content-between">
                 <h2>{{ experiment.name }}
-                    {% if not experiment.is_retired %}
-                        <em class="text-success" style="font-size: medium">(is retired: No)</em>
-                    {% else %}
-                        <em class="text-danger" style="font-size: medium">(is retired: Yes)</em>
-                    {% endif %}
-                    <em class="text-primary" style="font-size: medium">
-                        (status: {{ experiment.experiment_state }})
-                    </em>
-                    {% if user_requests %}
-                        <em class="text-danger" style="font-size: medium">
-                            (join requests: {{ user_requests.count }})
-                        </em>
-                    {% endif %}
+                    <a class='fs-6' 
+                        target="_blank" 
+                        data-bs-toggle="tooltip" 
+                        data-bs-title="Go to User Manual 4.7.4"
+                        href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments"
+                    >
+                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                    </a>
                 </h2>
+                <!-- {% if not experiment.is_retired %}
+                    <em class="text-success" style="font-size: medium">(is retired: No)</em>
+                {% else %}
+                    <em class="text-danger" style="font-size: medium">(is retired: Yes)</em>
+                {% endif %}
+                <em class="text-primary" style="font-size: medium">
+                    (status: {{ experiment.experiment_state }})
+                </em>
+                {% if user_requests %}
+                    <em class="text-danger" style="font-size: medium">
+                        (join requests: {{ user_requests.count }})
+                    </em>
+                {% endif %} -->
                 {% if experiment.is_deleted %}
                     <a class="text-danger" style="font-size: medium"><strong>(DELETED)</strong></a>
                 {% endif %}
@@ -113,6 +121,14 @@
                         {% else %}
                             <em class="text-secondary" style="font-size: medium">(no active session)</em>
                         {% endif %}
+                        <a class='fs-6' 
+                            target="_blank" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-title="Go to User Manual 4.7.4"
+                            href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.n06rd6hc8m6s"
+                        >
+                            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                        </a>
                     </h4>
                     {%  if user.is_operator or not experiment.is_retired and experiment.membership.is_experiment_creator or not experiment.is_retired and experiment.membership.is_experiment_member %}
                         <div>
@@ -374,6 +390,14 @@
                     <tr>
                         <td style="width: 25%">
                             Linked Files
+                            <a class='fs-6' 
+                                target="_blank" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-title="Go to User Manual 4.7.5"
+                                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-5-canonical-experiment-access#h.h81zxn2zuk0h"
+                            >
+                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                            </a>
                             {% if not experiment.is_retired %}
                                 {% if user.is_operator %}
                                     <button class="btn btn-primary mr-2" style="float: right">
@@ -415,6 +439,14 @@
                     <tr>
                         <td style="width: 25%">
                             Members
+                            <a class='fs-6' 
+                                target="_blank" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-title="Go to User Manual 4.7.4"
+                                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.ks7skuui8cs4"
+                            >
+                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                            </a>
                             {% if not experiment.is_retired %}
                             {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
                                 {% if experiment.members_locked == False %}
@@ -449,6 +481,14 @@
                     <tr>
                         <td style="width: 25%">
                             Targeted Resources
+                            <a class='fs-6' 
+                                target="_blank" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-title="Go to User Manual 4.7.4"
+                                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.sbkhvxrogci8"
+                            >
+                                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                            </a>
                             {% if not experiment.is_retired %}
                                 {% if experiment.membership.is_experiment_creator or experiment.membership.is_experiment_member %}
                                     {% if not experiment.resources_locked %}
@@ -575,11 +615,26 @@
         </div>
         {% if debug or user.is_operator or user.is_site_admin %}
             <hr>
-            <pre><strong>experiment</strong>:<br>{{ experiment|pprint }}</pre>
-            <pre><strong>resources</strong>:<br>{{ resources|pprint }}</pre>
-            <pre><strong>session</strong>:<br>{{ session|pprint }}</pre>
-            <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
-            <br>
+            <div class="mb-5">
+                <div class="accordion" id="accordionPanelsStayOpenExample">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
+                          API Data
+                        </button>
+                      </h2>
+                      <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <pre><strong>experiment</strong>:<br>{{ experiment|pprint }}</pre>
+                            <pre><strong>resources</strong>:<br>{{ resources|pprint }}</pre>
+                            <pre><strong>session</strong>:<br>{{ session|pprint }}</pre>
+                            <pre><strong>user_requests:</strong><br>{{ user_requests|pprint }}</pre>
+                            <br>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
         {% endif %}
     {% else %}
         <p>You are not allowed to view this experiment or are not logged in</p>

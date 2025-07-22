@@ -25,6 +25,8 @@ from portal.apps.error_handling.api.viewsets import AerpawErrorViewset
 from portal.apps.experiment_files.api.viewsets import ExperimentFileViewSet
 from portal.apps.experiments.api.viewsets import CanonicalExperimentResourceViewSet, OnDemandSessionViewSet, \
     ExperimentViewSet, UserExperimentViewSet
+from portal.apps.google_group.api.viewsets import GoogleGroupMembershipViewSet
+from portal.apps.google_group.views import oauth2_callback
 from portal.apps.operations.api.viewsets import CanonicalNumberViewSet
 from portal.apps.profiles.views import session_expired
 from portal.apps.projects.api.viewsets import ProjectViewSet, UserProjectViewSet
@@ -44,6 +46,7 @@ router.register(r'aerpaw-error', AerpawErrorViewset, basename='aerpaw-error')
 router.register(r'aerpaw-thread', AerpawThreadViewset, basename='aerpaw-thread')
 router.register(r'experiment-files', ExperimentFileViewSet, basename='experiment-files')
 router.register(r'experiments', ExperimentViewSet, basename='experiments')
+router.register(r'google-group', GoogleGroupMembershipViewSet, basename='google-group')
 router.register(r'messages', UserMessageViewSet, basename='messages')
 router.register(r'p-canonical-experiment-number', CanonicalNumberViewSet, basename='canonical-experiment-number')
 router.register(r'projects', ProjectViewSet, basename='projects')
@@ -57,7 +60,8 @@ router.register(r'users', UserViewSet, basename='users')
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('', include('portal.apps.portal_home.urls')),  # portal_home app
+    path('oauth2callback/', oauth2_callback, name='oauth2_callback'),
     path('accounts/login/', session_expired, name='session_expired'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
@@ -72,6 +76,7 @@ urlpatterns = [
     path('operators/experiment-files/', include('portal.apps.experiment_files.urls')),  # experiment_files app
     path('operators/experiment-info/', include('portal.apps.experiment_info.urls')),  # experiment_files app
     path('experiments/', include('portal.apps.experiments.urls')),  # experiments app
+    path('google_group/', include('portal.apps.google_group.urls')),  # google_group app
     path('messages/', include('portal.apps.user_messages.urls')),  # user_messages app
     path('profile/', include('portal.apps.profiles.urls')),  # profiles app
     path('projects/', include('portal.apps.projects.urls')),  # projects app

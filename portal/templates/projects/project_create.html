@@ -12,13 +12,17 @@
     {% if user.is_authenticated %}
         {% if user.is_pi %}
             <div class="container w-85">
-                <h2>Create Project</h2>
+                <h2>Create Project
+                    <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-3-creating-and-managing-projects#h.h4zrep9y2eu4" target="_blank"  data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.3">
+                        <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                    </a>
+                </h2>
                 <form id="create-project" method="POST" class="post-form">
                     {% csrf_token %}
                     {{ form.as_p }}
                 </form>
                 <button class="btn btn-success mr-2" type="submit" form="create-project" value="save">Save</button>
-                <button class="btn btn-secondary mr-2" value="cancel">
+                <button class="btn btn-primary mr-2" value="cancel">
                     <a href="{% url 'project_list' %}" class="unlink">Back</a>
                 </button>
             </div>

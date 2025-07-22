@@ -22,11 +22,13 @@
     
     <!-- other stylesheets / sources -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}"/>
     <title>
         {% block title %}
-            AERPAW Testbed
+        AERPAW Testbed
         {% endblock %}
     </title>
+    <link rel="icon" sizes="16x16" type="image/x-icon" href="{% static 'images/logo/aerpaw_drone.png' %}">
     {% block head %}
     {% endblock %}
 </head>
