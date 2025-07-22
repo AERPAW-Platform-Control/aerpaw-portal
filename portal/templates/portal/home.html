@@ -6,11 +6,16 @@
 
 {% block content %}
     {% if not user.is_authenticated %}
-        <h3 class="text-center mt-4">Please log in to gain full access of AERPAW testbed.</h3>
+        <h3 class="text-center mt-4">Please log in to gain full access of AERPAW testbed.
+            <a class='fs-6' href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-1-account-creation-and-authentication#h.a02mit7l17ps" target="_blank" data-bs-toggle="tooltip" data-bs-title="Go to User Manual 4.7.1">
+                <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+            </a>
+        </h3>
     {% endif %}
     <div class="homepage">
         <img class="rounded my-4 img-fluid" width="25%"
              src="{% static 'images/logo/aerpaw-logo.png' %}" alt="aerpaw logo">
+             {{form}}
         <p>
         <span class="h2"><a href="https://aerpaw.org/" target="_blank">AERPAW</a>
         </span> <strong>(Aerial Experimentation and Research Platform for Advanced Wireless)</strong> is a $24 million
@@ -53,8 +58,48 @@
             - <a href="https://www.aerpaw.org/" target="_blank">AERPAW Main Site</a> <br>
             - <a href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/1-aerpaw-overview" target="_blank">AERPAW User Manual</a><br>
             - <a
-                href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual/2-experiment-lifecycle-workflows/2-5-acceptable-use-policy-aup"
+                href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/3-user-resources-and-policies/3-1-acceptable-use-policy-aup"
                 target="_blank">AERPAW Acceptable Use Policy</a>
         </p>
     </div>
+    {% if ask_consent == True %}
+    <div class="modal fade show bg-body-secondary" id="GoogleGroupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="GoogleGroupModalLabel" aria-hidden="true" style="display:block; --bs-bg-opacity: .5;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-dark">
+              <h1 class="modal-title fs-5 text-light" id="GoogleGroupModalLabel">AERPAW Users Google Group</h1>
+              <button type="button" class="btn-close text-light" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="join-google-group-form" action="{% url 'user_consent_view' %}" method="post">
+                    {% csrf_token %}
+                    <p>
+                        If you use AERPAW, or intend to use it, or are just interested in staying in touch with AERPAW preparatory to potentially using it, 
+                        please join this forum.  The AERPAW team will post informational messages and announcements here that are relevant for users of AERPAW.  
+                        Specific questions about AERPAW experiments or usage may also be posted here, and may receive responses from the AERPAW team, or other users.  
+                        However <b>please note</b> that: 
+                        <ul>
+                                <li>
+                                    (i) this is not the appropriate source to gather general information about AERPAW - navigate to the User Manual at <a class="text-primary" href="https://sites.google.com/ncsu.edu/aerpaw-wiki/aerpaw-user-manual">aerpaw.org</a> for that;
+                                </li>
+                                <li>
+                                    (ii) this is not the forum for requesting specific help for issues with specific experiments - please use 
+                                    the ticketing system as provided to you as an active AERPAW Experimenter.
+                                </li>
+                            </ul>
+                       
+                    </p>
+                    <p>
+                        Would you like to join the AERPAW users google group?
+                    </p>
+                    <div class="container">
+                        <button name="join_group" type="subimt" form="join-google-group-form" class="btn btn-primary">Join</button>
+                        <button name="decline_group" type="submit" form="join-google-group-form" class="btn btn-primary">Decline</button>
+                    </div>
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
 {% endblock %}

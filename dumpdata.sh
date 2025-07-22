@@ -6,6 +6,7 @@ APPS_LIST=(
     "experiment_files"
     "experiment_info"
     "experiments"
+    "google_group"
     "operations"
     "profiles"
     "projects"

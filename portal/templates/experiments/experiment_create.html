@@ -14,9 +14,17 @@
             <div class="container w-85">
                 <div class="row">
                     <div class="col-11">
-                        <h2>Create Experiment <em class="text-success" style="font-size: medium">
-                            (Project: {{ project.project_id|id_to_project_name }})</em>
-                        </h2>
+                        <h2>Create Experiment 
+                            <a class='fs-6' 
+                            target="_blank" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-title="Go to User Manual 4.7.4"
+                            href="https://sites.google.com/ncsu.edu/aerpaw-user-manual/4-experiment-portal-workflow/4-7-detailed-walkthroughs/4-7-4-creating-and-managing-experiments#h.6esyrtorcwxh"
+                            >
+                            <i class="fa-solid fa-book fs-6 fa-1x mb-2"></i>
+                        </a>
+                    </h2>
+                    <em class="text-success" style="font-size: medium">(Project: {{ project.project_id|id_to_project_name }})</em>
                         <div class=" rounded w-25 ps-2 align-middle">
                             <p class="d-inline text-body-secondary">Fields marked with <span class="text-danger fs-4 fw-normal">*</span> are required</p>
                         </div>

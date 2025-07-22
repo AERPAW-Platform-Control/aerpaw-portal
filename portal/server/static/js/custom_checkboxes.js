@@ -14,12 +14,9 @@ function singleChoiceCheckBoxGroup(clickedCheckbox){
     */
     let checkboxGroup = $(clickedCheckbox).parentsUntil('div.single-choice-checkbox-group').parent()
     $(checkboxGroup).find('input[type=checkbox]').each((checkboxIndex, checkbox)=>{
-        if(checkbox != clickedCheckbox){
-            
-            console.log(`checkbox id = ${$(checkbox).attr('id')}`)
+        if(checkbox != clickedCheckbox){            
             let wasChecked = $(checkbox).prop('checked')
             if( $(checkbox).prop('checked') ){
-                console.log(`${$(checkbox).attr('id')} checkbox is checked`)
                 $(checkbox).prop('checked', false)
                 if( $(checkbox).attr('onclick') == 'toggleGroup(this)' ){
                     if( wasChecked == true ){
