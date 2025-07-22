@@ -14,14 +14,27 @@ def home_view(request):
     is_member = user.email in list_group_members(request)
     print(f'is_member: {is_member}')
 
+    # If the google membership object has just been created, save the user's membership status.
     if created:
         google_group.member=is_member
         google_group.save()
 
-    if google_group.member == True or google_group.consent_asked == True:
+    # If the user is:
+    #  - already a member 
+    #    OR 
+    #  - has already been asked to be a member and declined
+    # Return them to the home page
+    if google_group.member == True\
+        or google_group.consent_asked == True\
+            or is_member == True:
         context={}
         return render(request, 'home.html', context)
     
+    # If the user is:
+    # - not a member
+    #   AND
+    # - has not been asked if they want to be a member 
+    # Ask them to join the Google Group
     elif google_group.consent_asked == False:
         return redirect('forum')
 
