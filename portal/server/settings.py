@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'portal.apps.credentials',  # credentials
     'portal.apps.user_messages',  # user messages
     'portal.apps.user_requests',  # user requests
+    'portal.apps.threads',  # threads
 
 ]
 
