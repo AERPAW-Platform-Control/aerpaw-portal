@@ -454,6 +454,7 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                         for pk in resources_added:
                             if AerpawResource.objects.filter(pk=pk).exists():
                                 resource = AerpawResource.objects.get(pk=pk)
+                                print(f'Selected Resource= {resource}')
                                 if not experiment.is_canonical or \
                                         (experiment.is_canonical and
                                          resource.resource_class == AerpawResource.ResourceClass.ALLOW_CANONICAL):
@@ -465,6 +466,8 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                     canonical_experiment_resource.resource = resource
                                     canonical_experiment_resource.node_display_name = resource.name
                                     canonical_experiment_resource.node_uhd = CanonicalExperimentResource.NodeUhd.FOUR_THREE
+                                    print(f'Resource= {canonical_experiment_resource}')
+                                    print(f'1. Resource Type= {canonical_experiment_resource.node_type}')
                                     if resource.resource_type == AerpawResource.ResourceType.AFRN:
                                         canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.AFRN
                                         canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
@@ -479,9 +482,11 @@ class ExperimentViewSet(GenericViewSet, RetrieveModelMixin, ListModelMixin, Upda
                                         if resource.resource_type == AerpawResource.ResourceType.THREE_PBBE:
                                             canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
                                     elif resource.resource_type == AerpawResource.ResourceType.ACN:
-                                        canonical_experiment_resource.node_type == CanonicalExperimentResource.NodeType.ACN
+                                        canonical_experiment_resource.node_type = CanonicalExperimentResource.NodeType.ACN
+                                        print(f'2. Resource Type= {canonical_experiment_resource.node_type}')
                                         canonical_experiment_resource.node_vehicle = CanonicalExperimentResource.NodeVehicle.VEHICLE_NONE
                                     canonical_experiment_resource.save()
+                                    print(f'3. Resource Type= {canonical_experiment_resource.node_type}')
                                 else:
                                     try:
                                         raise ValidationError(
