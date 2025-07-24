@@ -15,8 +15,6 @@ from portal.apps.google_group.group_dashboard import credentials_to_dict, user_g
 SCOPES = [
     "https://www.googleapis.com/auth/apps.groups.settings",
     "https://www.googleapis.com/auth/cloud-identity.groups",
-    "https://www.googleapis.com/auth/admin.directory.group",
-    "https://www.googleapis.com/auth/admin.directory.group.member"
 ]
 SERVICE_ACCOUNT_KEY = 'service_account_key.json'
 CLIENT_ID = '20527554357-6ur6tdml35k0g54m5mhg6bptetc2580e.apps.googleusercontent.com'
@@ -42,7 +40,6 @@ def join_google_group(request):
     return redirect(authorization_url)
 
 def start_flow(request):
-    print('starting flow')
     request.session.pop('credentials', None)
     request.session.pop('state', None)
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
@@ -57,38 +54,26 @@ def start_flow(request):
         prompt='consent'
     )
     request.session['oauth_state'] = state
-    print(f'authorization_url= {authorization_url}')
-    print(f'state= {state}')
-    print()
-    print()
-    print()
     return authorization_url
 
 def oauth2_callback(request):
     # Redirect to a view that adds users to the group
     try: 
         state = request.session.get('oauth_state')
-        print(f'state= ',state)
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-        print('STARTING FLOW')
         
         flow = Flow.from_client_secrets_file(
             CLIENT_SECRET,
             scopes=SCOPES,
             state=state
         )
-        print('FLOW STARTED')
+        
         flow.redirect_uri = request.build_absolute_uri(reverse('oauth2_callback'))
-        print(flow.redirect_uri)
-        print(f'AUTHORIZATION URI= {request.build_absolute_uri()}')
         authorization_response = request.build_absolute_uri()
         flow.fetch_token(authorization_response=authorization_response)
-        print('TOKEN FETCHED')
         credentials = flow.credentials
-        print(f'CREDENTIALS= {credentials}')
         with open(TOKEN_FILE, "w") as token_file:
             json.dump(credentials_to_dict(credentials), token_file, indent=4)
-        print(f'credentials= {credentials}')
         request.session['google_credentials'] = credentials_to_dict(credentials)
     except Exception as exc:
         print()

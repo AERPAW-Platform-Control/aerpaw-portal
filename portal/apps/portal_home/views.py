@@ -10,7 +10,9 @@ def home_view(request):
     
     user = request.user
     print(f'user email: {user.email}')
-    google_group, created = GoogleGroupMembership.objects.get_or_create(user=user)
+    url = start_flow(request)
+    return redirect(url)
+    """ google_group, created = GoogleGroupMembership.objects.get_or_create(user=user)
     is_member = user.email in list_group_members(request)
     print(f'is_member: {is_member}')
 
@@ -39,4 +41,4 @@ def home_view(request):
         return redirect('forum')
 
     
-    
+     """
