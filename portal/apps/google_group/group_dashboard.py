@@ -3,6 +3,8 @@ from django.http import JsonResponse
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 from .models import GoogleGroupMembership
 from portal.apps.error_handling.error_dashboard import new_error
@@ -24,25 +26,35 @@ def add_user_to_group(request):
     print('\n\n\n')
     
     try:
-        credentials = Credentials.from_authorized_user_file(TOKEN_FILE, ['https://www.googleapis.com/auth/cloud-identity.groups'])
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'client_secret.apps.googleusercontent.com.json',
+            scopes=['https://www.googleapis.com/auth/cloud-identity.groups']
+        )
+        credentials = flow.run_local_server(port=8080)
+        #credentials = Credentials.from_authorized_user_file(TOKEN_FILE, ['https://www.googleapis.com/auth/cloud-identity.groups'])
         print(f'credentials {credentials}')
     except Exception as exc:
         print('Cannot add user to group! Credentials not found')
         new_error(exc, request.user)
 
     service = build('cloudidentity', 'v1', credentials=credentials)
-    user_email = str(request.user.email)
+    #user_email = str(request.user.email)
+    #user_email = 'cmv303@nyu.edu'
+    #user_email='cjrober5@outlook.com'
+    user_email='cjroberts5@icloud.com'
     group_membership = {
-        'preferredMemberKey': {'id': user_email},
-        'roles': [{'name': 'MEMBER'}]
+        'preferredMemberKey': {
+            'id': user_email,
+            },
+        'roles': [{'name': 'MEMBER'}],
+        
     }
 
     try:
         request = service.groups().memberships().create(
             parent=GROUP_NAME,
             body=group_membership
-        )
-        request.execute()
+        ).execute()
         return True
     except Exception as exc:
         error = new_error(exc, request.user)
@@ -50,6 +62,7 @@ def add_user_to_group(request):
         print(f'ERROR!\n{error.traceback}')
         print('\n\n\n')
         return False
+  
     
 
 def user_gave_consent(request):
