@@ -35,76 +35,63 @@ class FieldTripForm(forms.ModelForm):
     )
     number_of_fixed_nodes = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Number of Fixed Nodes'
     )
     number_of_portable_nodes = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Number of Portable Nodes'
     )
     LAMs = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Number of LAMs'
     )
     SAMs = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Number of SAMs'
     )
     rovers = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Number of Rovers'
     )
     helikite = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Helikite'
     )
     person_hours = forms.FloatField(
         widget=forms.NumberInput(attrs={'class':'form-control'}),
-        required=False,
         label='Person Hours'
     )
     operators = forms.ModelMultipleChoiceField(
         queryset=AerpawUser.objects.filter(username__endswith = '@ncsu.edu').order_by('first_name'),
         widget=forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'}),
-        required=False,
         label='Select Operator(s)',
+        error_messages={'required': 'Select at least one operator.'}
     )
     experiment_date = forms.DateField(
         widget=forms.DateInput(attrs={'type':'date', 'class':'form-control'}),
         label='Date of Experiment',
-        required=False,
     )
     start_time = forms.TimeField(
         widget=forms.TimeInput(attrs={'type': 'time', 'class':'form-control'}),
         label='Time Start',
-        required=False,
     )
     end_time = forms.TimeField(
         widget=forms.TimeInput(attrs={'type': 'time', 'class':'form-control'}),
         label='Time End',
-        required=False,
     )
     fixed_nodes_used = forms.ModelMultipleChoiceField(
         queryset=AerpawResource.objects.filter(resource_type=AerpawResource.ResourceType.AFRN).order_by('name'),
         widget=forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'}),
         label='Fixed Node(s) Used',
-        required=False,
     )
     radio_hardware = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 6, 'cols': 50, 'class':'form-control'}),
-        required=False,
         label='Experiment Radio Hardware',
     )
     site = forms.ChoiceField(
         choices=FieldTrip.AerpawSite.choices,
         widget=forms.RadioSelect(attrs={'class':'form-check-input'}),
         label='AERPAW Site',
-        required=False,
     )
     comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 6, 'cols': 50, 'class':'form-control'}),

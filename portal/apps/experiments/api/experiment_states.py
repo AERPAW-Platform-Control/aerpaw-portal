@@ -168,6 +168,7 @@ def transition_experiment_state(request, experiment: AerpawExperiment, next_stat
     # ACTIVE_TESTBED --> SAVED - execution complete
     # Flags 010
     elif transition == ('active_testbed', 'saved'):
+        print('changing state from active tb to saved')
         active_testbed_to_saved(request=request, experiment=experiment)
     # SAVED --> WAIT_DEVELOPMENT_DEPLOY - start development session
     elif transition == ('saved', 'wait_development_deploy'):

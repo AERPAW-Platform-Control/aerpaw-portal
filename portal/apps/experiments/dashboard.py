@@ -330,6 +330,7 @@ def evaluate_dashboard_action(request):
 
 
 def evaluate_session_dashboard_action(request):
+    print()
     print('DASHBOARD evaluate_session_dashboard_action')
     print('request.POST', request.POST)
     api_request = Request(request=HttpRequest())
@@ -337,6 +338,7 @@ def evaluate_session_dashboard_action(request):
     api_request.method = 'PUT'
     e = ExperimentViewSet(request=api_request)
     op = None
+    next_state = ''
     if request.POST.get('end_session'):
         experiment = AerpawExperiment.objects.get(id = request.POST.get('end_session'))
         try:
@@ -361,7 +363,7 @@ def evaluate_session_dashboard_action(request):
             'session_datetime': request.POST.get("session_datetime") if request.POST.get('session_datetime') else None,
             'experiment': experiment,
             })
-        op = e.state(api_request, pk=int(experiment.id))
+        e.state(api_request, pk=int(experiment.id))
 
     # Ends testbed session and initiates a new development session
     if request.POST.get('end_testbed_initiate_dev'):
@@ -390,9 +392,20 @@ def evaluate_session_dashboard_action(request):
     if request.POST.get('end_testbed_only'):
         print('Ending testbed session without starting a new dev session')
         print(f'request.POST= {request.POST}')
+        experiment = AerpawExperiment.objects.get(id=request.POST.get('end_testbed_only'))
         api_request.data.update(**request.POST)
         api_request.data.update({'experiment_id':request.POST.get('end_testbed_only')})
+        api_request.data.update({
+            'next_state': AerpawExperiment.ExperimentState.SAVED,
+            'ops_session':True,
+            'session_description': request.POST.get('session_description'),
+            'is_success': request.POST.get('session_success'),
+            'reschedule_session': request.POST.get('reschedule_session') if request.POST.get('reschedule_session') else False,
+            'session_datetime': request.POST.get("session_datetime") if request.POST.get('session_datetime') else None,
+            'experiment': experiment,
+            })
         new_field_trip(api_request)
+        e.state(api_request, pk=int(experiment.id))
 
     if request.POST.get('new_development'):
         experiment_id = request.POST.get('new_development')

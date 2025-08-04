@@ -535,28 +535,30 @@ def new_field_trip(request):
         exp_form_data = None
     
     ft = FieldTrip()
-    ft.number_of_fixed_nodes = request.data.get('number_of_fixed_nodes')[0]
-    ft.number_of_portable_nodes = request.data.get('number_of_portable_nodes')[0]
-    ft.LAMs = request.data.get('LAMs')[0]
-    ft.SAMs = request.data.get('SAMs')[0]
-    ft.rovers = request.data.get('rovers')[0]
-    ft.helikite = request.data.get('helikite')[0]
-    ft.person_hours = request.data.get('person_hours')[0]
-    ft.experiment_date = request.data.get('experiment_date')[0]
-    ft.start_time = request.data.get('start_time')[0]
-    ft.end_time = request.data.get('end_time')[0]
-    ft.radio_hardware = request.data.get('radio_hardware')[0]
-    ft.site = request.data.get('site')[0]
-    ft.comments = request.data.get('comments')[0]
+    ft.number_of_fixed_nodes = request.data.get('number_of_fixed_nodes')[0] if request.POST.get('host_institution') else 'none'
+    ft.number_of_portable_nodes = request.data.get('number_of_portable_nodes')[0] if request.POST.get('host_institution') else 'none'
+    ft.LAMs = request.data.get('LAMs')[0] if request.POST.get('host_institution') else 'none'
+    ft.SAMs = request.data.get('SAMs')[0] if request.POST.get('host_institution') else 'none'
+    ft.rovers = request.data.get('rovers')[0] if request.POST.get('host_institution') else 'none'
+    ft.helikite = request.data.get('helikite')[0] if request.POST.get('host_institution') else 'none'
+    ft.person_hours = request.data.get('person_hours')[0] if request.POST.get('person_hours') else 'none'
+    ft.experiment_date = request.data.get('experiment_date')[0] if request.POST.get('experiment_date') else 'none'
+    ft.start_time = request.data.get('start_time')[0] if request.POST.get('start_time') else 'none'
+    ft.end_time = request.data.get('end_time')[0] if request.POST.get('end_time') else 'none'
+    ft.radio_hardware = request.data.get('radio_hardware')[0] if request.POST.get('radio_hardware') else 'none'
+    ft.site = request.data.get('site')[0] if request.POST.get('site') else 'none'
+    ft.comments = request.data.get('comments')[0] if request.POST.get('comments') else 'none'
     ft.save()
     ft.experiment.add(AerpawExperiment.objects.get(id=request.data.get('experiment_id')))
 
     if exp_form_data:
         ft.experiment_form.add(exp_form_data)
-    for fn in request.data.get('fixed_nodes_used'):
-        ft.fixed_nodes_used.add(fn)
-    for op in request.data.get('operators'):
-        ft.ap_operators.add(op)
+    if request.data.get('fixed_nodes_used'):
+        for fn in request.data.get('fixed_nodes_used'):
+            ft.fixed_nodes_used.add(fn)
+    if request.data.get('operators'):
+        for op in request.data.get('operators'):
+            ft.ap_operators.add(op)
 
     print(f'Field Trip = {ft.ap_operators.all()}')
 

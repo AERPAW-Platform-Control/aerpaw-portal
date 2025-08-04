@@ -281,7 +281,7 @@
                     <div id="initiateDevelopmentBtnGroup" class="mb-3" style="display: none;">
                         <!-- field trip form -->
                         <div class="mb-3"> 
-                                
+                            
                             {% with field=end_testbed_session_form.visible_fields %}
                             <div class="row row-cols-2">
                                 <!-- Number of Fixed Nodes -->
@@ -465,5 +465,5 @@
           </div>
         </div>
       </div>
-      
+      <script src="{% static 'js/fieldtrip_form.js' %}?{% now 'U' %}"></script>
       {% endblock %}

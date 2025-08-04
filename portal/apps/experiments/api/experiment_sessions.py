@@ -181,6 +181,7 @@ def start_scheduled_session(session: ScheduledSession, user: AerpawUser) -> bool
 
 def end_scheduled_session(request, session: ScheduledSession, user: AerpawUser) -> bool:
     try:
+        print('Ending scheduled session')
         session.is_active = False
         session.modified_by = user.username
         session.end_date_time = datetime.now(timezone.utc)

@@ -1,3 +1,4 @@
+console.log('fieldtrip form js')
 class FormMessage{
     static allMessages = []
     constructor(id, parentElement, message,){
@@ -428,14 +429,8 @@ class FormButton{
     }
 
     static manageSubmitButtons(canonical){
-        let canButton = FormButton.getButtonById('canonicalSubmit')
-        let nonCanButton = FormButton.getButtonById('nonCanonicalSubmit')
-        let dependentQuestionIds = [
-            'description',
-            'hardware',
-            'software',
-            'leadExperimenterEmail',
-        ]
+        let canButton = FormButton.getButtonById('fail-session-btn')
+        let nonCanButton = FormButton.getButtonById('success-session-btn')
         let formInputList = FormInput.getMultipleInputById(dependentQuestionIds)
         
         //canonical experiment
