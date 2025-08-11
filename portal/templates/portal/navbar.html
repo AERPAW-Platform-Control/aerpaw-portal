@@ -44,11 +44,6 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'error_dashboard' %}">
-                                    Error Dashboard
-                                </a>
-                            </li>
-                            <li>
                                 <a class="dropdown-item" href="{% url 'experiment_form_responses' %}">
                                     Experiment Form Responses
                                 </a>
@@ -58,19 +53,6 @@
                                     Field Trips
                                 </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'reports_home' %}">
-                                    Reports
-                                </a>
-                            </li>
-                            {#                            <li>#}
-                            {#                                <hr class="dropdown-divider">#}
-                            {#                            </li>#}
-                            {#                            <li>#}
-                            {#                                <a class="dropdown-item" href="{% url 'home' %}">#}
-                            {#                                    Experiment Sessions#}
-                            {#                                </a>#}
-                            {#                            </li>#}
                         </ul>
                     </li>
                 {% endif %}
@@ -81,9 +63,21 @@
                             Administrators
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'user_role_request_list' %}">
-                                Role Requests
-                            </a></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'user_role_request_list' %}">
+                                    Role Requests
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'reports_home' %}">
+                                    Reports
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'error_dashboard' %}">
+                                    Error Dashboard
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 {% endif %}

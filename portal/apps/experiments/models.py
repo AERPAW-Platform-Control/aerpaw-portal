@@ -39,6 +39,7 @@ class AerpawExperiment(BaseModel, AuditModelMixin, models.Model):
         ACTIVE_EMULATION = 'active_emulation', _('Active Emulation')
         ACTIVE_SANDBOX = 'active_sandbox', _('Active Sandbox')
         ACTIVE_TESTBED = 'active_testbed', _('Active Testbed')
+        SAVING_EMULATION = 'saving_emulation', _('Saving Emulation')
         SAVING_DEVELOPMENT = 'saving_development', _('Saving Development')
         SAVING_SANDBOX = 'saving_sandbox', _('Saving Sandbox')
         SAVED = 'saved', _('Saved')

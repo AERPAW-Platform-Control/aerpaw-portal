@@ -142,10 +142,8 @@
                         <tr>
                             <th style="width: 20%; text-align: center"></th>
                             <th style="width: 20%; text-align: center">Development</th>
-                            <th style="width: 20%; text-align: center">Sandbox</th>
-                            {% if user.is_operator %}
                             <th style="width: 20%; text-align: center">Emulation</th>
-                            {% endif %}
+                            <th style="width: 20%; text-align: center">Sandbox</th>
                             <th style="width: 20%; text-align: center">Testbed</th>
                         </tr>
                         <tr>
@@ -174,6 +172,27 @@
                                 </td>
                             {% endif %}
                             <td style="text-align: center">
+                                {% if buttons.b_emu_submit %}
+                                    <button class="btn btn-success mr-2 thread"
+                                            type="submit"
+                                            name="b_emu_submit"
+                                            value="{{ experiment.experiment_id }}">
+                                        Submit to Emulation
+                                    </button>
+                                {% else %}
+                                <span   
+                                    data-bs-toggle="popover"
+                                    data-bs-trigger="hover focus"
+                                    data-bs-placement="top"
+                                    data-bs-title="Submit to Emulation is disabled because:"
+                                    data-bs-content="The experiment is currently in an Emulation Session OR is in another session type.">
+                                    <button class="btn btn-secondary mr-2" type="button"  disabled>
+                                        Submit to Emulation
+                                    </button>
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: center">
                                 {% if buttons.b_sandbox_submit %}
                                     <button class="btn btn-success mr-2"
                                             type="button"
@@ -195,29 +214,6 @@
                                     
                                 {% endif %}
                             </td>
-                            {% if user.is_operator %} 
-                            <td style="text-align: center">
-                                {% if buttons.b_emu_submit %}
-                                    <button class="btn btn-success mr-2 thread"
-                                            type="submit"
-                                            name="b_emu_submit"
-                                            value="{{ experiment.experiment_id }}">
-                                        Submit to Emulation
-                                    </button>
-                                {% else %}
-                                <span   
-                                    data-bs-toggle="popover"
-                                    data-bs-trigger="hover focus"
-                                    data-bs-placement="top"
-                                    data-bs-title="Submit to Emulation is disabled because:"
-                                    data-bs-content="The experiment is currently in an Emulation Session OR is in another session type.">
-                                    <button class="btn btn-secondary mr-2" type="button"  disabled>
-                                        Submit to Emulation
-                                    </button>
-                                </span>
-                                {% endif %}
-                            </td>
-                            {% endif %}
                             <td style="text-align: center">
                                 {% if buttons.b_testbed_submit %}
                                     <button class="btn btn-success mr-2 thread"
@@ -243,20 +239,6 @@
                         <tr>
                             <td>Waiting</td>
                             <td style="text-align: center"></td>
-                            <td style="text-align: center">
-                                {% if buttons.b_sandbox_cancel %}
-                                    <button class="btn btn-success mr-2 thread"
-                                            type="submit"
-                                            name="b_sandbox_cancel"
-                                            value="{{ experiment.experiment_id }}">
-                                        Cancel
-                                    </button>
-                                {% else %}
-                                    <button class="btn btn-secondary mr-2" disabled>
-                                        Cancel
-                                    </button>
-                                {% endif %}
-                            </td>
                             {% if user.is_operator %}
                             <td style="text-align: center">
                                 {% if buttons.b_emu_cancel %}
@@ -273,6 +255,21 @@
                                 {% endif %}
                             </td>
                             {% endif %}
+                            <td style="text-align: center">
+                                {% if buttons.b_sandbox_cancel %}
+                                    <button class="btn btn-success mr-2 thread"
+                                            type="submit"
+                                            name="b_sandbox_cancel"
+                                            value="{{ experiment.experiment_id }}">
+                                        Cancel
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-secondary mr-2" disabled>
+                                        Cancel
+                                    </button>
+                                {% endif %}
+                            </td>
+                            
                             <td style="text-align: center">
                                 {% if buttons.b_testbed_cancel %}
                                     <button class="btn btn-success mr-2 thread"

@@ -628,7 +628,9 @@ def experiment_sessions(request, experiment_id):
     if user.groups.filter(name='operator').exists():
         try:
             is_operator = True
-            evaluate_session_dashboard_action(request)    
+            successful_action = evaluate_session_dashboard_action(request)    
+            if successful_action == True:
+                return redirect('experiment_sessions', experiment_id=experiment.id)
         except Exception as exc:
             new_error(exc, request.user)
     try:

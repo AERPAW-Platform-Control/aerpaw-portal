@@ -61,6 +61,10 @@ def check_submit_to_sandbox(user: AerpawUser, experiment: AerpawExperiment):
     if experiment.resources.count() > 8:
         return False
     
+    # Experiment has passed emulation 
+    if experiment.experiment_flags != '101':
+        return False
+    
     fixed_nodes = 0
     LPNs = 0
     SPNs = 0
@@ -133,6 +137,11 @@ def check_submit_to_testbed(user: AerpawUser, experiment: AerpawExperiment):
     
     if not experiment.resources.exists():
         return False
+    
+    # Experiment has passed emulation 
+    if experiment.experiment_flags != '101':
+        return False
+    
     # user has one or more public keys
     if not PublicCredentials.objects.filter(
             owner=user,
@@ -199,7 +208,8 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
         # ACTIVE_DEVELOPMENT       - Save, Save & Exit
         if experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT:
             buttons['b_dev_save'] = True
-            buttons['b_dev_save_exit'] = True
+            buttons['b_dev_save_exit'] = False
+            buttons['b_emu_submit'] = True
         # ACTIVE_EMULATION         - n/a
         elif experiment.experiment_state == AerpawExperiment.ExperimentState.ACTIVE_EMULATION:
             pass
@@ -231,7 +241,7 @@ def get_dashboard_buttons(request, experiment_id: int) -> dict:
             pass
         # WAIT_EMULATION_DEPLOY    - Cancel
         elif experiment.experiment_state == AerpawExperiment.ExperimentState.WAIT_EMULATION_DEPLOY:
-            buttons['b_emu_cancel'] = True
+            buttons['b_emu_cancel'] = False
         # WAIT_EMULATION_SCHEDULE  - Cancel
         elif experiment.experiment_state == AerpawExperiment.ExperimentState.WAIT_EMULATION_SCHEDULE:
             buttons['b_emu_cancel'] = True
@@ -310,7 +320,7 @@ def evaluate_dashboard_action(request):
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_emu_cancel'):
             experiment_id = request.POST.get('b_emu_cancel')
-            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.SAVED})
+            api_request.data.update({'next_state': AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT})
             op = e.state(api_request, pk=int(experiment_id))
         if request.POST.get('b_testbed_submit'):
             experiment_id = request.POST.get('b_testbed_submit')
@@ -337,32 +347,51 @@ def evaluate_session_dashboard_action(request):
     api_request.method = 'PUT'
     e = ExperimentViewSet(request=api_request)
     op = None
+    is_success = False
     if request.POST.get('end_session'):
-        experiment = AerpawExperiment.objects.get(id = request.POST.get('end_session'))
+        experiment = AerpawExperiment.objects.get(id = request.POST.get('end_session').split('-')[0])
+        print(f'experiment= {experiment}')
+        
+        # Get the correct type of session
         try:
             session_type = ScheduledSession.objects.filter(experiment=experiment).order_by('-created').first().session_type
         except:
             session_type = OnDemandSession.objects.filter(experiment=experiment).order_by('-created').first().session_type
         
+        print(f'session_type= {session_type}')
         if session_type == 'sandbox':
             next_state = AerpawExperiment.ExperimentState.SAVING_SANDBOX
+
+        elif session_type == 'emulation':
+            print(f'is_success = {request.POST.get('end_session').split('-')[1]}')
+            if request.POST.get('end_session').split('-')[1] == 'True':
+                is_success = True
+                next_state = AerpawExperiment.ExperimentState.SAVING_EMULATION
+            else: 
+                next_state = AerpawExperiment.ExperimentState.ACTIVE_DEVELOPMENT
+            print(f'next_state= {next_state}')
+
+
         else:
             next_state = AerpawExperiment.ExperimentState.SAVED
         
-        is_success = False
+
+
+        
         if request.POST.get('session_success') and request.POST.get('session_success') == 'True':
             is_success = True
         api_request.data.update({
             'next_state': next_state,
             'ops_session':True,
-            'session_description': request.POST.get('session_description'),
+            'session_description': request.POST.get('session_description') if request.POST.get('session_description') else 'None',
             'is_success': is_success,
             'reschedule_session': request.POST.get('reschedule_session') if request.POST.get('reschedule_session') else False,
             'session_datetime': request.POST.get("session_datetime") if request.POST.get('session_datetime') else None,
             'experiment': experiment,
             })
         op = e.state(api_request, pk=int(experiment.id))
-
+        return True
+    
     # Ends testbed session and initiates a new development session
     if request.POST.get('end_testbed_initiate_dev'):
         print('Ending testbed session and starting a new dev session')
@@ -383,9 +412,7 @@ def evaluate_session_dashboard_action(request):
         # Initiate a new development session
         api_request.data.update({'next_state':AerpawExperiment.ExperimentState.WAIT_DEVELOPMENT_DEPLOY})
         op = e.state(api_request, pk=int(experiment.id))
-
-        
-
+        return True
     # Ends Testbed session and does NOT intiate a new development session
     if request.POST.get('end_testbed_only'):
         print('Ending testbed session without starting a new dev session')
@@ -393,7 +420,7 @@ def evaluate_session_dashboard_action(request):
         api_request.data.update(**request.POST)
         api_request.data.update({'experiment_id':request.POST.get('end_testbed_only')})
         new_field_trip(api_request)
-
+        return True
     if request.POST.get('new_development'):
         experiment_id = request.POST.get('new_development')
         api_request.data.update({
@@ -401,6 +428,7 @@ def evaluate_session_dashboard_action(request):
             'ops_session':False
             })
         op = e.state(api_request, pk=int(experiment_id))
+        return True
     if request.POST.get('new_sandbox'):
         experiment_id = request.POST.get('new_sandbox')
         api_request.data.update({
@@ -408,6 +436,7 @@ def evaluate_session_dashboard_action(request):
             'ops_session':True
             })
         op = e.state(api_request, pk=int(experiment_id))
+        return True
     if request.POST.get('new_emulation'):
         experiment_id = request.POST.get('new_emulation')
         api_request.data.update({
@@ -415,6 +444,7 @@ def evaluate_session_dashboard_action(request):
             'ops_session':True
             })
         op = e.state(api_request, pk=int(experiment_id))
+        return True
     if request.POST.get('new_testbed'):
         experiment_id = request.POST.get('new_testbed')
         api_request.data.update({
@@ -422,6 +452,7 @@ def evaluate_session_dashboard_action(request):
             'ops_session':True
             })
         op = e.state(api_request, pk=int(experiment_id))
+        return True
     if request.POST.get('schedule_session'):
         experiment = AerpawExperiment.objects.get(id = request.POST.get('schedule_session'))
         next_state = next_natural_transition(experiment)
@@ -430,7 +461,7 @@ def evaluate_session_dashboard_action(request):
             'session_datetime':request.POST.get('session_datetime'),
             })
         op = e.state(api_request, pk=int(experiment.id))
-
+        return True
 
     if request.POST.get('start_session'):
         print('start_session')
@@ -441,6 +472,7 @@ def evaluate_session_dashboard_action(request):
             'ops_session':True
             })
         op = e.state(api_request, pk=int(experiment.id))
+        return True
 
     if request.POST.get('cancel_session'):
         print('cancel_session')
@@ -458,7 +490,9 @@ def evaluate_session_dashboard_action(request):
 
         if request.POST.get('reschedule_session') and request.POST.get('reschedule_session') == 'True':
             print('Rescheduling Session')
+        return True
         
+    
 
 def get_session_dashboard_buttons(request, session_id: int) -> dict:
     print(f'session id = {session_id}')
